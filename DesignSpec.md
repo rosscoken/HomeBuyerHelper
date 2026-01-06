@@ -1245,6 +1245,47 @@ Potential future directions, always maintaining privacy-first principles:
 - Localization for international markets
 - Open source release
 - Widget support (iOS, Android, Windows)
+- **Bring Your Own Model (BYOM) Integration** for AI-assisted document review
+
+#### 8.5.1 BYOM: AI Document Review (Future)
+
+Allow users to optionally connect their own AI model API keys (e.g., Claude, OpenAI) to get intelligent assistance with reviewing home buying documents.
+
+**Use Cases:**
+
+- **Offer Contract Review**: Analyze purchase agreements for unusual clauses, missing protections, or areas needing attention
+- **Disclosure Document Analysis**: Summarize seller disclosures and flag potential concerns
+- **HOA Document Review**: Parse HOA CC&Rs, bylaws, and meeting minutes for red flags
+- **Inspection Report Summary**: Extract key findings and prioritize repair items
+- **Closing Document Preparation**: Help understand the stack of documents before signing day
+
+**Privacy-First Implementation:**
+
+| Principle | Implementation |
+|-----------|----------------|
+| **User's Own API Key** | Users provide their own API key from their chosen provider - we never see it |
+| **Direct API Calls** | Requests go directly from user's device to AI provider - not through our servers |
+| **Explicit Opt-In** | Feature is completely disabled by default; requires intentional setup |
+| **No Data Retention** | Documents are not stored after analysis; processed in-memory only |
+| **Transparent Costs** | Users pay their own API costs directly to provider at their rates |
+
+**Supported Providers (Planned):**
+
+- Anthropic Claude (recommended for document analysis)
+- OpenAI GPT-4
+- Local models via Ollama (fully offline option)
+
+**User Flow:**
+
+1. User navigates to Settings → AI Document Review
+2. User selects their preferred AI provider
+3. User enters their own API key (stored locally, encrypted)
+4. User uploads or photographs a document
+5. Document is sent directly to AI provider for analysis
+6. Results displayed in-app with key findings highlighted
+7. User can ask follow-up questions about the document
+
+This feature maintains the app's core privacy commitment while giving power users the option to leverage AI for complex document review tasks.
 
 ---
 
