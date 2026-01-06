@@ -16,6 +16,7 @@ This document provides a comprehensive implementation roadmap for the HomeBuyerH
 | 8 | [Accessibility Guidelines](./08-accessibility-guidelines.md) | WCAG compliance, platform-specific accessibility, and testing |
 | 9 | [UX Specifications](./09-ux-specifications.md) | Detailed UX recommendations, wireframe guidance, and design system |
 | 10 | [Progress Tracking](./10-progress-tracking.md) | Mechanisms for tracking implementation progress |
+| 11 | [Future: BYOM & Year 2+](./11-future-byom-features.md) | BYOM AI document review and other future features |
 
 ---
 
@@ -46,15 +47,26 @@ HomeBuyerHelper empowers home buyers with systematic property evaluation, compre
 | PDF Export | QuestPDF |
 | Testing | xUnit + NSubstitute + Playwright (UI) |
 
-### Phase Overview
+### Roadmap Overview
 
 ```
+Year 1: Core Application
+─────────────────────────────────────────────────────────────────────────────
 Phase 1 (MVP)              Phase 2 (Budget)           Phase 3 (Analysis)         Phase 4 (Polish)
 ├─ Property Evaluation     ├─ Budget Planning         ├─ Commute Analysis        ├─ Cross-platform Sync
 ├─ Guided Onboarding       ├─ Cash Flow Projection    ├─ Funding Calculator      ├─ Sharing Features
 ├─ iOS + Android           ├─ Windows + macOS         ├─ Tax Impact Analysis     ├─ Dark Mode
 ├─ SQLite Storage          ├─ PDF Reports             ├─ Optional Cloud Sync     ├─ Tablet Optimization
 └─ App Store Submission    └─ Desktop Store Submit    └─ Photo Attachments       └─ Template Sharing
+
+Year 2+: Advanced Features
+─────────────────────────────────────────────────────────────────────────────
+Phase 5 (BYOM)             Phase 6+ (Future)
+├─ AI Document Review      ├─ Listing URL Auto-fill
+├─ Contract Analysis       ├─ Mortgage API Integration
+├─ Disclosure Parsing      ├─ Community Templates
+├─ HOA Document Review     ├─ Localization
+└─ Local Model Support     └─ Widget Support
 ```
 
 ---
@@ -138,16 +150,19 @@ graph TD
     B --> C[03-Phase 2 Budget]
     C --> D[04-Phase 3 Analysis]
     D --> E[05-Phase 4 Polish]
+    E --> K[11-Future BYOM]
 
     F[06-Testing Strategy] --> B
     F --> C
     F --> D
     F --> E
+    F --> K
 
     G[07-Security Review] --> B
     G --> C
     G --> D
     G --> E
+    G --> K
 
     H[08-Accessibility] --> B
     H --> C
@@ -176,3 +191,4 @@ graph TD
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0 | 2026-01-06 | Initial implementation plan |
+| 1.1 | 2026-01-06 | Add BYOM and Year 2+ features document |
