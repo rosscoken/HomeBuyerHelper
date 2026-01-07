@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:HomeBuyerHelper.ViewModels"
+             x:Class="HomeBuyerHelper.Pages.Settings.DataManagementPage"
+             x:DataType="vm:DataManagementViewModel"
+             Title="{Binding Title}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="16">
+
+            <!-- Export Section -->
+            <Frame Style="{StaticResource CardFrame}" Padding="16">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Export Data" Style="{StaticResource Title}"/>
+                    <Label Text="Export all your properties, criteria, scores, and settings to a JSON backup file."
+                           Style="{StaticResource Body}"
+                           TextColor="{StaticResource Gray500}"/>
+                    <Button Text="Export All Data"
+                            Command="{Binding ExportDataCommand}"
+                            Style="{StaticResource PrimaryButton}"/>
+                    <Label Text="{Binding LastExportPath, StringFormat='Last export: {0}'}"
+                           IsVisible="{Binding LastExportPath, Converter={StaticResource IsNotNullConverter}}"
+                           Style="{StaticResource Caption}"
+                           TextColor="{StaticResource Success}"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Import Section -->
+            <Frame Style="{StaticResource CardFrame}" Padding="16">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Import Data" Style="{StaticResource Title}"/>
+                    <Label Text="Restore data from a previously exported backup file."
+                           Style="{StaticResource Body}"
+                           TextColor="{StaticResource Gray500}"/>
+
+                    <!-- File Selection -->
+                    <Button Text="Select Backup File"
+                            Command="{Binding SelectImportFileCommand}"
+                            Style="{StaticResource OutlineButton}"
+                            IsVisible="{Binding IsFileSelected, Converter={StaticResource InvertedBoolConverter}}"/>
+
+                    <!-- Selected File Info -->
+                    <Frame IsVisible="{Binding IsFileSelected}"
+                           BackgroundColor="{StaticResource SurfaceVariant}"
+                           Padding="12"
+                           CornerRadius="8">
+                        <VerticalStackLayout Spacing="8">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Grid.Column="0"
+                                       Text="File Selected"
+                                       Style="{StaticResource Subtitle}"
+                                       TextColor="{StaticResource Success}"/>
+                                <Button Grid.Column="1"
+                                        Text="Clear"
+                                        Command="{Binding ClearSelectionCommand}"
+                                        Style="{StaticResource TextButton}"
+                                        FontSize="12"/>
+                            </Grid>
+
+                            <!-- Validation Result -->
+                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="4"
+                                  IsVisible="{Binding ImportValidation.IsValid}">
+                                <Label Grid.Row="0" Grid.Column="0" Text="Export Date:" Style="{StaticResource Caption}"/>
+                                <Label Grid.Row="0" Grid.Column="1"
+                                       Text="{Binding ImportValidation.ExportDate, StringFormat='{0:g}'}"
+                                       Style="{StaticResource Caption}" HorizontalTextAlignment="End"/>
+
+                                <Label Grid.Row="1" Grid.Column="0" Text="Properties:" Style="{StaticResource Caption}"/>
+                                <Label Grid.Row="1" Grid.Column="1"
+                                       Text="{Binding ImportValidation.PropertyCount}"
+                                       Style="{StaticResource Caption}" HorizontalTextAlignment="End"/>
+
+                                <Label Grid.Row="2" Grid.Column="0" Text="Criteria:" Style="{StaticResource Caption}"/>
+                                <Label Grid.Row="2" Grid.Column="1"
+                                       Text="{Binding ImportValidation.CriteriaCount}"
+                                       Style="{StaticResource Caption}" HorizontalTextAlignment="End"/>
+
+                                <Label Grid.Row="3" Grid.Column="0" Text="Scores:" Style="{StaticResource Caption}"/>
+                                <Label Grid.Row="3" Grid.Column="1"
+                                       Text="{Binding ImportValidation.ScoreCount}"
+                                       Style="{StaticResource Caption}" HorizontalTextAlignment="End"/>
+                            </Grid>
+
+                            <Label Text="{Binding ImportValidation.ErrorMessage}"
+                                   TextColor="{StaticResource Error}"
+                                   IsVisible="{Binding ImportValidation.IsValid, Converter={StaticResource InvertedBoolConverter}}"/>
+                        </VerticalStackLayout>
+                    </Frame>
+
+                    <!-- Import Options -->
+                    <VerticalStackLayout IsVisible="{Binding IsFileSelected}" Spacing="8">
+                        <Label Text="Import Mode:" Style="{StaticResource Subtitle}"/>
+
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                            <CheckBox Grid.Column="0"
+                                      IsChecked="{Binding ReplaceExisting}"
+                                      VerticalOptions="Center"/>
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                                <Label Text="Replace all existing data"
+                                       Style="{StaticResource Body}"/>
+                                <Label Text="Warning: This will delete all current data!"
+                                       Style="{StaticResource Caption}"
+                                       TextColor="{StaticResource Error}"
+                                       IsVisible="{Binding ReplaceExisting}"/>
+                                <Label Text="New data will be added alongside existing data."
+                                       Style="{StaticResource Caption}"
+                                       TextColor="{StaticResource Gray400}"
+                                       IsVisible="{Binding ReplaceExisting, Converter={StaticResource InvertedBoolConverter}}"/>
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <Button Text="Import Data"
+                                Command="{Binding ImportDataCommand}"
+                                Style="{StaticResource PrimaryButton}"
+                                IsEnabled="{Binding ImportValidation.IsValid}"/>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Info Section -->
+            <Frame Style="{StaticResource CardFrame}" Padding="16">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="About Backups" Style="{StaticResource Subtitle}"/>
+                    <Label Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="Your backup includes:" FontAttributes="Bold"/>
+                                <Span Text="&#10;- All properties and their details"/>
+                                <Span Text="&#10;- Evaluation criteria and weights"/>
+                                <Span Text="&#10;- Property scores and notes"/>
+                                <Span Text="&#10;- App settings (loan defaults, etc.)"/>
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                    <Label Text="Tip: Export regularly to protect your data!"
+                           Style="{StaticResource Caption}"
+                           TextColor="{StaticResource Primary}"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Error Message -->
+            <Label Text="{Binding ErrorMessage}"
+                   TextColor="{StaticResource Error}"
+                   IsVisible="{Binding HasError}"
+                   HorizontalTextAlignment="Center"/>
+
+            <!-- Loading Indicator -->
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               IsVisible="{Binding IsBusy}"
+                               HorizontalOptions="Center"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

@@ -76,4 +76,16 @@ public partial class DashboardViewModel : BaseViewModel
     {
         await Shell.Current.GoToAsync(nameof(Pages.ComparisonPage));
     }
+
+    [RelayCommand]
+    private async Task NavigateToDataManagementAsync()
+    {
+        await Shell.Current.GoToAsync("DataManagement");
+    }
+
+    [RelayCommand]
+    private async Task NavigateToLoanSettingsAsync()
+    {
+        await Shell.Current.GoToAsync("LoanSettings");
+    }
 }

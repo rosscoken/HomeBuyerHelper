@@ -82,6 +82,20 @@
                         Command="{Binding NavigateToComparisonCommand}" />
             </Grid>
 
+            <!-- Settings Section -->
+            <Label Text="Settings" Style="{StaticResource Title}" />
+
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                <Button Grid.Column="0"
+                        Text="Loan Settings"
+                        Command="{Binding NavigateToLoanSettingsCommand}"
+                        Style="{StaticResource OutlineButton}" />
+                <Button Grid.Column="1"
+                        Text="Export/Import"
+                        Command="{Binding NavigateToDataManagementCommand}"
+                        Style="{StaticResource OutlineButton}" />
+            </Grid>
+
             <!-- Loading Indicator -->
             <ActivityIndicator IsRunning="{Binding IsBusy}"
                                IsVisible="{Binding IsBusy}"

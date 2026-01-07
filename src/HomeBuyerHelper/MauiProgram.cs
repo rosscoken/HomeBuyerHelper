@@ -59,6 +59,7 @@ public static class MauiProgram
         builder.Services.AddTransient<ComparisonViewModel>();
         builder.Services.AddTransient<ScoringWalkthroughViewModel>();
         builder.Services.AddTransient<LoanSettingsViewModel>();
+        builder.Services.AddTransient<DataManagementViewModel>();
 
         // Register onboarding view models
         builder.Services.AddTransient<WelcomeViewModel>();
@@ -79,6 +80,7 @@ public static class MauiProgram
         builder.Services.AddTransient<ComparisonPage>();
         builder.Services.AddTransient<ScoringWalkthroughPage>();
         builder.Services.AddTransient<LoanSettingsPage>();
+        builder.Services.AddTransient<DataManagementPage>();
 
         // Register onboarding pages
         builder.Services.AddTransient<WelcomePage>();
