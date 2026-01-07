@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:HomeBuyerHelper.ViewModels.Onboarding"
+             x:Class="HomeBuyerHelper.Pages.Onboarding.HouseholdPage"
+             x:DataType="vm:HouseholdViewModel"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{StaticResource Background}">
+
+    <Grid RowDefinitions="Auto,*,Auto" Padding="24">
+
+        <!-- Progress Header -->
+        <VerticalStackLayout Grid.Row="0" Spacing="16">
+            <ProgressBar Progress="0.3" ProgressColor="{StaticResource Primary}" HeightRequest="4"/>
+            <Label Text="Step 3 of 7" Style="{StaticResource Caption}" HorizontalTextAlignment="Center"/>
+        </VerticalStackLayout>
+
+        <!-- Content -->
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Spacing="32" Padding="0,24">
+
+                <!-- Household Type -->
+                <VerticalStackLayout Spacing="16">
+                    <Label Text="Who will be living in this home?"
+                           Style="{StaticResource Headline}"
+                           HorizontalTextAlignment="Center"/>
+
+                    <VerticalStackLayout Spacing="8">
+                        <RadioButton Content="Just me" IsChecked="{Binding IsJustMeSelected}" GroupName="Household" Style="{StaticResource RadioButtonCard}"/>
+                        <RadioButton Content="Me and a partner/spouse" IsChecked="{Binding IsWithPartnerSelected}" GroupName="Household" Style="{StaticResource RadioButtonCard}"/>
+                        <RadioButton Content="Family with kids" IsChecked="{Binding IsFamilySelected}" GroupName="Household" Style="{StaticResource RadioButtonCard}"/>
+                        <RadioButton Content="Roommates" IsChecked="{Binding IsRoommatesSelected}" GroupName="Household" Style="{StaticResource RadioButtonCard}"/>
+                        <RadioButton Content="Multi-generational household" IsChecked="{Binding IsMultiGenSelected}" GroupName="Household" Style="{StaticResource RadioButtonCard}"/>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+
+                <!-- Work Arrangement -->
+                <VerticalStackLayout Spacing="16">
+                    <Label Text="How do you and others work?"
+                           Style="{StaticResource Subtitle}"
+                           HorizontalTextAlignment="Center"/>
+
+                    <VerticalStackLayout Spacing="8">
+                        <RadioButton Content="Everyone commutes to an office daily" IsChecked="{Binding IsFullyOnsiteSelected}" GroupName="Work" Style="{StaticResource RadioButtonCard}"/>
+                        <RadioButton Content="Hybrid (some days office, some home)" IsChecked="{Binding IsHybridSelected}" GroupName="Work" Style="{StaticResource RadioButtonCard}"/>
+                        <RadioButton Content="Fully remote / work from home" IsChecked="{Binding IsFullyRemoteSelected}" GroupName="Work" Style="{StaticResource RadioButtonCard}"/>
+                        <RadioButton Content="Retired or not working" IsChecked="{Binding IsRetiredSelected}" GroupName="Work" Style="{StaticResource RadioButtonCard}"/>
+                        <RadioButton Content="Mix of the above" IsChecked="{Binding IsMixedSelected}" GroupName="Work" Style="{StaticResource RadioButtonCard}"/>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+
+                <!-- Pets -->
+                <VerticalStackLayout Spacing="16">
+                    <Label Text="Do you have pets?"
+                           Style="{StaticResource Subtitle}"
+                           HorizontalTextAlignment="Center"/>
+
+                    <HorizontalStackLayout Spacing="16" HorizontalOptions="Center">
+                        <VerticalStackLayout>
+                            <CheckBox IsChecked="{Binding HasDogs}"/>
+                            <Label Text="Dogs" HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                        <VerticalStackLayout>
+                            <CheckBox IsChecked="{Binding HasCats}"/>
+                            <Label Text="Cats" HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                        <VerticalStackLayout>
+                            <CheckBox IsChecked="{Binding HasOtherPets}"/>
+                            <Label Text="Other" HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Navigation -->
+        <Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="16">
+            <Button Grid.Column="0"
+                    Text="Back"
+                    Command="{Binding BackCommand}"
+                    Style="{StaticResource OutlineButton}"
+                    HeightRequest="50"/>
+
+            <Button Grid.Column="1"
+                    Text="Continue"
+                    Command="{Binding ContinueCommand}"
+                    IsEnabled="{Binding HasSelection}"
+                    Style="{StaticResource PrimaryButton}"
+                    HeightRequest="50"/>
+        </Grid>
+
+    </Grid>
+
+</ContentPage>

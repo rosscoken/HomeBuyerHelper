@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:HomeBuyerHelper.ViewModels.Onboarding"
+             x:Class="HomeBuyerHelper.Pages.Onboarding.OnboardingCompletePage"
+             x:DataType="vm:OnboardingCompleteViewModel"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{StaticResource Background}">
+
+    <Grid RowDefinitions="*,Auto" Padding="32">
+
+        <!-- Content -->
+        <VerticalStackLayout Grid.Row="0"
+                             VerticalOptions="Center"
+                             Spacing="32">
+
+            <!-- Success Icon -->
+            <Border StrokeThickness="0"
+                    BackgroundColor="{StaticResource Primary}"
+                    HeightRequest="100"
+                    WidthRequest="100"
+                    HorizontalOptions="Center">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="50"/>
+                </Border.StrokeShape>
+                <Label Text="&#x2713;"
+                       FontSize="48"
+                       TextColor="White"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"/>
+            </Border>
+
+            <Label Text="You're all set!"
+                   Style="{StaticResource Headline}"
+                   HorizontalTextAlignment="Center"/>
+
+            <Label Text="Your evaluation criteria are ready. Now let's add some properties to compare."
+                   Style="{StaticResource Subtitle}"
+                   HorizontalTextAlignment="Center"
+                   Opacity="0.8"/>
+
+            <!-- Summary Card -->
+            <Border Padding="20" BackgroundColor="{StaticResource SurfaceVariant}">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="16"/>
+                </Border.StrokeShape>
+                <VerticalStackLayout Spacing="16">
+                    <Label Text="Your Setup" Style="{StaticResource Subtitle}" FontAttributes="Bold"/>
+
+                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="12">
+                        <Label Grid.Row="0" Grid.Column="0" Text="Criteria configured"/>
+                        <Label Grid.Row="0" Grid.Column="1" Text="{Binding CriteriaCount}" FontAttributes="Bold"/>
+
+                        <Label Grid.Row="1" Grid.Column="0" Text="Top priority"/>
+                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding TopPriority}" FontAttributes="Bold"/>
+
+                        <Label Grid.Row="2" Grid.Column="0" Text="Situation"/>
+                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding Situation}" FontAttributes="Bold"/>
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+        </VerticalStackLayout>
+
+        <!-- Actions -->
+        <VerticalStackLayout Grid.Row="1" Spacing="16">
+            <Button Text="Add Your First Property"
+                    Command="{Binding AddPropertyCommand}"
+                    Style="{StaticResource PrimaryButton}"
+                    HeightRequest="56"/>
+
+            <Button Text="Go to Dashboard"
+                    Command="{Binding GoToDashboardCommand}"
+                    Style="{StaticResource OutlineButton}"
+                    HeightRequest="50"/>
+        </VerticalStackLayout>
+
+    </Grid>
+
+</ContentPage>

@@ -14,5 +14,7 @@
     <converters:SystemSuggestedConverter x:Key="SystemSuggestedConverter" />
     <converters:OnboardingButtonTextConverter x:Key="OnboardingButtonTextConverter" />
     <converters:OnboardingButtonCommandConverter x:Key="OnboardingButtonCommandConverter" />
+    <converters:BoolToColorConverter x:Key="BoolToColorConverter" />
+    <converters:BoolToStrokeConverter x:Key="BoolToStrokeConverter" />
 
 </ResourceDictionary>

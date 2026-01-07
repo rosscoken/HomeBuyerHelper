@@ -35,6 +35,13 @@ public interface IExportService
     Task ImportDataAsync(string filePath);
 
     /// <summary>
+    /// Imports data from JSON content.
+    /// </summary>
+    /// <param name="jsonContent">JSON backup content.</param>
+    /// <returns>True if import was successful.</returns>
+    Task<bool> ImportFromJsonAsync(string jsonContent);
+
+    /// <summary>
     /// Generates a share-ready summary of a property.
     /// </summary>
     Task<string> GenerateShareTextAsync(int propertyId);

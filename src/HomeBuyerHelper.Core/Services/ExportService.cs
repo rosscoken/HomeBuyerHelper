@@ -91,8 +91,56 @@ public class ExportService : IExportService
             throw new FileNotFoundException("Import file not found", filePath);
         }
 
-        // TODO: Implement import logic
-        await Task.CompletedTask;
+        var json = await File.ReadAllTextAsync(filePath);
+        await ImportFromJsonAsync(json);
+    }
+
+    public async Task<bool> ImportFromJsonAsync(string jsonContent)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(jsonContent))
+                return false;
+
+            // Validate JSON structure
+            var importData = System.Text.Json.JsonSerializer.Deserialize<ImportDataModel>(jsonContent);
+            if (importData == null)
+                return false;
+
+            // Import criteria first (properties may reference them)
+            if (importData.Criteria != null)
+            {
+                foreach (var criterion in importData.Criteria)
+                {
+                    criterion.Id = 0; // Reset ID for new insert
+                    await _criteriaRepository.CreateAsync(criterion);
+                }
+            }
+
+            // Import properties
+            if (importData.Properties != null)
+            {
+                foreach (var property in importData.Properties)
+                {
+                    property.Id = 0; // Reset ID for new insert
+                    await _propertyRepository.CreateAsync(property);
+                }
+            }
+
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private class ImportDataModel
+    {
+        public DateTime ExportDate { get; set; }
+        public string? Version { get; set; }
+        public List<Property>? Properties { get; set; }
+        public List<EvaluationCriterion>? Criteria { get; set; }
     }
 
     public async Task<string> GenerateShareTextAsync(int propertyId)

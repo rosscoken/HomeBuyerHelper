@@ -152,3 +152,62 @@ public class OnboardingButtonTextConverter : IValueConverter
         throw new NotImplementedException();
     }
 }
+
+/// <summary>
+/// Returns appropriate command based on onboarding step.
+/// Note: This is a simplified converter - in production, use DataTriggers or VisualStateManager.
+/// </summary>
+public class OnboardingButtonCommandConverter : IValueConverter
+{
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        // This converter is a placeholder - the actual implementation
+        // would need access to the ViewModel commands
+        return null;
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+/// <summary>
+/// Converts boolean to background color for selection states.
+/// </summary>
+public class BoolToColorConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is bool isSelected && isSelected)
+        {
+            return Color.FromArgb("#F0EDF6"); // SurfaceVariant / selected
+        }
+        return Color.FromArgb("#FFFFFF"); // Surface / unselected
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+/// <summary>
+/// Converts boolean to stroke color for selection states.
+/// </summary>
+public class BoolToStrokeConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is bool isSelected && isSelected)
+        {
+            return Color.FromArgb("#512BD4"); // Primary / selected
+        }
+        return Color.FromArgb("#E0E0E0"); // Gray300 / unselected
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}

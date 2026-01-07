@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:HomeBuyerHelper.ViewModels.Onboarding"
+             x:Class="HomeBuyerHelper.Pages.Onboarding.GoalSelectionPage"
+             x:DataType="vm:GoalSelectionViewModel"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{StaticResource Background}">
+
+    <Grid RowDefinitions="Auto,*,Auto" Padding="24">
+
+        <!-- Progress Header -->
+        <VerticalStackLayout Grid.Row="0" Spacing="16">
+            <ProgressBar Progress="0.1" ProgressColor="{StaticResource Primary}" HeightRequest="4"/>
+            <Label Text="Step 1 of 7" Style="{StaticResource Caption}" HorizontalTextAlignment="Center"/>
+        </VerticalStackLayout>
+
+        <!-- Content -->
+        <ScrollView Grid.Row="1" VerticalOptions="Center">
+            <VerticalStackLayout Spacing="24" Padding="0,24">
+
+                <Label Text="What best describes your situation?"
+                       Style="{StaticResource Headline}"
+                       HorizontalTextAlignment="Center"
+                       AutomationProperties.IsInAccessibleTree="True"/>
+
+                <!-- Option Buttons -->
+                <VerticalStackLayout Spacing="12" x:Name="OptionsStack">
+                    <RadioButton Content="Buying my first home"
+                                 Value="FirstHome"
+                                 IsChecked="{Binding IsFirstHomeSelected}"
+                                 GroupName="Situation"
+                                 Style="{StaticResource RadioButtonCard}"
+                                 AutomationProperties.Name="Buying my first home"/>
+
+                    <RadioButton Content="Upgrading to a bigger/better home"
+                                 Value="Upgrading"
+                                 IsChecked="{Binding IsUpgradingSelected}"
+                                 GroupName="Situation"
+                                 Style="{StaticResource RadioButtonCard}"
+                                 AutomationProperties.Name="Upgrading to a bigger or better home"/>
+
+                    <RadioButton Content="Downsizing or simplifying"
+                                 Value="Downsizing"
+                                 IsChecked="{Binding IsDownsizingSelected}"
+                                 GroupName="Situation"
+                                 Style="{StaticResource RadioButtonCard}"
+                                 AutomationProperties.Name="Downsizing or simplifying"/>
+
+                    <RadioButton Content="Relocating to a new area"
+                                 Value="Relocating"
+                                 IsChecked="{Binding IsRelocatingSelected}"
+                                 GroupName="Situation"
+                                 Style="{StaticResource RadioButtonCard}"
+                                 AutomationProperties.Name="Relocating to a new area"/>
+
+                    <RadioButton Content="Buying an investment property"
+                                 Value="Investment"
+                                 IsChecked="{Binding IsInvestmentSelected}"
+                                 GroupName="Situation"
+                                 Style="{StaticResource RadioButtonCard}"
+                                 AutomationProperties.Name="Buying an investment property"/>
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Navigation -->
+        <Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="16">
+            <Button Grid.Column="0"
+                    Text="Back"
+                    Command="{Binding BackCommand}"
+                    Style="{StaticResource OutlineButton}"
+                    HeightRequest="50"
+                    AutomationProperties.Name="Go back"/>
+
+            <Button Grid.Column="1"
+                    Text="Continue"
+                    Command="{Binding ContinueCommand}"
+                    IsEnabled="{Binding HasSelection}"
+                    Style="{StaticResource PrimaryButton}"
+                    HeightRequest="50"
+                    AutomationProperties.Name="Continue to next step"/>
+        </Grid>
+
+    </Grid>
+
+</ContentPage>

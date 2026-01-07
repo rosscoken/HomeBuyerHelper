@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:HomeBuyerHelper.ViewModels.Onboarding"
+             x:Class="HomeBuyerHelper.Pages.Onboarding.CriteriaReviewPage"
+             x:DataType="vm:CriteriaReviewViewModel"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{StaticResource Background}">
+
+    <Grid RowDefinitions="Auto,*,Auto" Padding="24">
+
+        <!-- Progress Header -->
+        <VerticalStackLayout Grid.Row="0" Spacing="16">
+            <ProgressBar Progress="0.8" ProgressColor="{StaticResource Primary}" HeightRequest="4"/>
+            <Label Text="Step 6 of 7" Style="{StaticResource Caption}" HorizontalTextAlignment="Center"/>
+        </VerticalStackLayout>
+
+        <!-- Content -->
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Spacing="24" Padding="0,24">
+
+                <Label Text="Here's what we'll evaluate"
+                       Style="{StaticResource Headline}"
+                       HorizontalTextAlignment="Center"/>
+
+                <Label Text="Based on your priorities, we suggest these criteria. You can adjust weights or remove any."
+                       Style="{StaticResource Caption}"
+                       HorizontalTextAlignment="Center"/>
+
+                <!-- Total Weight -->
+                <Border Padding="12" BackgroundColor="{StaticResource SurfaceVariant}">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="8"/>
+                    </Border.StrokeShape>
+                    <HorizontalStackLayout HorizontalOptions="Center" Spacing="8">
+                        <Label Text="Total Weight:" Style="{StaticResource Body}"/>
+                        <Label Text="{Binding TotalWeight, StringFormat='{0:0}%'}"
+                               Style="{StaticResource Body}"
+                               FontAttributes="Bold"
+                               TextColor="{Binding TotalWeightColor}"/>
+                    </HorizontalStackLayout>
+                </Border>
+
+                <!-- Criteria List -->
+                <VerticalStackLayout Spacing="12" BindableLayout.ItemsSource="{Binding Criteria}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="vm:CriterionItem">
+                            <Border Padding="16" BackgroundColor="{StaticResource Surface}">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="12"/>
+                                </Border.StrokeShape>
+                                <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="Auto,*,Auto" RowSpacing="8">
+                                    <!-- Checkbox and Name -->
+                                    <CheckBox Grid.Row="0" Grid.Column="0"
+                                              IsChecked="{Binding IsIncluded}"
+                                              VerticalOptions="Center"/>
+                                    <Label Grid.Row="0" Grid.Column="1"
+                                           Text="{Binding Name}"
+                                           Style="{StaticResource Subtitle}"
+                                           VerticalOptions="Center"/>
+                                    <Label Grid.Row="0" Grid.Column="2"
+                                           Text="{Binding Weight, StringFormat='{0:0}%'}"
+                                           Style="{StaticResource Body}"
+                                           FontAttributes="Bold"
+                                           VerticalOptions="Center"/>
+
+                                    <!-- Reason -->
+                                    <Label Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"
+                                           Text="{Binding Reason}"
+                                           Style="{StaticResource Caption}"
+                                           TextColor="{StaticResource OnSurfaceVariant}"/>
+
+                                    <!-- Weight Slider -->
+                                    <Slider Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3"
+                                            Minimum="1" Maximum="30"
+                                            Value="{Binding Weight}"
+                                            IsEnabled="{Binding IsIncluded}"
+                                            ThumbColor="{StaticResource Primary}"
+                                            MinimumTrackColor="{StaticResource Primary}"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Navigation -->
+        <Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="16">
+            <Button Grid.Column="0"
+                    Text="Back"
+                    Command="{Binding BackCommand}"
+                    Style="{StaticResource OutlineButton}"
+                    HeightRequest="50"/>
+
+            <Button Grid.Column="1"
+                    Text="Continue"
+                    Command="{Binding ContinueCommand}"
+                    IsEnabled="{Binding CanContinue}"
+                    Style="{StaticResource PrimaryButton}"
+                    HeightRequest="50"/>
+        </Grid>
+
+    </Grid>
+
+</ContentPage>

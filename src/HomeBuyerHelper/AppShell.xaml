@@ -7,10 +7,31 @@
     Shell.FlyoutBehavior="Disabled"
     Title="HomeBuyerHelper">
 
-    <!-- Main navigation structure -->
-    <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate pages:DashboardPage}"
-        Route="Dashboard" />
+    <!-- Main Tab Navigation -->
+    <TabBar>
+        <ShellContent
+            Title="Dashboard"
+            ContentTemplate="{DataTemplate pages:DashboardPage}"
+            Route="Dashboard"
+            Icon="home_icon.png" />
+
+        <ShellContent
+            Title="Properties"
+            ContentTemplate="{DataTemplate pages:PropertyListPage}"
+            Route="Properties"
+            Icon="property_icon.png" />
+
+        <ShellContent
+            Title="Compare"
+            ContentTemplate="{DataTemplate pages:ComparisonPage}"
+            Route="Comparison"
+            Icon="compare_icon.png" />
+
+        <ShellContent
+            Title="Criteria"
+            ContentTemplate="{DataTemplate pages:CriteriaPage}"
+            Route="Criteria"
+            Icon="criteria_icon.png" />
+    </TabBar>
 
 </Shell>
