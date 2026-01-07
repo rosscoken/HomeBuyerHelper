@@ -15,6 +15,7 @@ public partial class AppShell : Shell
         Routing.RegisterRoute(nameof(Pages.PropertyListPage), typeof(Pages.PropertyListPage));
         Routing.RegisterRoute(nameof(Pages.PropertyDetailPage), typeof(Pages.PropertyDetailPage));
         Routing.RegisterRoute(nameof(Pages.CriteriaPage), typeof(Pages.CriteriaPage));
+        Routing.RegisterRoute("CriterionEdit", typeof(Pages.CriterionEditPage));
         Routing.RegisterRoute(nameof(Pages.ComparisonPage), typeof(Pages.ComparisonPage));
         Routing.RegisterRoute("PropertyEntry", typeof(Pages.PropertyDetailPage));
 

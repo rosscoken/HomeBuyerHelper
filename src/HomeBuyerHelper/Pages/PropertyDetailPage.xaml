@@ -143,6 +143,65 @@
                 </VerticalStackLayout>
             </Frame>
 
+            <!-- Score Summary Section (only for existing properties) -->
+            <Frame Style="{StaticResource CardFrame}"
+                   IsVisible="{Binding IsNewProperty, Converter={StaticResource InvertedBoolConverter}}">
+                <VerticalStackLayout Spacing="12">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Grid.Column="0" Text="Scores" Style="{StaticResource Title}"/>
+                        <Label Grid.Column="1"
+                               Text="{Binding Rank, StringFormat='Rank #{0}'}"
+                               Style="{StaticResource Body}"
+                               TextColor="{StaticResource Primary}"
+                               FontAttributes="Bold"/>
+                    </Grid>
+
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                        <!-- Overall Score Circle -->
+                        <Frame Grid.Column="0"
+                               BackgroundColor="{StaticResource Primary}"
+                               CornerRadius="30"
+                               Padding="0"
+                               HeightRequest="60"
+                               WidthRequest="60"
+                               BorderColor="Transparent">
+                            <Label Text="{Binding OverallScore, StringFormat='{0:F1}'}"
+                                   TextColor="White"
+                                   FontSize="20"
+                                   FontAttributes="Bold"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
+                        </Frame>
+
+                        <!-- Score Progress -->
+                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="4">
+                            <Label Text="Overall Score"
+                                   Style="{StaticResource Body}"
+                                   FontAttributes="Bold"/>
+                            <Label Text="{Binding ScoredCriteriaCount, StringFormat='{0} of '}"
+                                   Style="{StaticResource Caption}">
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="{Binding ScoredCriteriaCount}"/>
+                                        <Span Text=" of "/>
+                                        <Span Text="{Binding TotalCriteriaCount}"/>
+                                        <Span Text=" criteria scored"/>
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+                        </VerticalStackLayout>
+
+                        <!-- Score Button -->
+                        <Button Grid.Column="2"
+                                Text="{Binding IsFullyScored, Converter={StaticResource BoolToScoreButtonTextConverter}}"
+                                Command="{Binding ScorePropertyCommand}"
+                                Style="{StaticResource SecondaryButton}"
+                                VerticalOptions="Center"
+                                IsVisible="{Binding TotalCriteriaCount, Converter={StaticResource GreaterThanConverter}, ConverterParameter=0}"/>
+                    </Grid>
+                </VerticalStackLayout>
+            </Frame>
+
             <!-- Notes Section -->
             <Label Text="Notes" Style="{StaticResource Title}" />
 
@@ -169,8 +228,18 @@
                         Style="{StaticResource OutlineButton}" />
                 <Button Grid.Column="1"
                         Text="Save"
-                        Command="{Binding SaveCommand}" />
+                        Command="{Binding SaveCommand}"
+                        Style="{StaticResource PrimaryButton}"/>
             </Grid>
+
+            <!-- Delete Button (only for existing properties) -->
+            <Button Text="Delete Property"
+                    Command="{Binding DeleteCommand}"
+                    TextColor="{StaticResource Error}"
+                    BackgroundColor="Transparent"
+                    IsVisible="{Binding IsNewProperty, Converter={StaticResource InvertedBoolConverter}}"
+                    HorizontalOptions="Center"
+                    AutomationProperties.Name="Delete this property"/>
 
             <!-- Loading Indicator -->
             <ActivityIndicator IsRunning="{Binding IsBusy}"

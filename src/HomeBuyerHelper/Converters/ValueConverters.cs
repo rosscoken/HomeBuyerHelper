@@ -211,3 +211,48 @@ public class BoolToStrokeConverter : IValueConverter
         throw new NotImplementedException();
     }
 }
+
+/// <summary>
+/// Converts boolean (IsFullyScored) to score button text.
+/// </summary>
+public class BoolToScoreButtonTextConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        return value is true ? "Edit Scores" : "Score";
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+/// <summary>
+/// Converts a score (0-10) to a color based on thresholds.
+/// Green: 8-10, Yellow: 5-7, Red: 1-4
+/// </summary>
+public class ScoreToColorConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        decimal score = value switch
+        {
+            decimal d => d,
+            int i => i,
+            double dbl => (decimal)dbl,
+            _ => 0
+        };
+
+        if (score >= 8)
+            return Color.FromArgb("#4CAF50"); // Success green
+        if (score >= 5)
+            return Color.FromArgb("#FF9800"); // Warning yellow/orange
+        return Color.FromArgb("#F44336"); // Error red
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}

@@ -74,6 +74,24 @@ public partial class PropertyDetailViewModel : BaseViewModel
     [ObservableProperty]
     private MonthlyCostBreakdown? _costBreakdown;
 
+    [ObservableProperty]
+    private decimal _overallScore;
+
+    [ObservableProperty]
+    private int _rank;
+
+    [ObservableProperty]
+    private int _scoredCriteriaCount;
+
+    [ObservableProperty]
+    private int _totalCriteriaCount;
+
+    [ObservableProperty]
+    private bool _isFullyScored;
+
+    [ObservableProperty]
+    private IReadOnlyList<PropertyScore> _scores = [];
+
     public IReadOnlyList<PropertyType> PropertyTypes { get; } = Enum.GetValues<PropertyType>();
 
     public PropertyDetailViewModel(
@@ -135,6 +153,12 @@ public partial class PropertyDetailViewModel : BaseViewModel
                 AnnualInsurance = property.AnnualInsurance;
                 ListingUrl = property.ListingUrl;
                 Notes = property.Notes;
+                OverallScore = property.OverallScore;
+                Rank = property.Rank;
+                ScoredCriteriaCount = property.ScoredCriteriaCount;
+                TotalCriteriaCount = property.TotalCriteriaCount;
+                IsFullyScored = property.IsFullyScored;
+                Scores = property.Scores;
 
                 UpdateCostBreakdown();
             }
@@ -191,6 +215,31 @@ public partial class PropertyDetailViewModel : BaseViewModel
     private async Task CancelAsync()
     {
         await Shell.Current.GoToAsync("..");
+    }
+
+    [RelayCommand]
+    private async Task DeleteAsync()
+    {
+        if (IsNewProperty || !PropertyId.HasValue) return;
+
+        var confirmed = await Shell.Current.DisplayAlert(
+            "Delete Property",
+            $"Are you sure you want to delete '{Nickname}'? This action cannot be undone.",
+            "Delete",
+            "Cancel");
+
+        if (confirmed)
+        {
+            await _propertyService.DeletePropertyAsync(PropertyId.Value);
+            await Shell.Current.GoToAsync("..");
+        }
+    }
+
+    [RelayCommand]
+    private async Task ScorePropertyAsync()
+    {
+        if (!PropertyId.HasValue) return;
+        await Shell.Current.GoToAsync($"ScoringWalkthrough?propertyId={PropertyId.Value}");
     }
 
     [RelayCommand]

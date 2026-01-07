@@ -16,5 +16,7 @@
     <converters:OnboardingButtonCommandConverter x:Key="OnboardingButtonCommandConverter" />
     <converters:BoolToColorConverter x:Key="BoolToColorConverter" />
     <converters:BoolToStrokeConverter x:Key="BoolToStrokeConverter" />
+    <converters:BoolToScoreButtonTextConverter x:Key="BoolToScoreButtonTextConverter" />
+    <converters:ScoreToColorConverter x:Key="ScoreToColorConverter" />
 
 </ResourceDictionary>

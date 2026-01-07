@@ -47,12 +47,14 @@ public static class MauiProgram
         builder.Services.AddSingleton<ICalculationService, CalculationService>();
         builder.Services.AddSingleton<IExportService, ExportService>();
         builder.Services.AddSingleton<IOnboardingStateService, OnboardingStateService>();
+        builder.Services.AddSingleton<IWeightBalancingService, WeightBalancingService>();
 
         // Register main view models (transient - new instance per page)
         builder.Services.AddTransient<DashboardViewModel>();
         builder.Services.AddTransient<PropertyListViewModel>();
         builder.Services.AddTransient<PropertyDetailViewModel>();
         builder.Services.AddTransient<CriteriaViewModel>();
+        builder.Services.AddTransient<CriterionEditViewModel>();
         builder.Services.AddTransient<ComparisonViewModel>();
 
         // Register onboarding view models
@@ -70,6 +72,7 @@ public static class MauiProgram
         builder.Services.AddTransient<PropertyListPage>();
         builder.Services.AddTransient<PropertyDetailPage>();
         builder.Services.AddTransient<CriteriaPage>();
+        builder.Services.AddTransient<CriterionEditPage>();
         builder.Services.AddTransient<ComparisonPage>();
 
         // Register onboarding pages

@@ -18,8 +18,8 @@ public class PropertyScore
     public int CriterionId { get; set; }
 
     /// <summary>
-    /// The score value (1-5 scale).
-    /// 1 = Poor, 2 = Below Average, 3 = Average, 4 = Good, 5 = Excellent
+    /// The score value (1-10 scale).
+    /// 1-2 = Poor, 3-4 = Below Average, 5-6 = Average, 7-8 = Good, 9-10 = Excellent
     /// </summary>
     public int Score { get; set; }
 

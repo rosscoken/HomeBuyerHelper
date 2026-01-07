@@ -136,6 +136,52 @@ public class Property
     /// Calculates the estimated monthly insurance.
     /// </summary>
     public decimal MonthlyInsurance => (AnnualInsurance ?? 0) / 12;
+
+    // Score-related properties (populated when loading with scores)
+
+    /// <summary>
+    /// Overall weighted score (0-10 scale).
+    /// </summary>
+    public decimal OverallScore { get; set; }
+
+    /// <summary>
+    /// Rank among all properties (1 = best).
+    /// </summary>
+    public int Rank { get; set; }
+
+    /// <summary>
+    /// Number of criteria that have been scored.
+    /// </summary>
+    public int ScoredCriteriaCount { get; set; }
+
+    /// <summary>
+    /// Total number of criteria to score.
+    /// </summary>
+    public int TotalCriteriaCount { get; set; }
+
+    /// <summary>
+    /// Score completion percentage (0-100).
+    /// </summary>
+    public int ScoreCompletionPercent =>
+        TotalCriteriaCount > 0 ? (int)(ScoredCriteriaCount * 100.0 / TotalCriteriaCount) : 0;
+
+    /// <summary>
+    /// Whether all criteria have been scored.
+    /// </summary>
+    public bool IsFullyScored => TotalCriteriaCount > 0 && ScoredCriteriaCount >= TotalCriteriaCount;
+
+    /// <summary>
+    /// Color for score display (green for 8+, yellow for 5-7, red for 1-4).
+    /// </summary>
+    public string ScoreColor =>
+        OverallScore >= 8 ? "#4CAF50" :
+        OverallScore >= 5 ? "#FF9800" :
+        "#F44336";
+
+    /// <summary>
+    /// List of individual criterion scores.
+    /// </summary>
+    public List<PropertyScore> Scores { get; set; } = new();
 }
 
 /// <summary>
