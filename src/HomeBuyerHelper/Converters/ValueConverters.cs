@@ -256,3 +256,19 @@ public class ScoreToColorConverter : IValueConverter
         throw new NotImplementedException();
     }
 }
+
+/// <summary>
+/// Converts boolean (IsLastCriterion) to button text (Next/Finish).
+/// </summary>
+public class BoolToNextFinishConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        return value is true ? "Finish" : "Next";
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}

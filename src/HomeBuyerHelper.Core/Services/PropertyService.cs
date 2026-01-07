@@ -24,12 +24,95 @@ public class PropertyService : IPropertyService
 
     public async Task<IReadOnlyList<Property>> GetPropertiesWithScoresAsync()
     {
-        return await _propertyRepository.GetActiveAsync();
+        var properties = await _propertyRepository.GetActiveAsync();
+        var allCriteria = await _criteriaRepository.GetAllAsync();
+        var totalCriteriaCount = allCriteria.Count;
+        var totalPossibleWeight = allCriteria.Sum(c => c.Weight);
+
+        // Calculate scores for each property
+        var propertiesWithScores = new List<(Property Property, decimal OverallScore)>();
+        foreach (var property in properties)
+        {
+            var scores = await _scoreRepository.GetByPropertyIdAsync(property.Id);
+            property.Scores = scores.ToList();
+            property.ScoredCriteriaCount = scores.Count;
+            property.TotalCriteriaCount = totalCriteriaCount;
+
+            // Calculate weighted score (0-10 scale)
+            if (totalPossibleWeight > 0 && scores.Any())
+            {
+                var weightedSum = 0m;
+                var scoredWeight = 0m;
+
+                foreach (var score in scores)
+                {
+                    var criterion = allCriteria.FirstOrDefault(c => c.Id == score.CriterionId);
+                    if (criterion != null)
+                    {
+                        weightedSum += score.Score * criterion.Weight;
+                        scoredWeight += criterion.Weight;
+                    }
+                }
+
+                // Normalize to 10-point scale based on scored criteria weights
+                property.OverallScore = scoredWeight > 0
+                    ? Math.Round(weightedSum / scoredWeight, 1)
+                    : 0;
+            }
+
+            propertiesWithScores.Add((property, property.OverallScore));
+        }
+
+        // Assign ranks based on overall score
+        var ranked = propertiesWithScores
+            .OrderByDescending(p => p.OverallScore)
+            .ThenBy(p => p.Property.Nickname)
+            .Select((p, index) => { p.Property.Rank = index + 1; return p.Property; })
+            .ToList();
+
+        return ranked;
     }
 
     public async Task<Property?> GetPropertyDetailAsync(int id)
     {
-        return await _propertyRepository.GetByIdAsync(id);
+        var property = await _propertyRepository.GetByIdAsync(id);
+        if (property == null) return null;
+
+        var allCriteria = await _criteriaRepository.GetAllAsync();
+        var scores = await _scoreRepository.GetByPropertyIdAsync(id);
+
+        property.Scores = scores.ToList();
+        property.ScoredCriteriaCount = scores.Count;
+        property.TotalCriteriaCount = allCriteria.Count;
+
+        // Calculate weighted score
+        var totalPossibleWeight = allCriteria.Sum(c => c.Weight);
+        if (totalPossibleWeight > 0 && scores.Any())
+        {
+            var weightedSum = 0m;
+            var scoredWeight = 0m;
+
+            foreach (var score in scores)
+            {
+                var criterion = allCriteria.FirstOrDefault(c => c.Id == score.CriterionId);
+                if (criterion != null)
+                {
+                    weightedSum += score.Score * criterion.Weight;
+                    scoredWeight += criterion.Weight;
+                }
+            }
+
+            property.OverallScore = scoredWeight > 0
+                ? Math.Round(weightedSum / scoredWeight, 1)
+                : 0;
+        }
+
+        // Get rank
+        var rankings = await GetPropertyRankingsAsync();
+        var propertyRank = rankings.FirstOrDefault(r => r.Property.Id == id);
+        property.Rank = propertyRank?.Rank ?? 0;
+
+        return property;
     }
 
     public async Task<Property> CreatePropertyAsync(Property property)

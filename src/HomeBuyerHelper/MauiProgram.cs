@@ -56,6 +56,7 @@ public static class MauiProgram
         builder.Services.AddTransient<CriteriaViewModel>();
         builder.Services.AddTransient<CriterionEditViewModel>();
         builder.Services.AddTransient<ComparisonViewModel>();
+        builder.Services.AddTransient<ScoringWalkthroughViewModel>();
 
         // Register onboarding view models
         builder.Services.AddTransient<WelcomeViewModel>();
@@ -74,6 +75,7 @@ public static class MauiProgram
         builder.Services.AddTransient<CriteriaPage>();
         builder.Services.AddTransient<CriterionEditPage>();
         builder.Services.AddTransient<ComparisonPage>();
+        builder.Services.AddTransient<ScoringWalkthroughPage>();
 
         // Register onboarding pages
         builder.Services.AddTransient<WelcomePage>();

@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:HomeBuyerHelper.ViewModels"
+             x:Class="HomeBuyerHelper.Pages.ScoringWalkthroughPage"
+             x:DataType="vm:ScoringWalkthroughViewModel"
+             Title="{Binding Title}"
+             Shell.NavBarIsVisible="True">
+
+    <Grid RowDefinitions="Auto,*,Auto" Padding="16">
+
+        <!-- Progress Header -->
+        <VerticalStackLayout Grid.Row="0" Spacing="8" Margin="0,0,0,16">
+            <Grid ColumnDefinitions="*,Auto">
+                <Label Grid.Column="0"
+                       Text="{Binding PropertyName}"
+                       Style="{StaticResource Title}"/>
+                <Label Grid.Column="1"
+                       Text="{Binding ProgressText}"
+                       Style="{StaticResource Body}"
+                       TextColor="{StaticResource Primary}"/>
+            </Grid>
+            <ProgressBar Progress="{Binding ProgressPercent}"
+                         ProgressColor="{StaticResource Primary}"
+                         BackgroundColor="{StaticResource Gray200}"/>
+        </VerticalStackLayout>
+
+        <!-- Criterion Card -->
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Spacing="16">
+
+                <!-- Criterion Name and Description -->
+                <Frame Style="{StaticResource CardFrame}">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="{Binding CurrentCriterion.Name}"
+                               Style="{StaticResource Headline}"
+                               HorizontalTextAlignment="Center"/>
+                        <Label Text="{Binding CurrentCriterion.Description}"
+                               Style="{StaticResource Body}"
+                               HorizontalTextAlignment="Center"
+                               TextColor="{StaticResource Gray500}"
+                               IsVisible="{Binding CurrentCriterion.Description, Converter={StaticResource IsNotNullConverter}}"/>
+
+                        <!-- Weight Badge -->
+                        <Frame BackgroundColor="{StaticResource SurfaceVariant}"
+                               Padding="8,4"
+                               CornerRadius="12"
+                               HorizontalOptions="Center"
+                               BorderColor="Transparent">
+                            <Label Text="{Binding CurrentCriterion.Weight, StringFormat='Weight: {0}%'}"
+                                   Style="{StaticResource Caption}"
+                                   TextColor="{StaticResource Primary}"/>
+                        </Frame>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- Score Selection - Button Grid -->
+                <Frame Style="{StaticResource CardFrame}"
+                       IsVisible="{Binding UseSliderInput, Converter={StaticResource InvertedBoolConverter}}">
+                    <VerticalStackLayout Spacing="12">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Grid.Column="0" Text="Select Score" Style="{StaticResource Subtitle}"/>
+                            <Button Grid.Column="1"
+                                    Text="Use Slider"
+                                    Command="{Binding ToggleInputModeCommand}"
+                                    Style="{StaticResource TextButton}"/>
+                        </Grid>
+
+                        <!-- Score Buttons Grid (1-10) -->
+                        <Grid ColumnDefinitions="*,*,*,*,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="8">
+                            <Button Grid.Row="0" Grid.Column="0" Text="1"
+                                    Command="{Binding SelectScoreCommand}" CommandParameter="1"
+                                    BackgroundColor="{Binding SelectedScore, Converter={StaticResource EqualToConverter}, ConverterParameter=1}"
+                                    Style="{StaticResource ScoreButton}"/>
+                            <Button Grid.Row="0" Grid.Column="1" Text="2"
+                                    Command="{Binding SelectScoreCommand}" CommandParameter="2"
+                                    Style="{StaticResource ScoreButton}"/>
+                            <Button Grid.Row="0" Grid.Column="2" Text="3"
+                                    Command="{Binding SelectScoreCommand}" CommandParameter="3"
+                                    Style="{StaticResource ScoreButton}"/>
+                            <Button Grid.Row="0" Grid.Column="3" Text="4"
+                                    Command="{Binding SelectScoreCommand}" CommandParameter="4"
+                                    Style="{StaticResource ScoreButton}"/>
+                            <Button Grid.Row="0" Grid.Column="4" Text="5"
+                                    Command="{Binding SelectScoreCommand}" CommandParameter="5"
+                                    Style="{StaticResource ScoreButton}"/>
+                            <Button Grid.Row="1" Grid.Column="0" Text="6"
+                                    Command="{Binding SelectScoreCommand}" CommandParameter="6"
+                                    Style="{StaticResource ScoreButton}"/>
+                            <Button Grid.Row="1" Grid.Column="1" Text="7"
+                                    Command="{Binding SelectScoreCommand}" CommandParameter="7"
+                                    Style="{StaticResource ScoreButton}"/>
+                            <Button Grid.Row="1" Grid.Column="2" Text="8"
+                                    Command="{Binding SelectScoreCommand}" CommandParameter="8"
+                                    Style="{StaticResource ScoreButton}"/>
+                            <Button Grid.Row="1" Grid.Column="3" Text="9"
+                                    Command="{Binding SelectScoreCommand}" CommandParameter="9"
+                                    Style="{StaticResource ScoreButton}"/>
+                            <Button Grid.Row="1" Grid.Column="4" Text="10"
+                                    Command="{Binding SelectScoreCommand}" CommandParameter="10"
+                                    Style="{StaticResource ScoreButton}"/>
+                        </Grid>
+
+                        <Label Text="{Binding SelectedScore, StringFormat='Selected: {0}'}"
+                               Style="{StaticResource Body}"
+                               HorizontalTextAlignment="Center"
+                               TextColor="{StaticResource Primary}"
+                               FontAttributes="Bold"
+                               IsVisible="{Binding SelectedScore, Converter={StaticResource GreaterThanConverter}, ConverterParameter=0}"/>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- Score Selection - Slider -->
+                <Frame Style="{StaticResource CardFrame}"
+                       IsVisible="{Binding UseSliderInput}">
+                    <VerticalStackLayout Spacing="12">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Grid.Column="0" Text="Select Score" Style="{StaticResource Subtitle}"/>
+                            <Button Grid.Column="1"
+                                    Text="Use Buttons"
+                                    Command="{Binding ToggleInputModeCommand}"
+                                    Style="{StaticResource TextButton}"/>
+                        </Grid>
+
+                        <Label Text="{Binding SelectedScore}"
+                               Style="{StaticResource Headline}"
+                               HorizontalTextAlignment="Center"
+                               TextColor="{StaticResource Primary}"/>
+
+                        <Slider Minimum="1" Maximum="10"
+                                Value="{Binding SelectedScore}"
+                                MinimumTrackColor="{StaticResource Primary}"
+                                MaximumTrackColor="{StaticResource Gray300}"/>
+
+                        <Grid ColumnDefinitions="*,*">
+                            <Label Grid.Column="0" Text="1 - Poor" Style="{StaticResource Caption}"/>
+                            <Label Grid.Column="1" Text="10 - Excellent" Style="{StaticResource Caption}"
+                                   HorizontalTextAlignment="End"/>
+                        </Grid>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- Score Anchors -->
+                <Frame Style="{StaticResource CardFrame}"
+                       IsVisible="{Binding CurrentCriterion.ScoreAnchorHigh, Converter={StaticResource IsNotNullConverter}}">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="Score Guide" Style="{StaticResource Subtitle}"/>
+
+                        <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+                              ColumnDefinitions="Auto,*" ColumnSpacing="12" RowSpacing="4">
+                            <Label Grid.Row="0" Grid.Column="0" Text="9-10:"
+                                   TextColor="{StaticResource Success}" FontAttributes="Bold"/>
+                            <Label Grid.Row="0" Grid.Column="1" Text="{Binding CurrentCriterion.ScoreAnchorHigh}"
+                                   Style="{StaticResource Caption}"/>
+
+                            <Label Grid.Row="1" Grid.Column="0" Text="7-8:"
+                                   TextColor="{StaticResource Accent}" FontAttributes="Bold"/>
+                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding CurrentCriterion.ScoreAnchorMidHigh}"
+                                   Style="{StaticResource Caption}"/>
+
+                            <Label Grid.Row="2" Grid.Column="0" Text="5-6:"
+                                   TextColor="{StaticResource Warning}" FontAttributes="Bold"/>
+                            <Label Grid.Row="2" Grid.Column="1" Text="{Binding CurrentCriterion.ScoreAnchorMid}"
+                                   Style="{StaticResource Caption}"/>
+
+                            <Label Grid.Row="3" Grid.Column="0" Text="3-4:"
+                                   TextColor="{StaticResource Warning}" FontAttributes="Bold"/>
+                            <Label Grid.Row="3" Grid.Column="1" Text="{Binding CurrentCriterion.ScoreAnchorMidLow}"
+                                   Style="{StaticResource Caption}"/>
+
+                            <Label Grid.Row="4" Grid.Column="0" Text="1-2:"
+                                   TextColor="{StaticResource Error}" FontAttributes="Bold"/>
+                            <Label Grid.Row="4" Grid.Column="1" Text="{Binding CurrentCriterion.ScoreAnchorLow}"
+                                   Style="{StaticResource Caption}"/>
+                        </Grid>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- Notes -->
+                <Frame Style="{StaticResource CardFrame}">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="Notes (optional)" Style="{StaticResource Subtitle}"/>
+                        <Editor Text="{Binding Notes}"
+                                Placeholder="Why did you give this score?"
+                                HeightRequest="80"
+                                AutomationProperties.Name="Score notes"/>
+                    </VerticalStackLayout>
+                </Frame>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Navigation Buttons -->
+        <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" Margin="0,16,0,0">
+            <Button Grid.Column="0"
+                    Text="Back"
+                    Command="{Binding GoBackCommand}"
+                    IsVisible="{Binding CanGoBack}"
+                    Style="{StaticResource SecondaryButton}"
+                    AutomationProperties.Name="Previous criterion"/>
+
+            <Button Grid.Column="1"
+                    Text="Skip"
+                    Command="{Binding SkipCommand}"
+                    Style="{StaticResource TextButton}"
+                    HorizontalOptions="Center"
+                    AutomationProperties.Name="Skip this criterion"/>
+
+            <Button Grid.Column="2"
+                    Text="{Binding IsLastCriterion, Converter={StaticResource BoolToNextFinishConverter}}"
+                    Command="{Binding SaveAndNextCommand}"
+                    Style="{StaticResource PrimaryButton}"
+                    IsEnabled="{Binding SelectedScore, Converter={StaticResource GreaterThanConverter}, ConverterParameter=0}"
+                    AutomationProperties.Name="Save and continue"/>
+        </Grid>
+
+        <!-- Loading -->
+        <ActivityIndicator Grid.Row="1"
+                           IsRunning="{Binding IsBusy}"
+                           IsVisible="{Binding IsBusy}"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"/>
+
+    </Grid>
+
+</ContentPage>

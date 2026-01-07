@@ -18,6 +18,7 @@ public partial class AppShell : Shell
         Routing.RegisterRoute("CriterionEdit", typeof(Pages.CriterionEditPage));
         Routing.RegisterRoute(nameof(Pages.ComparisonPage), typeof(Pages.ComparisonPage));
         Routing.RegisterRoute("PropertyEntry", typeof(Pages.PropertyDetailPage));
+        Routing.RegisterRoute("ScoringWalkthrough", typeof(Pages.ScoringWalkthroughPage));
 
         // Register onboarding flow routes
         Routing.RegisterRoute("Welcome", typeof(WelcomePage));
