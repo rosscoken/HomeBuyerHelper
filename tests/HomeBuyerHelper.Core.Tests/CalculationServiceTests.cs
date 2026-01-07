@@ -46,7 +46,7 @@ public class CalculationServiceTests
         // Arrange
         var principal = 360_000m;
         var termYears = 30;
-        var expectedMonthlyPayment = principal / (termYears * 12);
+        var expectedMonthlyPayment = principal / (termYears * 12m);
 
         // Act
         var result = _sut.CalculateMonthlyMortgagePayment(principal, 0, termYears);

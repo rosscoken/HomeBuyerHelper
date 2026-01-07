@@ -13,7 +13,7 @@ public partial class ComparisonViewModel : BaseViewModel
     private readonly IExportService _exportService;
 
     [ObservableProperty]
-    private IReadOnlyList<PropertyComparisonResult> _comparisonResults = [];
+    private IReadOnlyList<PropertyRanking> _comparisonResults = [];
 
     [ObservableProperty]
     private bool _isEmpty;
@@ -37,9 +37,7 @@ public partial class ComparisonViewModel : BaseViewModel
     {
         await ExecuteBusyAsync(async () =>
         {
-            var rankings = await _propertyService.GetPropertyRankingsAsync();
-            var propertyIds = rankings.Select(r => r.Property.Id);
-            ComparisonResults = await _propertyService.ComparePropertiesAsync(propertyIds);
+            ComparisonResults = await _propertyService.GetPropertyRankingsAsync();
             IsEmpty = ComparisonResults.Count == 0;
         });
     }
