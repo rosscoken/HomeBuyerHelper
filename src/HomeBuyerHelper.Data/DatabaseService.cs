@@ -44,7 +44,7 @@ public class DatabaseService : IDatabaseService
     /// <summary>
     /// Gets the database connection, initializing if needed.
     /// </summary>
-    internal Task<SQLiteAsyncConnection> GetConnectionAsync() => GetDatabaseAsync();
+    public Task<SQLiteAsyncConnection> GetConnectionAsync() => GetDatabaseAsync();
 
     public async Task InitializeAsync()
     {

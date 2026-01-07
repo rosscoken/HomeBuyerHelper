@@ -152,22 +152,3 @@ public class OnboardingButtonTextConverter : IValueConverter
         throw new NotImplementedException();
     }
 }
-
-/// <summary>
-/// Returns appropriate command based on onboarding step.
-/// Note: This is a simplified converter - in production, use DataTriggers or VisualStateManager.
-/// </summary>
-public class OnboardingButtonCommandConverter : IValueConverter
-{
-    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
-    {
-        // This converter is a placeholder - the actual implementation
-        // would need access to the ViewModel commands
-        return null;
-    }
-
-    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
-    {
-        throw new NotImplementedException();
-    }
-}

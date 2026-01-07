@@ -12,9 +12,9 @@ public class ScoreRepository : IScoreRepository
     private readonly DatabaseService _databaseService;
     private readonly ICriteriaRepository _criteriaRepository;
 
-    public ScoreRepository(IDatabaseService databaseService, ICriteriaRepository criteriaRepository)
+    public ScoreRepository(DatabaseService databaseService, ICriteriaRepository criteriaRepository)
     {
-        _databaseService = (DatabaseService)databaseService;
+        _databaseService = databaseService;
         _criteriaRepository = criteriaRepository;
     }
 

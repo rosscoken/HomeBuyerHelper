@@ -11,9 +11,9 @@ public class CriteriaRepository : ICriteriaRepository
 {
     private readonly DatabaseService _databaseService;
 
-    public CriteriaRepository(IDatabaseService databaseService)
+    public CriteriaRepository(DatabaseService databaseService)
     {
-        _databaseService = (DatabaseService)databaseService;
+        _databaseService = databaseService;
     }
 
     public async Task<EvaluationCriterion?> GetByIdAsync(int id)

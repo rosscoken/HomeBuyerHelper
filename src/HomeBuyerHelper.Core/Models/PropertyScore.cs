@@ -50,6 +50,7 @@ public class PropertyScore
 
     /// <summary>
     /// Gets the weighted score (score * criterion weight).
+    /// Returns 0 if criterion was deleted.
     /// </summary>
-    public int WeightedScore => Criterion != null ? Score * Criterion.Weight : Score;
+    public int WeightedScore => Criterion?.Weight is int weight ? Score * weight : 0;
 }

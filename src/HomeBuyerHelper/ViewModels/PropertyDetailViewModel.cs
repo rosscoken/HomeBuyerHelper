@@ -90,12 +90,24 @@ public partial class PropertyDetailViewModel : BaseViewModel
         {
             IsNewProperty = false;
             Title = "Edit Property";
-            _ = LoadPropertyAsync(value.Value);
+            LoadPropertyAndHandleErrors(value.Value);
         }
         else
         {
             IsNewProperty = true;
             Title = "Add Property";
+        }
+    }
+
+    private async void LoadPropertyAndHandleErrors(int id)
+    {
+        try
+        {
+            await LoadPropertyAsync(id);
+        }
+        catch (Exception ex)
+        {
+            SetError($"Failed to load property: {ex.Message}");
         }
     }
 
