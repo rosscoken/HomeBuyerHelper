@@ -37,7 +37,7 @@ This document defines the comprehensive testing approach for HomeBuyerHelper, in
 [MethodName]_[Scenario]_[ExpectedResult]
 
 // Examples:
-CalculateWeightedScore_AllCriteriaSored_ReturnsCorrectTotal()
+CalculateWeightedScore_AllCriteriaScored_ReturnsCorrectTotal()
 ValidateProperty_MissingNickname_ReturnsValidationError()
 ```
 
