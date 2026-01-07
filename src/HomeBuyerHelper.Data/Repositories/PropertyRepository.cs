@@ -11,9 +11,9 @@ public class PropertyRepository : IPropertyRepository
 {
     private readonly DatabaseService _databaseService;
 
-    public PropertyRepository(IDatabaseService databaseService)
+    public PropertyRepository(DatabaseService databaseService)
     {
-        _databaseService = (DatabaseService)databaseService;
+        _databaseService = databaseService;
     }
 
     public async Task<Property?> GetByIdAsync(int id)

@@ -11,9 +11,9 @@ public class UserPreferencesRepository : IUserPreferencesRepository
 {
     private readonly DatabaseService _databaseService;
 
-    public UserPreferencesRepository(IDatabaseService databaseService)
+    public UserPreferencesRepository(DatabaseService databaseService)
     {
-        _databaseService = (DatabaseService)databaseService;
+        _databaseService = databaseService;
     }
 
     public async Task<UserPreferences> GetAsync()

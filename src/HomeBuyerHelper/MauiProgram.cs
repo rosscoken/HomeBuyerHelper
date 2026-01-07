@@ -31,7 +31,8 @@ public static class MauiProgram
 #endif
 
         // Register database service (singleton - shared across app)
-        builder.Services.AddSingleton<IDatabaseService, DatabaseService>();
+        builder.Services.AddSingleton<DatabaseService>();
+        builder.Services.AddSingleton<IDatabaseService>(sp => sp.GetRequiredService<DatabaseService>());
 
         // Register repositories (singleton - one instance per type)
         builder.Services.AddSingleton<IPropertyRepository, PropertyRepository>();
