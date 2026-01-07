@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:HomeBuyerHelper.ViewModels"
+             xmlns:models="clr-namespace:HomeBuyerHelper.Core.Models;assembly=HomeBuyerHelper.Core"
+             x:Class="HomeBuyerHelper.Pages.CriteriaPage"
+             x:DataType="vm:CriteriaViewModel"
+             Title="{Binding Title}">
+
+    <Grid RowDefinitions="Auto,*" Padding="16">
+
+        <!-- Add New Criterion -->
+        <Frame Grid.Row="0" Style="{StaticResource CardFrame}" Margin="0,0,0,16">
+            <VerticalStackLayout Spacing="8">
+                <Label Text="Add New Criterion" Style="{StaticResource Title}" />
+                <Entry Placeholder="Criterion name"
+                       Text="{Binding NewCriterionName}"
+                       AutomationProperties.Name="New criterion name" />
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                    <Picker Grid.Column="0"
+                            ItemsSource="{Binding Categories}"
+                            SelectedItem="{Binding NewCriterionCategory}"
+                            Title="Category" />
+                    <VerticalStackLayout Grid.Column="1">
+                        <Label Text="{Binding NewCriterionWeight, StringFormat='Weight: {0}'}"
+                               Style="{StaticResource Caption}" />
+                        <Slider Minimum="1" Maximum="10"
+                                Value="{Binding NewCriterionWeight}" />
+                    </VerticalStackLayout>
+                </Grid>
+                <Button Text="Add Criterion"
+                        Command="{Binding AddCriterionCommand}" />
+            </VerticalStackLayout>
+        </Frame>
+
+        <!-- Criteria List -->
+        <CollectionView Grid.Row="1"
+                        ItemsSource="{Binding Criteria}"
+                        SelectionMode="None"
+                        EmptyView="No criteria yet. Add your first criterion above.">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:EvaluationCriterion">
+                    <SwipeView>
+                        <SwipeView.RightItems>
+                            <SwipeItems>
+                                <SwipeItem Text="Delete"
+                                           BackgroundColor="{StaticResource Error}"
+                                           Command="{Binding Source={RelativeSource AncestorType={x:Type vm:CriteriaViewModel}}, Path=DeleteCriterionCommand}"
+                                           CommandParameter="{Binding}" />
+                            </SwipeItems>
+                        </SwipeView.RightItems>
+
+                        <Frame Style="{StaticResource CardFrame}" Margin="0,4">
+                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                                <Label Grid.Row="0" Grid.Column="0"
+                                       Text="{Binding Name}"
+                                       Style="{StaticResource Title}" />
+                                <Label Grid.Row="0" Grid.Column="1"
+                                       Text="{Binding Category}"
+                                       Style="{StaticResource Caption}"
+                                       VerticalOptions="Center" />
+                                <HorizontalStackLayout Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Spacing="8">
+                                    <Label Text="{Binding Weight, StringFormat='Weight: {0}'}"
+                                           Style="{StaticResource Caption}"
+                                           VerticalOptions="Center" />
+                                    <Slider WidthRequest="150"
+                                            Minimum="1" Maximum="10"
+                                            Value="{Binding Weight}" />
+                                    <Label Text="{Binding IsSystemSuggested, Converter={StaticResource SystemSuggestedConverter}}"
+                                           Style="{StaticResource Caption}"
+                                           TextColor="{StaticResource Gray500}"
+                                           VerticalOptions="Center" />
+                                </HorizontalStackLayout>
+                            </Grid>
+                        </Frame>
+                    </SwipeView>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Loading -->
+        <ActivityIndicator Grid.Row="1"
+                           IsRunning="{Binding IsBusy}"
+                           IsVisible="{Binding IsBusy}"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center" />
+
+    </Grid>
+
+</ContentPage>

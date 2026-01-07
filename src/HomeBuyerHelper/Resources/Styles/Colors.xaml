@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<?xaml-comp compile="true" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <!-- Primary Colors -->
+    <Color x:Key="Primary">#512BD4</Color>
+    <Color x:Key="PrimaryDark">#3B1F99</Color>
+    <Color x:Key="PrimaryLight">#7B5BE0</Color>
+
+    <!-- Secondary Colors -->
+    <Color x:Key="Secondary">#DFD8F7</Color>
+    <Color x:Key="SecondaryDark">#C5B9F0</Color>
+
+    <!-- Accent Colors -->
+    <Color x:Key="Accent">#00C853</Color>
+    <Color x:Key="AccentDark">#00A644</Color>
+
+    <!-- Semantic Colors -->
+    <Color x:Key="Success">#4CAF50</Color>
+    <Color x:Key="Warning">#FF9800</Color>
+    <Color x:Key="Error">#F44336</Color>
+    <Color x:Key="Info">#2196F3</Color>
+
+    <!-- Neutral Colors -->
+    <Color x:Key="White">White</Color>
+    <Color x:Key="Black">Black</Color>
+    <Color x:Key="Gray100">#F5F5F5</Color>
+    <Color x:Key="Gray200">#EEEEEE</Color>
+    <Color x:Key="Gray300">#E0E0E0</Color>
+    <Color x:Key="Gray400">#BDBDBD</Color>
+    <Color x:Key="Gray500">#9E9E9E</Color>
+    <Color x:Key="Gray600">#757575</Color>
+    <Color x:Key="Gray900">#212121</Color>
+
+    <!-- Text Colors -->
+    <Color x:Key="TextPrimary">#212121</Color>
+    <Color x:Key="TextSecondary">#757575</Color>
+    <Color x:Key="TextDisabled">#9E9E9E</Color>
+    <Color x:Key="TextOnPrimary">White</Color>
+
+    <!-- Background Colors -->
+    <Color x:Key="PageBackground">#FAFAFA</Color>
+    <Color x:Key="CardBackground">White</Color>
+    <Color x:Key="SurfaceBackground">#F5F5F5</Color>
+
+</ResourceDictionary>
