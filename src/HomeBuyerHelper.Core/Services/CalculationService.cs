@@ -14,7 +14,7 @@ public class CalculationService : ICalculationService
             return 0;
 
         if (annualInterestRate <= 0)
-            return principal / (termYears * 12);
+            return principal / (termYears * 12m);
 
         var monthlyRate = annualInterestRate / 100 / 12;
         var numberOfPayments = termYears * 12;
@@ -75,10 +75,6 @@ public class CalculationService : ICalculationService
         var prepaidInterest = purchasePrice * 0.002m; // ~15 days of interest
         var homeInspection = 500m;
         var otherFees = 500m;
-
-        var total = loanOriginationFee + appraisalFee + titleInsurance +
-                   titleSearch + escrowFees + recordingFees +
-                   prepaidInterest + homeInspection + otherFees;
 
         return new ClosingCostEstimate
         {

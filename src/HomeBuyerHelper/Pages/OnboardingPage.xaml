@@ -141,7 +141,7 @@
 
             <Button Grid.Column="2"
                     Text="{Binding CurrentStep, Converter={StaticResource OnboardingButtonTextConverter}}"
-                    Command="{Binding CurrentStep, Converter={StaticResource OnboardingButtonCommandConverter}, ConverterParameter={Binding}}" />
+                    x:Name="NextCompleteButton" />
         </Grid>
 
         <!-- Loading -->

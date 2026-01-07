@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:HomeBuyerHelper.ViewModels"
+             xmlns:interfaces="clr-namespace:HomeBuyerHelper.Core.Interfaces;assembly=HomeBuyerHelper.Core"
              x:Class="HomeBuyerHelper.Pages.ComparisonPage"
              x:DataType="vm:ComparisonViewModel"
              Title="{Binding Title}">
@@ -14,7 +15,7 @@
                         SelectionMode="None"
                         EmptyView="No properties to compare. Add some properties first!">
             <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="vm:PropertyComparisonResult">
+                <DataTemplate x:DataType="interfaces:PropertyRanking">
                     <Frame Style="{StaticResource CardFrame}" Margin="0,8">
                         <VerticalStackLayout Spacing="8">
                             <!-- Header with rank -->
@@ -23,7 +24,7 @@
                                        BackgroundColor="{StaticResource Primary}"
                                        Padding="8,4"
                                        CornerRadius="12">
-                                    <Label Text="#1"
+                                    <Label Text="{Binding Rank, StringFormat='#{0}'}"
                                            TextColor="{StaticResource TextOnPrimary}"
                                            FontAttributes="Bold" />
                                 </Frame>
