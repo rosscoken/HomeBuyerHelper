@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:HomeBuyerHelper.ViewModels"
+             x:Class="HomeBuyerHelper.Pages.OnboardingPage"
+             x:DataType="vm:OnboardingViewModel"
+             Title="{Binding Title}"
+             Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="Auto,*,Auto" Padding="24">
+
+        <!-- Progress Indicator -->
+        <HorizontalStackLayout Grid.Row="0" HorizontalOptions="Center" Spacing="8">
+            <Label Style="{StaticResource Caption}">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text="Step " />
+                        <Span Text="{Binding CurrentStep}" FontAttributes="Bold" />
+                        <Span Text=" of " />
+                        <Span Text="{Binding TotalSteps}" />
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+        </HorizontalStackLayout>
+
+        <!-- Content Area -->
+        <ScrollView Grid.Row="1" VerticalOptions="Center">
+            <VerticalStackLayout Spacing="24">
+
+                <!-- Step 1: Welcome -->
+                <VerticalStackLayout IsVisible="{Binding CurrentStep, Converter={StaticResource EqualToConverter}, ConverterParameter=1}"
+                                     Spacing="16">
+                    <Label Text="Welcome to HomeBuyerHelper!"
+                           Style="{StaticResource Headline}"
+                           HorizontalTextAlignment="Center" />
+                    <Label Text="We'll help you make informed decisions about your home purchase. Let's set up your preferences."
+                           Style="{StaticResource Subtitle}"
+                           HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+
+                <!-- Step 2: Buying Goal -->
+                <VerticalStackLayout IsVisible="{Binding CurrentStep, Converter={StaticResource EqualToConverter}, ConverterParameter=2}"
+                                     Spacing="16">
+                    <Label Text="What's your home buying goal?"
+                           Style="{StaticResource Headline}"
+                           HorizontalTextAlignment="Center" />
+                    <Picker ItemsSource="{Binding BuyingGoals}"
+                            SelectedItem="{Binding BuyingGoal}"
+                            Title="Select your goal" />
+                </VerticalStackLayout>
+
+                <!-- Step 3: Property Count -->
+                <VerticalStackLayout IsVisible="{Binding CurrentStep, Converter={StaticResource EqualToConverter}, ConverterParameter=3}"
+                                     Spacing="16">
+                    <Label Text="How many properties are you comparing?"
+                           Style="{StaticResource Headline}"
+                           HorizontalTextAlignment="Center" />
+                    <Picker ItemsSource="{Binding PropertyCountRanges}"
+                            SelectedItem="{Binding PropertyCountRange}"
+                            Title="Select range" />
+                </VerticalStackLayout>
+
+                <!-- Step 4: Household -->
+                <VerticalStackLayout IsVisible="{Binding CurrentStep, Converter={StaticResource EqualToConverter}, ConverterParameter=4}"
+                                     Spacing="16">
+                    <Label Text="Tell us about your household"
+                           Style="{StaticResource Headline}"
+                           HorizontalTextAlignment="Center" />
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="Household size" Style="{StaticResource Subtitle}" />
+                        <Stepper Minimum="1" Maximum="10" Value="{Binding HouseholdSize}" />
+                        <Label Text="{Binding HouseholdSize, StringFormat='{0} people'}" HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+                    <HorizontalStackLayout Spacing="24" HorizontalOptions="Center">
+                        <VerticalStackLayout>
+                            <Label Text="Children?" HorizontalOptions="Center" />
+                            <Switch IsToggled="{Binding HasChildren}" HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout>
+                            <Label Text="Pets?" HorizontalOptions="Center" />
+                            <Switch IsToggled="{Binding HasPets}" HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+
+                <!-- Step 5: Work -->
+                <VerticalStackLayout IsVisible="{Binding CurrentStep, Converter={StaticResource EqualToConverter}, ConverterParameter=5}"
+                                     Spacing="16">
+                    <Label Text="What's your work arrangement?"
+                           Style="{StaticResource Headline}"
+                           HorizontalTextAlignment="Center" />
+                    <Picker ItemsSource="{Binding WorkArrangements}"
+                            SelectedItem="{Binding WorkArrangement}"
+                            Title="Select arrangement" />
+                </VerticalStackLayout>
+
+                <!-- Step 6: Priorities -->
+                <VerticalStackLayout IsVisible="{Binding CurrentStep, Converter={StaticResource EqualToConverter}, ConverterParameter=6}"
+                                     Spacing="16">
+                    <Label Text="What matters most to you?"
+                           Style="{StaticResource Headline}"
+                           HorizontalTextAlignment="Center" />
+                    <Label Text="Select all that apply"
+                           Style="{StaticResource Subtitle}"
+                           HorizontalTextAlignment="Center" />
+                    <VerticalStackLayout Spacing="12">
+                        <HorizontalStackLayout Spacing="8">
+                            <CheckBox IsChecked="{Binding PrioritizesLocation}" />
+                            <Label Text="Location (neighborhood, schools, walkability)" VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                        <HorizontalStackLayout Spacing="8">
+                            <CheckBox IsChecked="{Binding PrioritizesSize}" />
+                            <Label Text="Size (bedrooms, living space, storage)" VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                        <HorizontalStackLayout Spacing="8">
+                            <CheckBox IsChecked="{Binding PrioritizesCondition}" />
+                            <Label Text="Condition (move-in ready, updated features)" VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                        <HorizontalStackLayout Spacing="8">
+                            <CheckBox IsChecked="{Binding PrioritizesPrice}" />
+                            <Label Text="Price (staying within budget)" VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Navigation Buttons -->
+        <Grid Grid.Row="2" ColumnDefinitions="*,*,*" ColumnSpacing="12">
+            <Button Grid.Column="0"
+                    Text="Back"
+                    Command="{Binding PreviousStepCommand}"
+                    IsVisible="{Binding CurrentStep, Converter={StaticResource GreaterThanConverter}, ConverterParameter=1}"
+                    Style="{StaticResource OutlineButton}" />
+
+            <Button Grid.Column="1"
+                    Text="Skip"
+                    Command="{Binding SkipOnboardingCommand}"
+                    Style="{StaticResource SecondaryButton}" />
+
+            <Button Grid.Column="2"
+                    Text="{Binding CurrentStep, Converter={StaticResource OnboardingButtonTextConverter}}"
+                    Command="{Binding CurrentStep, Converter={StaticResource OnboardingButtonCommandConverter}, ConverterParameter={Binding}}" />
+        </Grid>
+
+        <!-- Loading -->
+        <ActivityIndicator Grid.Row="1"
+                           IsRunning="{Binding IsBusy}"
+                           IsVisible="{Binding IsBusy}"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center" />
+
+    </Grid>
+
+</ContentPage>

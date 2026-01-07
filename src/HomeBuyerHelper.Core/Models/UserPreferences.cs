@@ -1,0 +1,138 @@
+namespace HomeBuyerHelper.Core.Models;
+
+/// <summary>
+/// Stores user preferences and app settings.
+/// </summary>
+public class UserPreferences
+{
+    public int Id { get; set; }
+
+    /// <summary>
+    /// Whether the user has completed onboarding.
+    /// </summary>
+    public bool HasCompletedOnboarding { get; set; }
+
+    /// <summary>
+    /// User's buying goal/timeline.
+    /// </summary>
+    public BuyingGoal BuyingGoal { get; set; } = BuyingGoal.Exploring;
+
+    /// <summary>
+    /// Number of properties the user plans to compare (1, 2-5, 5+).
+    /// </summary>
+    public PropertyCountRange PropertyCountRange { get; set; } = PropertyCountRange.TwoToFive;
+
+    /// <summary>
+    /// Household size for space requirements.
+    /// </summary>
+    public int HouseholdSize { get; set; } = 2;
+
+    /// <summary>
+    /// Whether there are children in the household.
+    /// </summary>
+    public bool HasChildren { get; set; }
+
+    /// <summary>
+    /// Whether there are pets in the household.
+    /// </summary>
+    public bool HasPets { get; set; }
+
+    /// <summary>
+    /// Work arrangement affecting commute needs.
+    /// </summary>
+    public WorkArrangement WorkArrangement { get; set; } = WorkArrangement.Hybrid;
+
+    /// <summary>
+    /// Whether the user prioritizes location.
+    /// </summary>
+    public bool PrioritizesLocation { get; set; }
+
+    /// <summary>
+    /// Whether the user prioritizes size.
+    /// </summary>
+    public bool PrioritizesSize { get; set; }
+
+    /// <summary>
+    /// Whether the user prioritizes condition/updates.
+    /// </summary>
+    public bool PrioritizesCondition { get; set; }
+
+    /// <summary>
+    /// Whether the user prioritizes price.
+    /// </summary>
+    public bool PrioritizesPrice { get; set; }
+
+    /// <summary>
+    /// Preferred currency for display.
+    /// </summary>
+    public string Currency { get; set; } = "USD";
+
+    /// <summary>
+    /// Whether to use dark mode.
+    /// </summary>
+    public bool UseDarkMode { get; set; }
+
+    /// <summary>
+    /// Whether to enable notifications.
+    /// </summary>
+    public bool EnableNotifications { get; set; } = true;
+
+    /// <summary>
+    /// Default down payment percentage for calculations.
+    /// </summary>
+    public decimal DefaultDownPaymentPercent { get; set; } = 20m;
+
+    /// <summary>
+    /// Default mortgage interest rate for calculations.
+    /// </summary>
+    public decimal DefaultInterestRate { get; set; } = 7.0m;
+
+    /// <summary>
+    /// Default mortgage term in years.
+    /// </summary>
+    public int DefaultMortgageTerm { get; set; } = 30;
+
+    /// <summary>
+    /// When preferences were created.
+    /// </summary>
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    /// <summary>
+    /// When preferences were last modified.
+    /// </summary>
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+}
+
+/// <summary>
+/// User's home buying goal/timeline.
+/// </summary>
+public enum BuyingGoal
+{
+    Exploring,           // "Just exploring, no timeline"
+    WithinYear,          // "Looking to buy within a year"
+    ActivelySearching,   // "Actively searching now"
+    MadeOffer,           // "Already made an offer"
+    UnderContract        // "Under contract"
+}
+
+/// <summary>
+/// Range of properties the user plans to compare.
+/// </summary>
+public enum PropertyCountRange
+{
+    One,        // Evaluating a single property
+    TwoToFive,  // Comparing 2-5 properties
+    MoreThanFive // Comparing 5+ properties
+}
+
+/// <summary>
+/// User's work arrangement affecting commute needs.
+/// </summary>
+public enum WorkArrangement
+{
+    FullyRemote,    // No commute needed
+    Hybrid,         // Some commute days
+    FullyOnsite,    // Daily commute
+    Retired,        // Not working
+    Other
+}

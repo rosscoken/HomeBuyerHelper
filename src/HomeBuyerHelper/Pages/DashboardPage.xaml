@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:HomeBuyerHelper.ViewModels"
+             x:Class="HomeBuyerHelper.Pages.DashboardPage"
+             x:DataType="vm:DashboardViewModel"
+             Title="{Binding Title}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="16">
+
+            <!-- Welcome/Onboarding Card -->
+            <Frame Style="{StaticResource CardFrame}"
+                   IsVisible="{Binding HasCompletedOnboarding, Converter={StaticResource InvertedBoolConverter}}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Welcome to HomeBuyerHelper!"
+                           Style="{StaticResource Headline}"
+                           HorizontalOptions="Center" />
+                    <Label Text="Let's get started by setting up your preferences."
+                           Style="{StaticResource Subtitle}"
+                           HorizontalOptions="Center" />
+                    <Button Text="Start Setup"
+                            Command="{Binding NavigateToOnboardingCommand}"
+                            HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Quick Stats -->
+            <Frame Style="{StaticResource CardFrame}"
+                   IsVisible="{Binding HasCompletedOnboarding}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Your Properties" Style="{StaticResource Title}" />
+                    <Label Style="{StaticResource Subtitle}">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="You have " />
+                                <Span Text="{Binding PropertyCount}" FontAttributes="Bold" />
+                                <Span Text=" properties to compare" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Top Property Card -->
+            <Frame Style="{StaticResource CardFrame}"
+                   IsVisible="{Binding TopProperty, Converter={StaticResource IsNotNullConverter}}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Top Ranked Property" Style="{StaticResource Title}" />
+                    <Label Text="{Binding TopProperty.Property.Nickname}"
+                           Style="{StaticResource Headline}" />
+                    <Label Style="{StaticResource Subtitle}">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="Score: " />
+                                <Span Text="{Binding TopProperty.ScorePercentage, StringFormat='{0:F0}%'}"
+                                      FontAttributes="Bold" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                    <Label Text="{Binding TopProperty.Property.EffectivePrice, StringFormat='{0:C0}'}"
+                           TextColor="{StaticResource Primary}"
+                           FontSize="18"
+                           FontAttributes="Bold" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Quick Actions -->
+            <Label Text="Quick Actions" Style="{StaticResource Title}" />
+
+            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="12">
+                <Button Grid.Row="0" Grid.Column="0"
+                        Text="Add Property"
+                        Command="{Binding NavigateToAddPropertyCommand}"
+                        Style="{StaticResource SecondaryButton}" />
+                <Button Grid.Row="0" Grid.Column="1"
+                        Text="View All"
+                        Command="{Binding NavigateToPropertyListCommand}"
+                        Style="{StaticResource OutlineButton}" />
+                <Button Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                        Text="Compare Properties"
+                        Command="{Binding NavigateToComparisonCommand}" />
+            </Grid>
+
+            <!-- Loading Indicator -->
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               IsVisible="{Binding IsBusy}"
+                               HorizontalOptions="Center" />
+
+            <!-- Error Message -->
+            <Label Text="{Binding ErrorMessage}"
+                   TextColor="{StaticResource Error}"
+                   IsVisible="{Binding HasError}"
+                   HorizontalOptions="Center" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

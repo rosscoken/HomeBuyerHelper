@@ -1,0 +1,24 @@
+<Project>
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+  </PropertyGroup>
+
+  <!-- Shared metadata -->
+  <PropertyGroup>
+    <Authors>HomeBuyerHelper Team</Authors>
+    <Company>HomeBuyerHelper</Company>
+    <Product>HomeBuyerHelper</Product>
+    <Copyright>Copyright 2026</Copyright>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+
+  <!-- Test project detection -->
+  <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.Tests'))">
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+</Project>

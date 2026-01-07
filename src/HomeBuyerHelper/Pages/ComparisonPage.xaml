@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:HomeBuyerHelper.ViewModels"
+             x:Class="HomeBuyerHelper.Pages.ComparisonPage"
+             x:DataType="vm:ComparisonViewModel"
+             Title="{Binding Title}">
+
+    <Grid RowDefinitions="*,Auto" Padding="16">
+
+        <!-- Comparison Results -->
+        <CollectionView Grid.Row="0"
+                        ItemsSource="{Binding ComparisonResults}"
+                        SelectionMode="None"
+                        EmptyView="No properties to compare. Add some properties first!">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="vm:PropertyComparisonResult">
+                    <Frame Style="{StaticResource CardFrame}" Margin="0,8">
+                        <VerticalStackLayout Spacing="8">
+                            <!-- Header with rank -->
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <Frame Grid.Column="0"
+                                       BackgroundColor="{StaticResource Primary}"
+                                       Padding="8,4"
+                                       CornerRadius="12">
+                                    <Label Text="#1"
+                                           TextColor="{StaticResource TextOnPrimary}"
+                                           FontAttributes="Bold" />
+                                </Frame>
+                                <Label Grid.Column="1"
+                                       Text="{Binding Property.Nickname}"
+                                       Style="{StaticResource Title}"
+                                       Margin="12,0,0,0"
+                                       VerticalOptions="Center" />
+                                <Label Grid.Column="2"
+                                       Text="{Binding ScorePercentage, StringFormat='{0:F0}%'}"
+                                       Style="{StaticResource Headline}"
+                                       TextColor="{StaticResource Primary}"
+                                       VerticalOptions="Center" />
+                            </Grid>
+
+                            <!-- Price and basics -->
+                            <HorizontalStackLayout Spacing="16">
+                                <Label Text="{Binding Property.EffectivePrice, StringFormat='{0:C0}'}"
+                                       FontAttributes="Bold" />
+                                <Label Style="{StaticResource Subtitle}">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="{Binding Property.Bedrooms}" />
+                                            <Span Text=" bed / " />
+                                            <Span Text="{Binding Property.Bathrooms}" />
+                                            <Span Text=" bath" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                            </HorizontalStackLayout>
+
+                            <!-- Score breakdown (simplified) -->
+                            <ProgressBar Progress="{Binding ScorePercentage, Converter={StaticResource PercentToDecimalConverter}}"
+                                         ProgressColor="{StaticResource Primary}" />
+                            <Label Text="{Binding TotalWeightedScore, StringFormat='{0} weighted points'}"
+                                   Style="{StaticResource Caption}" />
+                        </VerticalStackLayout>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Action Buttons -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="12" Margin="0,16,0,0">
+            <Button Grid.Column="0"
+                    Text="Export PDF"
+                    Command="{Binding ExportComparisonCommand}"
+                    Style="{StaticResource OutlineButton}" />
+            <Button Grid.Column="1"
+                    Text="Share"
+                    Command="{Binding ShareComparisonCommand}" />
+        </Grid>
+
+        <!-- Loading -->
+        <ActivityIndicator Grid.Row="0"
+                           IsRunning="{Binding IsBusy}"
+                           IsVisible="{Binding IsBusy}"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center" />
+
+    </Grid>
+
+</ContentPage>

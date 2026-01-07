@@ -1,0 +1,134 @@
+using HomeBuyerHelper.Core.Interfaces;
+using HomeBuyerHelper.Core.Models;
+
+namespace HomeBuyerHelper.Core.Services;
+
+/// <summary>
+/// Business logic service for property operations.
+/// </summary>
+public class PropertyService : IPropertyService
+{
+    private readonly IPropertyRepository _propertyRepository;
+    private readonly IScoreRepository _scoreRepository;
+    private readonly ICriteriaRepository _criteriaRepository;
+
+    public PropertyService(
+        IPropertyRepository propertyRepository,
+        IScoreRepository scoreRepository,
+        ICriteriaRepository criteriaRepository)
+    {
+        _propertyRepository = propertyRepository;
+        _scoreRepository = scoreRepository;
+        _criteriaRepository = criteriaRepository;
+    }
+
+    public async Task<IReadOnlyList<Property>> GetPropertiesWithScoresAsync()
+    {
+        return await _propertyRepository.GetActiveAsync();
+    }
+
+    public async Task<Property?> GetPropertyDetailAsync(int id)
+    {
+        return await _propertyRepository.GetByIdAsync(id);
+    }
+
+    public async Task<Property> CreatePropertyAsync(Property property)
+    {
+        property.CreatedAt = DateTime.UtcNow;
+        property.UpdatedAt = DateTime.UtcNow;
+        var id = await _propertyRepository.CreateAsync(property);
+        property.Id = id;
+        return property;
+    }
+
+    public async Task UpdatePropertyAsync(Property property)
+    {
+        property.UpdatedAt = DateTime.UtcNow;
+        await _propertyRepository.UpdateAsync(property);
+    }
+
+    public async Task ArchivePropertyAsync(int id)
+    {
+        var property = await _propertyRepository.GetByIdAsync(id);
+        if (property != null)
+        {
+            property.IsArchived = true;
+            property.UpdatedAt = DateTime.UtcNow;
+            await _propertyRepository.UpdateAsync(property);
+        }
+    }
+
+    public async Task DeletePropertyAsync(int id)
+    {
+        // Delete scores first (cascade)
+        await _scoreRepository.DeleteByPropertyIdAsync(id);
+        await _propertyRepository.DeleteAsync(id);
+    }
+
+    public async Task ToggleFavoriteAsync(int id)
+    {
+        var property = await _propertyRepository.GetByIdAsync(id);
+        if (property != null)
+        {
+            property.IsFavorite = !property.IsFavorite;
+            property.UpdatedAt = DateTime.UtcNow;
+            await _propertyRepository.UpdateAsync(property);
+        }
+    }
+
+    public async Task<IReadOnlyList<PropertyComparisonResult>> ComparePropertiesAsync(IEnumerable<int> propertyIds)
+    {
+        var results = new List<PropertyComparisonResult>();
+        var maxPossibleScore = await _scoreRepository.GetMaxPossibleScoreAsync();
+
+        foreach (var id in propertyIds)
+        {
+            var property = await _propertyRepository.GetByIdAsync(id);
+            if (property == null) continue;
+
+            var scores = await _scoreRepository.GetByPropertyIdAsync(id);
+            var totalWeightedScore = scores.Sum(s => s.WeightedScore);
+            var scorePercentage = maxPossibleScore > 0
+                ? (decimal)totalWeightedScore / maxPossibleScore * 100
+                : 0;
+
+            results.Add(new PropertyComparisonResult
+            {
+                Property = property,
+                Scores = scores,
+                TotalWeightedScore = totalWeightedScore,
+                ScorePercentage = scorePercentage
+            });
+        }
+
+        return results.OrderByDescending(r => r.TotalWeightedScore).ToList();
+    }
+
+    public async Task<IReadOnlyList<PropertyRanking>> GetPropertyRankingsAsync()
+    {
+        var properties = await _propertyRepository.GetActiveAsync();
+        var maxPossibleScore = await _scoreRepository.GetMaxPossibleScoreAsync();
+
+        var rankings = new List<(Property Property, int Score, decimal Percentage)>();
+
+        foreach (var property in properties)
+        {
+            var totalScore = await _scoreRepository.GetTotalWeightedScoreAsync(property.Id);
+            var percentage = maxPossibleScore > 0
+                ? (decimal)totalScore / maxPossibleScore * 100
+                : 0;
+            rankings.Add((property, totalScore, percentage));
+        }
+
+        return rankings
+            .OrderByDescending(r => r.Score)
+            .Select((r, index) => new PropertyRanking
+            {
+                Property = r.Property,
+                Rank = index + 1,
+                TotalWeightedScore = r.Score,
+                ScorePercentage = r.Percentage
+            })
+            .ToList();
+    }
+}

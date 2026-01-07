@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:HomeBuyerHelper.ViewModels"
+             x:Class="HomeBuyerHelper.Pages.PropertyDetailPage"
+             x:DataType="vm:PropertyDetailViewModel"
+             Title="{Binding Title}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="16">
+
+            <!-- Basic Info Section -->
+            <Label Text="Basic Information" Style="{StaticResource Title}" />
+
+            <Entry Placeholder="Nickname (e.g., 'Blue house on Oak St')"
+                   Text="{Binding Nickname}"
+                   AutomationProperties.Name="Property Nickname" />
+
+            <Entry Placeholder="Address"
+                   Text="{Binding Address}"
+                   AutomationProperties.Name="Street Address" />
+
+            <Grid ColumnDefinitions="2*,*,*" ColumnSpacing="8">
+                <Entry Grid.Column="0"
+                       Placeholder="City"
+                       Text="{Binding City}"
+                       AutomationProperties.Name="City" />
+                <Entry Grid.Column="1"
+                       Placeholder="State"
+                       Text="{Binding State}"
+                       AutomationProperties.Name="State" />
+                <Entry Grid.Column="2"
+                       Placeholder="ZIP"
+                       Text="{Binding ZipCode}"
+                       Keyboard="Numeric"
+                       AutomationProperties.Name="ZIP Code" />
+            </Grid>
+
+            <!-- Price Section -->
+            <Label Text="Pricing" Style="{StaticResource Title}" />
+
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                <VerticalStackLayout Grid.Column="0">
+                    <Label Text="Asking Price" Style="{StaticResource Caption}" />
+                    <Entry Text="{Binding AskingPrice}"
+                           Keyboard="Numeric"
+                           AutomationProperties.Name="Asking Price" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Grid.Column="1">
+                    <Label Text="Your Offer (optional)" Style="{StaticResource Caption}" />
+                    <Entry Text="{Binding OfferPrice}"
+                           Keyboard="Numeric"
+                           AutomationProperties.Name="Offer Price" />
+                </VerticalStackLayout>
+            </Grid>
+
+            <!-- Property Details Section -->
+            <Label Text="Property Details" Style="{StaticResource Title}" />
+
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                <VerticalStackLayout Grid.Column="0">
+                    <Label Text="Bedrooms" Style="{StaticResource Caption}" />
+                    <Entry Text="{Binding Bedrooms}"
+                           Keyboard="Numeric"
+                           AutomationProperties.Name="Bedrooms" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Grid.Column="1">
+                    <Label Text="Bathrooms" Style="{StaticResource Caption}" />
+                    <Entry Text="{Binding Bathrooms}"
+                           Keyboard="Numeric"
+                           AutomationProperties.Name="Bathrooms" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Grid.Column="2">
+                    <Label Text="Sq Feet" Style="{StaticResource Caption}" />
+                    <Entry Text="{Binding SquareFeet}"
+                           Keyboard="Numeric"
+                           AutomationProperties.Name="Square Feet" />
+                </VerticalStackLayout>
+            </Grid>
+
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                <VerticalStackLayout Grid.Column="0">
+                    <Label Text="Year Built" Style="{StaticResource Caption}" />
+                    <Entry Text="{Binding YearBuilt}"
+                           Keyboard="Numeric"
+                           AutomationProperties.Name="Year Built" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Grid.Column="1">
+                    <Label Text="Property Type" Style="{StaticResource Caption}" />
+                    <Picker ItemsSource="{Binding PropertyTypes}"
+                            SelectedItem="{Binding PropertyType}"
+                            AutomationProperties.Name="Property Type" />
+                </VerticalStackLayout>
+            </Grid>
+
+            <!-- Costs Section -->
+            <Label Text="Monthly Costs" Style="{StaticResource Title}" />
+
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                <VerticalStackLayout Grid.Column="0">
+                    <Label Text="HOA Fee" Style="{StaticResource Caption}" />
+                    <Entry Text="{Binding MonthlyHOA}"
+                           Keyboard="Numeric"
+                           AutomationProperties.Name="Monthly HOA" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Grid.Column="1">
+                    <Label Text="Annual Taxes" Style="{StaticResource Caption}" />
+                    <Entry Text="{Binding AnnualPropertyTax}"
+                           Keyboard="Numeric"
+                           AutomationProperties.Name="Annual Property Tax" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Grid.Column="2">
+                    <Label Text="Annual Insurance" Style="{StaticResource Caption}" />
+                    <Entry Text="{Binding AnnualInsurance}"
+                           Keyboard="Numeric"
+                           AutomationProperties.Name="Annual Insurance" />
+                </VerticalStackLayout>
+            </Grid>
+
+            <!-- Cost Breakdown -->
+            <Frame Style="{StaticResource CardFrame}"
+                   IsVisible="{Binding CostBreakdown, Converter={StaticResource IsNotNullConverter}}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Estimated Monthly Cost" Style="{StaticResource Title}" />
+                    <Label Text="{Binding CostBreakdown.Total, StringFormat='Total: {0:C0}'}"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           TextColor="{StaticResource Primary}" />
+                    <Label Style="{StaticResource Caption}">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="P&amp;I: " />
+                                <Span Text="{Binding CostBreakdown.Principal, StringFormat='{0:C0}'}" />
+                                <Span Text=" + " />
+                                <Span Text="{Binding CostBreakdown.Interest, StringFormat='{0:C0}'}" />
+                                <Span Text=" | Taxes: " />
+                                <Span Text="{Binding CostBreakdown.PropertyTax, StringFormat='{0:C0}'}" />
+                                <Span Text=" | Ins: " />
+                                <Span Text="{Binding CostBreakdown.Insurance, StringFormat='{0:C0}'}" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Notes Section -->
+            <Label Text="Notes" Style="{StaticResource Title}" />
+
+            <Entry Placeholder="Listing URL"
+                   Text="{Binding ListingUrl}"
+                   Keyboard="Url"
+                   AutomationProperties.Name="Listing URL" />
+
+            <Editor Placeholder="Additional notes about this property..."
+                    Text="{Binding Notes}"
+                    HeightRequest="100"
+                    AutomationProperties.Name="Notes" />
+
+            <!-- Error Message -->
+            <Label Text="{Binding ErrorMessage}"
+                   TextColor="{StaticResource Error}"
+                   IsVisible="{Binding HasError}" />
+
+            <!-- Action Buttons -->
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                <Button Grid.Column="0"
+                        Text="Cancel"
+                        Command="{Binding CancelCommand}"
+                        Style="{StaticResource OutlineButton}" />
+                <Button Grid.Column="1"
+                        Text="Save"
+                        Command="{Binding SaveCommand}" />
+            </Grid>
+
+            <!-- Loading Indicator -->
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               IsVisible="{Binding IsBusy}"
+                               HorizontalOptions="Center" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

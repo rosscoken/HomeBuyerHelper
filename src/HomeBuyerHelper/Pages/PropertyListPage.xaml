@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:HomeBuyerHelper.ViewModels"
+             xmlns:models="clr-namespace:HomeBuyerHelper.Core.Models;assembly=HomeBuyerHelper.Core"
+             x:Class="HomeBuyerHelper.Pages.PropertyListPage"
+             x:DataType="vm:PropertyListViewModel"
+             Title="{Binding Title}">
+
+    <Grid RowDefinitions="*,Auto">
+        <!-- Property List -->
+        <CollectionView Grid.Row="0"
+                        ItemsSource="{Binding Properties}"
+                        SelectionMode="None"
+                        EmptyView="No properties yet. Add your first property!">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Property">
+                    <Frame Style="{StaticResource CardFrame}" Margin="16,8">
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:PropertyListViewModel}}, Path=SelectPropertyCommand}"
+                                CommandParameter="{Binding}" />
+                        </Frame.GestureRecognizers>
+
+                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
+                            <!-- Nickname -->
+                            <Label Grid.Row="0" Grid.Column="0"
+                                   Text="{Binding Nickname}"
+                                   Style="{StaticResource Title}" />
+
+                            <!-- Favorite Button -->
+                            <ImageButton Grid.Row="0" Grid.Column="1"
+                                         Source="{Binding IsFavorite, Converter={StaticResource FavoriteIconConverter}}"
+                                         Command="{Binding Source={RelativeSource AncestorType={x:Type vm:PropertyListViewModel}}, Path=ToggleFavoriteCommand}"
+                                         CommandParameter="{Binding}"
+                                         HeightRequest="24"
+                                         WidthRequest="24" />
+
+                            <!-- Address -->
+                            <Label Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                                   Style="{StaticResource Subtitle}">
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="{Binding Address}" />
+                                        <Span Text=", " />
+                                        <Span Text="{Binding City}" />
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+
+                            <!-- Price and Details -->
+                            <HorizontalStackLayout Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Spacing="16">
+                                <Label Text="{Binding EffectivePrice, StringFormat='{0:C0}'}"
+                                       TextColor="{StaticResource Primary}"
+                                       FontAttributes="Bold" />
+                                <Label Style="{StaticResource Caption}">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="{Binding Bedrooms}" />
+                                            <Span Text=" bed / " />
+                                            <Span Text="{Binding Bathrooms}" />
+                                            <Span Text=" bath / " />
+                                            <Span Text="{Binding SquareFeet, StringFormat='{0:N0}'}" />
+                                            <Span Text=" sqft" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                            </HorizontalStackLayout>
+                        </Grid>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Add Button -->
+        <Button Grid.Row="1"
+                Text="Add Property"
+                Command="{Binding AddPropertyCommand}"
+                Margin="16" />
+
+        <!-- Loading Indicator -->
+        <ActivityIndicator Grid.Row="0"
+                           IsRunning="{Binding IsBusy}"
+                           IsVisible="{Binding IsBusy}"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center" />
+    </Grid>
+
+</ContentPage>

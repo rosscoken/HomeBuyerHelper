@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<?xaml-comp compile="true" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:converters="clr-namespace:HomeBuyerHelper.Converters">
+
+    <converters:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+    <converters:IsNotNullConverter x:Key="IsNotNullConverter" />
+    <converters:EqualToConverter x:Key="EqualToConverter" />
+    <converters:GreaterThanConverter x:Key="GreaterThanConverter" />
+    <converters:FavoriteIconConverter x:Key="FavoriteIconConverter" />
+    <converters:PercentToDecimalConverter x:Key="PercentToDecimalConverter" />
+    <converters:SystemSuggestedConverter x:Key="SystemSuggestedConverter" />
+    <converters:OnboardingButtonTextConverter x:Key="OnboardingButtonTextConverter" />
+    <converters:OnboardingButtonCommandConverter x:Key="OnboardingButtonCommandConverter" />
+
+</ResourceDictionary>
