@@ -1,4 +1,5 @@
 using HomeBuyerHelper.Pages.Onboarding;
+using HomeBuyerHelper.Pages.Settings;
 
 namespace HomeBuyerHelper;
 
@@ -19,6 +20,7 @@ public partial class AppShell : Shell
         Routing.RegisterRoute(nameof(Pages.ComparisonPage), typeof(Pages.ComparisonPage));
         Routing.RegisterRoute("PropertyEntry", typeof(Pages.PropertyDetailPage));
         Routing.RegisterRoute("ScoringWalkthrough", typeof(Pages.ScoringWalkthroughPage));
+        Routing.RegisterRoute("LoanSettings", typeof(LoanSettingsPage));
 
         // Register onboarding flow routes
         Routing.RegisterRoute("Welcome", typeof(WelcomePage));

@@ -121,25 +121,47 @@
             <Frame Style="{StaticResource CardFrame}"
                    IsVisible="{Binding CostBreakdown, Converter={StaticResource IsNotNullConverter}}">
                 <VerticalStackLayout Spacing="8">
-                    <Label Text="Estimated Monthly Cost" Style="{StaticResource Title}" />
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Grid.Column="0" Text="Estimated Monthly Cost" Style="{StaticResource Title}" />
+                        <Button Grid.Column="1"
+                                Text="Settings"
+                                Command="{Binding OpenLoanSettingsCommand}"
+                                Style="{StaticResource TextButton}"
+                                FontSize="12"
+                                Padding="8,0"/>
+                    </Grid>
                     <Label Text="{Binding CostBreakdown.Total, StringFormat='Total: {0:C0}'}"
-                           FontSize="18"
+                           FontSize="24"
                            FontAttributes="Bold"
                            TextColor="{StaticResource Primary}" />
-                    <Label Style="{StaticResource Caption}">
-                        <Label.FormattedText>
-                            <FormattedString>
-                                <Span Text="P&amp;I: " />
-                                <Span Text="{Binding CostBreakdown.Principal, StringFormat='{0:C0}'}" />
-                                <Span Text=" + " />
-                                <Span Text="{Binding CostBreakdown.Interest, StringFormat='{0:C0}'}" />
-                                <Span Text=" | Taxes: " />
-                                <Span Text="{Binding CostBreakdown.PropertyTax, StringFormat='{0:C0}'}" />
-                                <Span Text=" | Ins: " />
-                                <Span Text="{Binding CostBreakdown.Insurance, StringFormat='{0:C0}'}" />
-                            </FormattedString>
-                        </Label.FormattedText>
-                    </Label>
+                    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="4" ColumnSpacing="8">
+                        <Label Grid.Row="0" Grid.Column="0" Text="Principal + Interest" Style="{StaticResource Caption}"/>
+                        <Label Grid.Row="0" Grid.Column="1" Style="{StaticResource Caption}" HorizontalTextAlignment="End">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{Binding CostBreakdown.Principal, StringFormat='{0:C0}'}" />
+                                    <Span Text=" + " />
+                                    <Span Text="{Binding CostBreakdown.Interest, StringFormat='{0:C0}'}" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                        <Label Grid.Row="1" Grid.Column="0" Text="Property Tax" Style="{StaticResource Caption}"/>
+                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding CostBreakdown.PropertyTax, StringFormat='{0:C0}'}"
+                               Style="{StaticResource Caption}" HorizontalTextAlignment="End"/>
+                        <Label Grid.Row="2" Grid.Column="0" Text="Insurance" Style="{StaticResource Caption}"/>
+                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding CostBreakdown.Insurance, StringFormat='{0:C0}'}"
+                               Style="{StaticResource Caption}" HorizontalTextAlignment="End"/>
+                        <Label Grid.Row="3" Grid.Column="0" Text="HOA + PMI" Style="{StaticResource Caption}"/>
+                        <Label Grid.Row="3" Grid.Column="1" Style="{StaticResource Caption}" HorizontalTextAlignment="End">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{Binding CostBreakdown.HOA, StringFormat='{0:C0}'}" />
+                                    <Span Text=" + " />
+                                    <Span Text="{Binding CostBreakdown.PMI, StringFormat='{0:C0}'}" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                    </Grid>
                 </VerticalStackLayout>
             </Frame>
 

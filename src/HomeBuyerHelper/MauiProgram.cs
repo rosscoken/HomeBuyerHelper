@@ -5,6 +5,7 @@ using HomeBuyerHelper.Data;
 using HomeBuyerHelper.Data.Repositories;
 using HomeBuyerHelper.Pages;
 using HomeBuyerHelper.Pages.Onboarding;
+using HomeBuyerHelper.Pages.Settings;
 using HomeBuyerHelper.ViewModels;
 using HomeBuyerHelper.ViewModels.Onboarding;
 using Microsoft.Extensions.Logging;
@@ -57,6 +58,7 @@ public static class MauiProgram
         builder.Services.AddTransient<CriterionEditViewModel>();
         builder.Services.AddTransient<ComparisonViewModel>();
         builder.Services.AddTransient<ScoringWalkthroughViewModel>();
+        builder.Services.AddTransient<LoanSettingsViewModel>();
 
         // Register onboarding view models
         builder.Services.AddTransient<WelcomeViewModel>();
@@ -76,6 +78,7 @@ public static class MauiProgram
         builder.Services.AddTransient<CriterionEditPage>();
         builder.Services.AddTransient<ComparisonPage>();
         builder.Services.AddTransient<ScoringWalkthroughPage>();
+        builder.Services.AddTransient<LoanSettingsPage>();
 
         // Register onboarding pages
         builder.Services.AddTransient<WelcomePage>();

@@ -13,6 +13,8 @@ public partial class PropertyDetailViewModel : BaseViewModel
 {
     private readonly IPropertyService _propertyService;
     private readonly ICalculationService _calculationService;
+    private readonly IUserPreferencesRepository _preferencesRepository;
+    private UserPreferences? _preferences;
 
     [ObservableProperty]
     private int? _propertyId;
@@ -96,10 +98,18 @@ public partial class PropertyDetailViewModel : BaseViewModel
 
     public PropertyDetailViewModel(
         IPropertyService propertyService,
-        ICalculationService calculationService)
+        ICalculationService calculationService,
+        IUserPreferencesRepository preferencesRepository)
     {
         _propertyService = propertyService;
         _calculationService = calculationService;
+        _preferencesRepository = preferencesRepository;
+    }
+
+    public override async Task OnAppearingAsync()
+    {
+        _preferences = await _preferencesRepository.GetAsync();
+        UpdateCostBreakdown();
     }
 
     partial void OnPropertyIdChanged(int? value)
@@ -248,17 +258,33 @@ public partial class PropertyDetailViewModel : BaseViewModel
         UpdateCostBreakdown();
     }
 
+    [RelayCommand]
+    private async Task OpenLoanSettingsAsync()
+    {
+        await Shell.Current.GoToAsync("LoanSettings");
+    }
+
     private void UpdateCostBreakdown()
     {
         if (AskingPrice > 0)
         {
+            var downPayment = _preferences?.DefaultDownPaymentPercent ?? 20m;
+            var interestRate = _preferences?.DefaultInterestRate ?? 7.0m;
+            var term = _preferences?.DefaultMortgageTerm ?? 30;
+            var taxRate = _preferences?.DefaultPropertyTaxRate ?? 0.96m;
+            var defaultInsurance = _preferences?.DefaultMonthlyInsurance ?? 125m;
+
+            var effectivePrice = OfferPrice ?? AskingPrice;
+            var annualTax = AnnualPropertyTax ?? (effectivePrice * taxRate / 100);
+            var annualInsurance = AnnualInsurance ?? (defaultInsurance * 12);
+
             CostBreakdown = _calculationService.CalculateMonthlyHousingCost(
-                OfferPrice ?? AskingPrice,
-                20m, // Default down payment
-                7.0m, // Default interest rate
-                30, // Default term
-                AnnualPropertyTax ?? 0,
-                AnnualInsurance ?? 0,
+                effectivePrice,
+                downPayment,
+                interestRate,
+                term,
+                annualTax,
+                annualInsurance,
                 MonthlyHOA);
         }
     }
