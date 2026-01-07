@@ -272,3 +272,19 @@ public class BoolToNextFinishConverter : IValueConverter
         throw new NotImplementedException();
     }
 }
+
+/// <summary>
+/// Converts boolean (IsSelectingProperties) to button text (Done/Select).
+/// </summary>
+public class BoolToEditSelectConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        return value is true ? "Done" : "Select";
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}

@@ -19,5 +19,6 @@
     <converters:BoolToScoreButtonTextConverter x:Key="BoolToScoreButtonTextConverter" />
     <converters:ScoreToColorConverter x:Key="ScoreToColorConverter" />
     <converters:BoolToNextFinishConverter x:Key="BoolToNextFinishConverter" />
+    <converters:BoolToEditSelectConverter x:Key="BoolToEditSelectConverter" />
 
 </ResourceDictionary>

@@ -3,88 +3,206 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:HomeBuyerHelper.ViewModels"
              xmlns:interfaces="clr-namespace:HomeBuyerHelper.Core.Interfaces;assembly=HomeBuyerHelper.Core"
+             xmlns:models="clr-namespace:HomeBuyerHelper.Core.Models;assembly=HomeBuyerHelper.Core"
              x:Class="HomeBuyerHelper.Pages.ComparisonPage"
              x:DataType="vm:ComparisonViewModel"
              Title="{Binding Title}">
 
-    <Grid RowDefinitions="*,Auto" Padding="16">
+    <Grid RowDefinitions="Auto,*,Auto" Padding="16">
 
-        <!-- Comparison Results -->
-        <CollectionView Grid.Row="0"
-                        ItemsSource="{Binding ComparisonResults}"
-                        SelectionMode="None"
-                        EmptyView="No properties to compare. Add some properties first!">
-            <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="interfaces:PropertyRanking">
-                    <Frame Style="{StaticResource CardFrame}" Margin="0,8">
-                        <VerticalStackLayout Spacing="8">
-                            <!-- Header with rank -->
-                            <Grid ColumnDefinitions="Auto,*,Auto">
-                                <Frame Grid.Column="0"
-                                       BackgroundColor="{StaticResource Primary}"
-                                       Padding="8,4"
-                                       CornerRadius="12">
-                                    <Label Text="{Binding Rank, StringFormat='#{0}'}"
-                                           TextColor="{StaticResource TextOnPrimary}"
-                                           FontAttributes="Bold" />
-                                </Frame>
-                                <Label Grid.Column="1"
-                                       Text="{Binding Property.Nickname}"
-                                       Style="{StaticResource Title}"
-                                       Margin="12,0,0,0"
-                                       VerticalOptions="Center" />
-                                <Label Grid.Column="2"
-                                       Text="{Binding ScorePercentage, StringFormat='{0:F0}%'}"
-                                       Style="{StaticResource Headline}"
-                                       TextColor="{StaticResource Primary}"
-                                       VerticalOptions="Center" />
-                            </Grid>
+        <!-- Property Selection Header -->
+        <Frame Grid.Row="0" Style="{StaticResource CardFrame}" Margin="0,0,0,8" Padding="12">
+            <VerticalStackLayout Spacing="8">
+                <Grid ColumnDefinitions="*,Auto">
+                    <Label Grid.Column="0"
+                           Text="{Binding SelectedCount, StringFormat='{0} properties selected'}"
+                           Style="{StaticResource Subtitle}"/>
+                    <Button Grid.Column="1"
+                            Text="{Binding IsSelectingProperties, Converter={StaticResource BoolToEditSelectConverter}}"
+                            Command="{Binding ToggleSelectionModeCommand}"
+                            Style="{StaticResource TextButton}"/>
+                </Grid>
 
-                            <!-- Price and basics -->
-                            <HorizontalStackLayout Spacing="16">
-                                <Label Text="{Binding Property.EffectivePrice, StringFormat='{0:C0}'}"
-                                       FontAttributes="Bold" />
-                                <Label Style="{StaticResource Subtitle}">
-                                    <Label.FormattedText>
-                                        <FormattedString>
-                                            <Span Text="{Binding Property.Bedrooms}" />
-                                            <Span Text=" bed / " />
-                                            <Span Text="{Binding Property.Bathrooms}" />
-                                            <Span Text=" bath" />
-                                        </FormattedString>
-                                    </Label.FormattedText>
-                                </Label>
-                            </HorizontalStackLayout>
+                <!-- Property Selection List (expandable) -->
+                <CollectionView ItemsSource="{Binding SelectableProperties}"
+                                IsVisible="{Binding IsSelectingProperties}"
+                                HeightRequest="150"
+                                SelectionMode="None">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:SelectableProperty">
+                            <Frame Padding="8" Margin="2"
+                                   BackgroundColor="{Binding IsSelected, Converter={StaticResource BoolToColorConverter}}"
+                                   BorderColor="{Binding IsSelected, Converter={StaticResource BoolToStrokeConverter}}">
+                                <Frame.GestureRecognizers>
+                                    <TapGestureRecognizer
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ComparisonViewModel}}, Path=TogglePropertySelectionCommand}"
+                                        CommandParameter="{Binding}"/>
+                                </Frame.GestureRecognizers>
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <CheckBox Grid.Column="0"
+                                              IsChecked="{Binding IsSelected}"
+                                              IsEnabled="False"
+                                              VerticalOptions="Center"/>
+                                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                                        <Label Text="{Binding Property.Nickname}"
+                                               Style="{StaticResource Body}"
+                                               FontAttributes="Bold"/>
+                                        <Label Text="{Binding Property.EffectivePrice, StringFormat='{0:C0}'}"
+                                               Style="{StaticResource Caption}"/>
+                                    </VerticalStackLayout>
+                                    <Label Grid.Column="2"
+                                           Text="{Binding Property.OverallScore, StringFormat='{0:F1}'}"
+                                           Style="{StaticResource Body}"
+                                           TextColor="{StaticResource Primary}"
+                                           VerticalOptions="Center"/>
+                                </Grid>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
 
-                            <!-- Score breakdown (simplified) -->
-                            <ProgressBar Progress="{Binding ScorePercentage, Converter={StaticResource PercentToDecimalConverter}}"
-                                         ProgressColor="{StaticResource Primary}" />
-                            <Label Text="{Binding TotalWeightedScore, StringFormat='{0} weighted points'}"
-                                   Style="{StaticResource Caption}" />
-                        </VerticalStackLayout>
-                    </Frame>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
+                <Button Text="Update Comparison"
+                        Command="{Binding GenerateComparisonMatrixCommand}"
+                        IsVisible="{Binding IsSelectingProperties}"
+                        Style="{StaticResource PrimaryButton}"/>
+            </VerticalStackLayout>
+        </Frame>
+
+        <!-- Comparison Matrix -->
+        <ScrollView Grid.Row="1" IsVisible="{Binding ShowMatrix}">
+            <VerticalStackLayout Spacing="8">
+
+                <!-- Property Headers -->
+                <Frame Style="{StaticResource CardFrame}" Padding="12">
+                    <HorizontalStackLayout Spacing="8">
+                        <Label Text="Criterion"
+                               WidthRequest="120"
+                               Style="{StaticResource Subtitle}"
+                               FontAttributes="Bold"/>
+                        <BindableLayout.ItemsSource>
+                            <x:Array Type="{x:Type models:Property}">
+                            </x:Array>
+                        </BindableLayout.ItemsSource>
+                    </HorizontalStackLayout>
+                </Frame>
+
+                <!-- Comparison Rows by Criterion -->
+                <CollectionView ItemsSource="{Binding ComparisonRows}"
+                                SelectionMode="None">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ComparisonRow">
+                            <Frame Style="{StaticResource CardFrame}" Margin="0,2" Padding="12">
+                                <Grid RowDefinitions="Auto,Auto" RowSpacing="8">
+                                    <!-- Criterion Name and Weight -->
+                                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                                        <Label Grid.Column="0"
+                                               Text="{Binding CriterionName}"
+                                               Style="{StaticResource Body}"
+                                               FontAttributes="Bold"
+                                               LineBreakMode="TailTruncation"/>
+                                        <Label Grid.Column="1"
+                                               Text="{Binding Weight, StringFormat='{0}%'}"
+                                               Style="{StaticResource Caption}"
+                                               TextColor="{StaticResource Gray500}"/>
+                                    </Grid>
+
+                                    <!-- Scores Row -->
+                                    <HorizontalStackLayout Grid.Row="1"
+                                                           BindableLayout.ItemsSource="{Binding Scores}"
+                                                           Spacing="8">
+                                        <BindableLayout.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:ComparisonScore">
+                                                <Frame BackgroundColor="{Binding ScoreColor}"
+                                                       CornerRadius="8"
+                                                       Padding="12,8"
+                                                       WidthRequest="60"
+                                                       BorderColor="Transparent">
+                                                    <Label Text="{Binding ScoreDisplay}"
+                                                           TextColor="White"
+                                                           FontAttributes="Bold"
+                                                           HorizontalTextAlignment="Center"
+                                                           VerticalTextAlignment="Center"/>
+                                                </Frame>
+                                            </DataTemplate>
+                                        </BindableLayout.ItemTemplate>
+                                    </HorizontalStackLayout>
+                                </Grid>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <!-- Summary Row -->
+                <Frame Style="{StaticResource CardFrame}" Padding="12" BackgroundColor="{StaticResource SurfaceVariant}">
+                    <Grid RowDefinitions="Auto,Auto" RowSpacing="8">
+                        <Label Grid.Row="0"
+                               Text="Overall Score"
+                               Style="{StaticResource Title}"/>
+                        <HorizontalStackLayout Grid.Row="1"
+                                               BindableLayout.ItemsSource="{Binding SelectedProperties}"
+                                               Spacing="8">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="models:Property">
+                                    <Frame BackgroundColor="{Binding ScoreColor}"
+                                           CornerRadius="8"
+                                           Padding="8"
+                                           WidthRequest="80"
+                                           BorderColor="Transparent">
+                                        <VerticalStackLayout>
+                                            <Label Text="{Binding OverallScore, StringFormat='{0:F1}'}"
+                                                   TextColor="White"
+                                                   FontSize="18"
+                                                   FontAttributes="Bold"
+                                                   HorizontalTextAlignment="Center"/>
+                                            <Label Text="{Binding Nickname}"
+                                                   TextColor="White"
+                                                   FontSize="10"
+                                                   HorizontalTextAlignment="Center"
+                                                   LineBreakMode="TailTruncation"/>
+                                        </VerticalStackLayout>
+                                    </Frame>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </HorizontalStackLayout>
+                    </Grid>
+                </Frame>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Empty State -->
+        <VerticalStackLayout Grid.Row="1"
+                             IsVisible="{Binding ShowMatrix, Converter={StaticResource InvertedBoolConverter}}"
+                             VerticalOptions="Center"
+                             Spacing="16"
+                             Padding="32">
+            <Label Text="Select Properties to Compare"
+                   Style="{StaticResource Title}"
+                   HorizontalTextAlignment="Center"/>
+            <Label Text="Select at least 2 properties above to see a side-by-side comparison."
+                   Style="{StaticResource Body}"
+                   HorizontalTextAlignment="Center"
+                   TextColor="{StaticResource Gray500}"/>
+        </VerticalStackLayout>
 
         <!-- Action Buttons -->
-        <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="12" Margin="0,16,0,0">
+        <Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="12" Margin="0,16,0,0"
+              IsVisible="{Binding ShowMatrix}">
             <Button Grid.Column="0"
-                    Text="Export PDF"
+                    Text="Export"
                     Command="{Binding ExportComparisonCommand}"
-                    Style="{StaticResource OutlineButton}" />
+                    Style="{StaticResource OutlineButton}"/>
             <Button Grid.Column="1"
                     Text="Share"
-                    Command="{Binding ShareComparisonCommand}" />
+                    Command="{Binding ShareComparisonCommand}"
+                    Style="{StaticResource PrimaryButton}"/>
         </Grid>
 
         <!-- Loading -->
-        <ActivityIndicator Grid.Row="0"
+        <ActivityIndicator Grid.Row="1"
                            IsRunning="{Binding IsBusy}"
                            IsVisible="{Binding IsBusy}"
                            HorizontalOptions="Center"
-                           VerticalOptions="Center" />
-
+                           VerticalOptions="Center"/>
     </Grid>
 
 </ContentPage>
