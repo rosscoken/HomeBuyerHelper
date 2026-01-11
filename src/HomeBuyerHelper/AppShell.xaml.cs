@@ -1,3 +1,4 @@
+using HomeBuyerHelper.Pages.Budget;
 using HomeBuyerHelper.Pages.Onboarding;
 using HomeBuyerHelper.Pages.Settings;
 
@@ -32,5 +33,9 @@ public partial class AppShell : Shell
         Routing.RegisterRoute("HomePriorities", typeof(HomePrioritiesPage));
         Routing.RegisterRoute("CriteriaReview", typeof(CriteriaReviewPage));
         Routing.RegisterRoute("OnboardingComplete", typeof(OnboardingCompletePage));
+
+        // Register budget flow routes
+        Routing.RegisterRoute("IncomeSetup", typeof(IncomeSetupPage));
+        Routing.RegisterRoute("ExpenseSetup", typeof(ExpenseSetupPage));
     }
 }

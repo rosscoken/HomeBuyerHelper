@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:HomeBuyerHelper.ViewModels.Budget"
+             xmlns:models="clr-namespace:HomeBuyerHelper.Core.Models;assembly=HomeBuyerHelper.Core"
+             x:Class="HomeBuyerHelper.Pages.Budget.ExpenseSetupPage"
+             x:DataType="vm:ExpenseSetupViewModel"
+             Title="{Binding Title}">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- Header Summary -->
+        <Frame Grid.Row="0" Style="{StaticResource CardFrame}" Margin="16,16,16,8" Padding="16">
+            <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,*" RowSpacing="8">
+                <Label Text="Total Monthly Expenses"
+                       Style="{StaticResource Caption}"
+                       TextColor="{StaticResource Gray500}"/>
+                <Label Grid.Column="1"
+                       Text="Essential Monthly"
+                       Style="{StaticResource Caption}"
+                       TextColor="{StaticResource Gray500}"
+                       HorizontalTextAlignment="End"/>
+
+                <Label Grid.Row="1"
+                       Text="{Binding TotalMonthlyExpenses, StringFormat='${0:N0}'}"
+                       Style="{StaticResource Title}"
+                       TextColor="{StaticResource Error}"/>
+                <Label Grid.Row="1" Grid.Column="1"
+                       Text="{Binding EssentialMonthlyExpenses, StringFormat='${0:N0}'}"
+                       Style="{StaticResource Title}"
+                       TextColor="{StaticResource Warning}"
+                       HorizontalTextAlignment="End"/>
+
+                <Label Grid.Row="2" Grid.ColumnSpan="2"
+                       Text="{Binding TotalAnnualExpenses, StringFormat='${0:N0}/year'}"
+                       Style="{StaticResource Caption}"
+                       TextColor="{StaticResource Gray400}"/>
+            </Grid>
+        </Frame>
+
+        <!-- Expense List or Edit Form -->
+        <Grid Grid.Row="1">
+
+            <!-- Expense List View -->
+            <ScrollView IsVisible="{Binding IsEditing, Converter={StaticResource InvertedBoolConverter}}">
+                <VerticalStackLayout Padding="16,8" Spacing="8">
+
+                    <Label Text="Your Expenses"
+                           Style="{StaticResource Subtitle}"
+                           IsVisible="{Binding Expenses.Count, Converter={StaticResource IntToBoolConverter}}"/>
+
+                    <Label Text="No expenses configured yet. Add your first expense to get started with budget planning."
+                           Style="{StaticResource Body}"
+                           TextColor="{StaticResource Gray400}"
+                           HorizontalTextAlignment="Center"
+                           Margin="0,40"
+                           IsVisible="{Binding Expenses.Count, Converter={StaticResource IntToInvertedBoolConverter}}"/>
+
+                    <CollectionView ItemsSource="{Binding Expenses}"
+                                    SelectionMode="None">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:Expense">
+                                <Frame Style="{StaticResource CardFrame}" Margin="0,4" Padding="12">
+                                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="4">
+                                        <Label Text="{Binding Name}"
+                                               Style="{StaticResource Subtitle}"
+                                               FontAttributes="Bold"/>
+
+                                        <HorizontalStackLayout Grid.Column="1" Spacing="8">
+                                            <Button Text="Edit"
+                                                    Style="{StaticResource TextButton}"
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ExpenseSetupViewModel}}, Path=StartEditExpenseCommand}"
+                                                    CommandParameter="{Binding .}"
+                                                    HeightRequest="32"
+                                                    Padding="8,0"/>
+                                            <Button Text="Delete"
+                                                    Style="{StaticResource TextButton}"
+                                                    TextColor="{StaticResource Error}"
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ExpenseSetupViewModel}}, Path=DeleteExpenseCommand}"
+                                                    CommandParameter="{Binding .}"
+                                                    HeightRequest="32"
+                                                    Padding="8,0"/>
+                                        </HorizontalStackLayout>
+
+                                        <Label Grid.Row="1"
+                                               Text="{Binding MonthlyAmount, StringFormat='${0:N0}/month'}"
+                                               Style="{StaticResource Body}"
+                                               TextColor="{StaticResource Error}"
+                                               FontAttributes="Bold"/>
+
+                                        <HorizontalStackLayout Grid.Row="2" Grid.ColumnSpan="2" Spacing="8">
+                                            <Frame BackgroundColor="{StaticResource Gray100}"
+                                                   Padding="6,2"
+                                                   CornerRadius="4"
+                                                   BorderColor="Transparent">
+                                                <Label Text="{Binding Category}"
+                                                       Style="{StaticResource Caption}"/>
+                                            </Frame>
+                                            <Frame BackgroundColor="{StaticResource Gray100}"
+                                                   Padding="6,2"
+                                                   CornerRadius="4"
+                                                   BorderColor="Transparent">
+                                                <Label Text="{Binding Frequency}"
+                                                       Style="{StaticResource Caption}"/>
+                                            </Frame>
+                                            <Frame BackgroundColor="{Binding IsEssential, Converter={StaticResource BoolToColorConverter}, ConverterParameter='Warning|Gray200'}"
+                                                   Padding="6,2"
+                                                   CornerRadius="4"
+                                                   BorderColor="Transparent"
+                                                   IsVisible="{Binding IsEssential}">
+                                                <Label Text="Essential"
+                                                       Style="{StaticResource Caption}"
+                                                       TextColor="{StaticResource White}"/>
+                                            </Frame>
+                                        </HorizontalStackLayout>
+                                    </Grid>
+                                </Frame>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                </VerticalStackLayout>
+            </ScrollView>
+
+            <!-- Edit Form -->
+            <ScrollView IsVisible="{Binding IsEditing}">
+                <VerticalStackLayout Padding="16" Spacing="16">
+
+                    <Label Text="{Binding SelectedExpense, Converter={StaticResource NullToBoolConverter}, ConverterParameter='Edit Expense|Add New Expense'}"
+                           Style="{StaticResource Title}"/>
+
+                    <!-- Name -->
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Expense Name" Style="{StaticResource Caption}"/>
+                        <Entry Text="{Binding EditName}"
+                               Placeholder="e.g., Car Payment"
+                               AutomationProperties.Name="Expense Name"/>
+                    </VerticalStackLayout>
+
+                    <!-- Amount -->
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Amount" Style="{StaticResource Caption}"/>
+                        <Entry Text="{Binding EditAmount}"
+                               Keyboard="Numeric"
+                               Placeholder="0.00"
+                               AutomationProperties.Name="Amount"/>
+                    </VerticalStackLayout>
+
+                    <!-- Frequency -->
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Payment Frequency" Style="{StaticResource Caption}"/>
+                        <Picker ItemsSource="{Binding FrequencyOptions}"
+                                SelectedItem="{Binding EditFrequency}"
+                                AutomationProperties.Name="Payment Frequency"/>
+                    </VerticalStackLayout>
+
+                    <!-- Category -->
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Category" Style="{StaticResource Caption}"/>
+                        <Picker ItemsSource="{Binding CategoryOptions}"
+                                SelectedItem="{Binding EditCategory}"
+                                AutomationProperties.Name="Category"/>
+                    </VerticalStackLayout>
+
+                    <!-- Is Essential -->
+                    <Grid ColumnDefinitions="*,Auto">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="Essential Expense" Style="{StaticResource Subtitle}"/>
+                            <Label Text="Check if this expense is necessary (not discretionary)."
+                                   Style="{StaticResource Caption}"
+                                   TextColor="{StaticResource Gray400}"/>
+                        </VerticalStackLayout>
+                        <Switch Grid.Column="1"
+                                IsToggled="{Binding EditIsEssential}"
+                                AutomationProperties.Name="Essential Expense Toggle"/>
+                    </Grid>
+
+                    <!-- Continues After Purchase -->
+                    <Grid ColumnDefinitions="*,Auto">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="Continues After Purchase" Style="{StaticResource Subtitle}"/>
+                            <Label Text="Check if this expense will continue after buying a home."
+                                   Style="{StaticResource Caption}"
+                                   TextColor="{StaticResource Gray400}"/>
+                        </VerticalStackLayout>
+                        <Switch Grid.Column="1"
+                                IsToggled="{Binding EditContinuesAfterPurchase}"
+                                AutomationProperties.Name="Continues After Purchase Toggle"/>
+                    </Grid>
+
+                    <!-- Notes -->
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Notes (optional)" Style="{StaticResource Caption}"/>
+                        <Editor Text="{Binding EditNotes}"
+                                Placeholder="Add any notes about this expense..."
+                                HeightRequest="80"
+                                AutomationProperties.Name="Notes"/>
+                    </VerticalStackLayout>
+
+                    <!-- Error Message -->
+                    <Label Text="{Binding ErrorMessage}"
+                           TextColor="{StaticResource Error}"
+                           IsVisible="{Binding HasError}"
+                           HorizontalTextAlignment="Center"/>
+
+                    <!-- Form Buttons -->
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                        <Button Text="Cancel"
+                                Command="{Binding CancelEditCommand}"
+                                Style="{StaticResource OutlineButton}"/>
+                        <Button Grid.Column="1"
+                                Text="Save"
+                                Command="{Binding SaveExpenseCommand}"
+                                Style="{StaticResource PrimaryButton}"/>
+                    </Grid>
+
+                </VerticalStackLayout>
+            </ScrollView>
+
+        </Grid>
+
+        <!-- Bottom Buttons -->
+        <VerticalStackLayout Grid.Row="2"
+                             Padding="16"
+                             Spacing="8"
+                             IsVisible="{Binding IsEditing, Converter={StaticResource InvertedBoolConverter}}">
+            <Button Text="Add Expense"
+                    Command="{Binding StartAddExpenseCommand}"
+                    Style="{StaticResource PrimaryButton}"/>
+            <Button Text="Back"
+                    Command="{Binding GoBackCommand}"
+                    Style="{StaticResource OutlineButton}"/>
+        </VerticalStackLayout>
+
+        <!-- Loading Indicator -->
+        <ActivityIndicator Grid.RowSpan="3"
+                           IsRunning="{Binding IsBusy}"
+                           IsVisible="{Binding IsBusy}"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"/>
+
+    </Grid>
+
+</ContentPage>

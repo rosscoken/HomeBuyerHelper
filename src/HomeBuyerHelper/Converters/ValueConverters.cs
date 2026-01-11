@@ -288,3 +288,60 @@ public class BoolToEditSelectConverter : IValueConverter
         throw new NotImplementedException();
     }
 }
+
+/// <summary>
+/// Returns true if the integer value is greater than 0.
+/// </summary>
+public class IntToBoolConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        return value is int intValue && intValue > 0;
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+/// <summary>
+/// Returns true if the integer value is 0 or less (inverse of IntToBoolConverter).
+/// </summary>
+public class IntToInvertedBoolConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        return value is not int intValue || intValue <= 0;
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+/// <summary>
+/// Converts null/not-null to text or boolean.
+/// Parameter format: "TextIfNotNull|TextIfNull" or no parameter returns bool.
+/// </summary>
+public class NullToBoolConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        var isNotNull = value != null;
+
+        if (parameter is string paramString && paramString.Contains('|'))
+        {
+            var parts = paramString.Split('|');
+            return isNotNull ? parts[0] : parts[1];
+        }
+
+        return isNotNull;
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}

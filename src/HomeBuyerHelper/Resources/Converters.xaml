@@ -20,5 +20,8 @@
     <converters:ScoreToColorConverter x:Key="ScoreToColorConverter" />
     <converters:BoolToNextFinishConverter x:Key="BoolToNextFinishConverter" />
     <converters:BoolToEditSelectConverter x:Key="BoolToEditSelectConverter" />
+    <converters:IntToBoolConverter x:Key="IntToBoolConverter" />
+    <converters:IntToInvertedBoolConverter x:Key="IntToInvertedBoolConverter" />
+    <converters:NullToBoolConverter x:Key="NullToBoolConverter" />
 
 </ResourceDictionary>

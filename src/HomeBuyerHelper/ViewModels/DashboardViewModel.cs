@@ -88,4 +88,16 @@ public partial class DashboardViewModel : BaseViewModel
     {
         await Shell.Current.GoToAsync("LoanSettings");
     }
+
+    [RelayCommand]
+    private async Task NavigateToIncomeSetupAsync()
+    {
+        await Shell.Current.GoToAsync("IncomeSetup");
+    }
+
+    [RelayCommand]
+    private async Task NavigateToExpenseSetupAsync()
+    {
+        await Shell.Current.GoToAsync("ExpenseSetup");
+    }
 }

@@ -4,9 +4,11 @@ using HomeBuyerHelper.Core.Services;
 using HomeBuyerHelper.Data;
 using HomeBuyerHelper.Data.Repositories;
 using HomeBuyerHelper.Pages;
+using HomeBuyerHelper.Pages.Budget;
 using HomeBuyerHelper.Pages.Onboarding;
 using HomeBuyerHelper.Pages.Settings;
 using HomeBuyerHelper.ViewModels;
+using HomeBuyerHelper.ViewModels.Budget;
 using HomeBuyerHelper.ViewModels.Onboarding;
 using Microsoft.Extensions.Logging;
 
@@ -42,6 +44,8 @@ public static class MauiProgram
         builder.Services.AddSingleton<ICriteriaRepository, CriteriaRepository>();
         builder.Services.AddSingleton<IScoreRepository, ScoreRepository>();
         builder.Services.AddSingleton<IUserPreferencesRepository, UserPreferencesRepository>();
+        builder.Services.AddSingleton<IIncomeRepository, IncomeRepository>();
+        builder.Services.AddSingleton<IExpenseRepository, ExpenseRepository>();
 
         // Register business services
         builder.Services.AddSingleton<IPropertyService, PropertyService>();
@@ -71,6 +75,10 @@ public static class MauiProgram
         builder.Services.AddTransient<CriteriaReviewViewModel>();
         builder.Services.AddTransient<OnboardingCompleteViewModel>();
 
+        // Register budget view models
+        builder.Services.AddTransient<IncomeSetupViewModel>();
+        builder.Services.AddTransient<ExpenseSetupViewModel>();
+
         // Register main pages (transient - new instance per navigation)
         builder.Services.AddTransient<DashboardPage>();
         builder.Services.AddTransient<PropertyListPage>();
@@ -91,6 +99,10 @@ public static class MauiProgram
         builder.Services.AddTransient<HomePrioritiesPage>();
         builder.Services.AddTransient<CriteriaReviewPage>();
         builder.Services.AddTransient<OnboardingCompletePage>();
+
+        // Register budget pages
+        builder.Services.AddTransient<IncomeSetupPage>();
+        builder.Services.AddTransient<ExpenseSetupPage>();
 
         return builder.Build();
     }
