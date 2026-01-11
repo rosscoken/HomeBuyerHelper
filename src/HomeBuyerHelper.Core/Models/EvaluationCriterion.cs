@@ -39,6 +39,36 @@ public class EvaluationCriterion
     public int DisplayOrder { get; set; }
 
     /// <summary>
+    /// Score anchor text for low scores (1-2).
+    /// </summary>
+    public string? ScoreAnchorLow { get; set; }
+
+    /// <summary>
+    /// Score anchor text for mid-low scores (3-4).
+    /// </summary>
+    public string? ScoreAnchorMidLow { get; set; }
+
+    /// <summary>
+    /// Score anchor text for mid scores (5-6).
+    /// </summary>
+    public string? ScoreAnchorMid { get; set; }
+
+    /// <summary>
+    /// Score anchor text for mid-high scores (7-8).
+    /// </summary>
+    public string? ScoreAnchorMidHigh { get; set; }
+
+    /// <summary>
+    /// Score anchor text for high scores (9-10).
+    /// </summary>
+    public string? ScoreAnchorHigh { get; set; }
+
+    /// <summary>
+    /// Whether this criterion's weight is locked during rebalancing.
+    /// </summary>
+    public bool IsWeightLocked { get; set; }
+
+    /// <summary>
     /// When the criterion was created.
     /// </summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

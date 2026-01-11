@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:HomeBuyerHelper.ViewModels.Onboarding"
+             x:Class="HomeBuyerHelper.Pages.Onboarding.HomePrioritiesPage"
+             x:DataType="vm:HomePrioritiesViewModel"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{StaticResource Background}">
+
+    <Grid RowDefinitions="Auto,*,Auto" Padding="24">
+
+        <!-- Progress Header -->
+        <VerticalStackLayout Grid.Row="0" Spacing="16">
+            <ProgressBar Progress="0.6" ProgressColor="{StaticResource Primary}" HeightRequest="4"/>
+            <Label Text="Step 5 of 7" Style="{StaticResource Caption}" HorizontalTextAlignment="Center"/>
+        </VerticalStackLayout>
+
+        <!-- Content -->
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Spacing="24" Padding="0,24">
+
+                <Label Text="What matters most about the home itself?"
+                       Style="{StaticResource Headline}"
+                       HorizontalTextAlignment="Center"/>
+
+                <Label Text="{Binding SelectionHint}"
+                       Style="{StaticResource Caption}"
+                       HorizontalTextAlignment="Center"
+                       TextColor="{StaticResource Primary}"/>
+
+                <!-- Priority Options -->
+                <VerticalStackLayout Spacing="8" BindableLayout.ItemsSource="{Binding Options}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="vm:PriorityOptionItem">
+                            <Border Padding="16"
+                                    BackgroundColor="{Binding IsSelected, Converter={StaticResource BoolToColorConverter}}"
+                                    Stroke="{Binding IsSelected, Converter={StaticResource BoolToStrokeConverter}}"
+                                    StrokeThickness="2">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="12"/>
+                                </Border.StrokeShape>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding ToggleCommand}"/>
+                                </Border.GestureRecognizers>
+                                <HorizontalStackLayout Spacing="12">
+                                    <CheckBox IsChecked="{Binding IsSelected}" IsEnabled="False"/>
+                                    <Label Text="{Binding DisplayName}"
+                                           Style="{StaticResource Body}"
+                                           VerticalOptions="Center"/>
+                                </HorizontalStackLayout>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Navigation -->
+        <Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="16">
+            <Button Grid.Column="0"
+                    Text="Back"
+                    Command="{Binding BackCommand}"
+                    Style="{StaticResource OutlineButton}"
+                    HeightRequest="50"/>
+
+            <Button Grid.Column="1"
+                    Text="Continue"
+                    Command="{Binding ContinueCommand}"
+                    IsEnabled="{Binding HasSelection}"
+                    Style="{StaticResource PrimaryButton}"
+                    HeightRequest="50"/>
+        </Grid>
+
+    </Grid>
+
+</ContentPage>

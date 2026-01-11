@@ -121,25 +121,106 @@
             <Frame Style="{StaticResource CardFrame}"
                    IsVisible="{Binding CostBreakdown, Converter={StaticResource IsNotNullConverter}}">
                 <VerticalStackLayout Spacing="8">
-                    <Label Text="Estimated Monthly Cost" Style="{StaticResource Title}" />
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Grid.Column="0" Text="Estimated Monthly Cost" Style="{StaticResource Title}" />
+                        <Button Grid.Column="1"
+                                Text="Settings"
+                                Command="{Binding OpenLoanSettingsCommand}"
+                                Style="{StaticResource TextButton}"
+                                FontSize="12"
+                                Padding="8,0"/>
+                    </Grid>
                     <Label Text="{Binding CostBreakdown.Total, StringFormat='Total: {0:C0}'}"
-                           FontSize="18"
+                           FontSize="24"
                            FontAttributes="Bold"
                            TextColor="{StaticResource Primary}" />
-                    <Label Style="{StaticResource Caption}">
-                        <Label.FormattedText>
-                            <FormattedString>
-                                <Span Text="P&amp;I: " />
-                                <Span Text="{Binding CostBreakdown.Principal, StringFormat='{0:C0}'}" />
-                                <Span Text=" + " />
-                                <Span Text="{Binding CostBreakdown.Interest, StringFormat='{0:C0}'}" />
-                                <Span Text=" | Taxes: " />
-                                <Span Text="{Binding CostBreakdown.PropertyTax, StringFormat='{0:C0}'}" />
-                                <Span Text=" | Ins: " />
-                                <Span Text="{Binding CostBreakdown.Insurance, StringFormat='{0:C0}'}" />
-                            </FormattedString>
-                        </Label.FormattedText>
-                    </Label>
+                    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="4" ColumnSpacing="8">
+                        <Label Grid.Row="0" Grid.Column="0" Text="Principal + Interest" Style="{StaticResource Caption}"/>
+                        <Label Grid.Row="0" Grid.Column="1" Style="{StaticResource Caption}" HorizontalTextAlignment="End">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{Binding CostBreakdown.Principal, StringFormat='{0:C0}'}" />
+                                    <Span Text=" + " />
+                                    <Span Text="{Binding CostBreakdown.Interest, StringFormat='{0:C0}'}" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                        <Label Grid.Row="1" Grid.Column="0" Text="Property Tax" Style="{StaticResource Caption}"/>
+                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding CostBreakdown.PropertyTax, StringFormat='{0:C0}'}"
+                               Style="{StaticResource Caption}" HorizontalTextAlignment="End"/>
+                        <Label Grid.Row="2" Grid.Column="0" Text="Insurance" Style="{StaticResource Caption}"/>
+                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding CostBreakdown.Insurance, StringFormat='{0:C0}'}"
+                               Style="{StaticResource Caption}" HorizontalTextAlignment="End"/>
+                        <Label Grid.Row="3" Grid.Column="0" Text="HOA + PMI" Style="{StaticResource Caption}"/>
+                        <Label Grid.Row="3" Grid.Column="1" Style="{StaticResource Caption}" HorizontalTextAlignment="End">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{Binding CostBreakdown.HOA, StringFormat='{0:C0}'}" />
+                                    <Span Text=" + " />
+                                    <Span Text="{Binding CostBreakdown.PMI, StringFormat='{0:C0}'}" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                    </Grid>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Score Summary Section (only for existing properties) -->
+            <Frame Style="{StaticResource CardFrame}"
+                   IsVisible="{Binding IsNewProperty, Converter={StaticResource InvertedBoolConverter}}">
+                <VerticalStackLayout Spacing="12">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Grid.Column="0" Text="Scores" Style="{StaticResource Title}"/>
+                        <Label Grid.Column="1"
+                               Text="{Binding Rank, StringFormat='Rank #{0}'}"
+                               Style="{StaticResource Body}"
+                               TextColor="{StaticResource Primary}"
+                               FontAttributes="Bold"/>
+                    </Grid>
+
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                        <!-- Overall Score Circle -->
+                        <Frame Grid.Column="0"
+                               BackgroundColor="{StaticResource Primary}"
+                               CornerRadius="30"
+                               Padding="0"
+                               HeightRequest="60"
+                               WidthRequest="60"
+                               BorderColor="Transparent">
+                            <Label Text="{Binding OverallScore, StringFormat='{0:F1}'}"
+                                   TextColor="White"
+                                   FontSize="20"
+                                   FontAttributes="Bold"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
+                        </Frame>
+
+                        <!-- Score Progress -->
+                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="4">
+                            <Label Text="Overall Score"
+                                   Style="{StaticResource Body}"
+                                   FontAttributes="Bold"/>
+                            <Label Text="{Binding ScoredCriteriaCount, StringFormat='{0} of '}"
+                                   Style="{StaticResource Caption}">
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="{Binding ScoredCriteriaCount}"/>
+                                        <Span Text=" of "/>
+                                        <Span Text="{Binding TotalCriteriaCount}"/>
+                                        <Span Text=" criteria scored"/>
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+                        </VerticalStackLayout>
+
+                        <!-- Score Button -->
+                        <Button Grid.Column="2"
+                                Text="{Binding IsFullyScored, Converter={StaticResource BoolToScoreButtonTextConverter}}"
+                                Command="{Binding ScorePropertyCommand}"
+                                Style="{StaticResource SecondaryButton}"
+                                VerticalOptions="Center"
+                                IsVisible="{Binding TotalCriteriaCount, Converter={StaticResource GreaterThanConverter}, ConverterParameter=0}"/>
+                    </Grid>
                 </VerticalStackLayout>
             </Frame>
 
@@ -169,8 +250,18 @@
                         Style="{StaticResource OutlineButton}" />
                 <Button Grid.Column="1"
                         Text="Save"
-                        Command="{Binding SaveCommand}" />
+                        Command="{Binding SaveCommand}"
+                        Style="{StaticResource PrimaryButton}"/>
             </Grid>
+
+            <!-- Delete Button (only for existing properties) -->
+            <Button Text="Delete Property"
+                    Command="{Binding DeleteCommand}"
+                    TextColor="{StaticResource Error}"
+                    BackgroundColor="Transparent"
+                    IsVisible="{Binding IsNewProperty, Converter={StaticResource InvertedBoolConverter}}"
+                    HorizontalOptions="Center"
+                    AutomationProperties.Name="Delete this property"/>
 
             <!-- Loading Indicator -->
             <ActivityIndicator IsRunning="{Binding IsBusy}"

@@ -46,6 +46,10 @@ public class UserPreferencesEntity
 
     public int DefaultMortgageTerm { get; set; }
 
+    public decimal DefaultPropertyTaxRate { get; set; }
+
+    public decimal DefaultMonthlyInsurance { get; set; }
+
     public DateTime CreatedAt { get; set; }
 
     public DateTime UpdatedAt { get; set; }

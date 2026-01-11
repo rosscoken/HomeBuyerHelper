@@ -44,5 +44,9 @@
     <Color x:Key="PageBackground">#FAFAFA</Color>
     <Color x:Key="CardBackground">White</Color>
     <Color x:Key="SurfaceBackground">#F5F5F5</Color>
+    <Color x:Key="Background">#FAFAFA</Color>
+    <Color x:Key="Surface">White</Color>
+    <Color x:Key="SurfaceVariant">#F0EDF6</Color>
+    <Color x:Key="OnSurfaceVariant">#49454F</Color>
 
 </ResourceDictionary>

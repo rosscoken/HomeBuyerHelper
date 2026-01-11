@@ -4,7 +4,10 @@ using HomeBuyerHelper.Core.Services;
 using HomeBuyerHelper.Data;
 using HomeBuyerHelper.Data.Repositories;
 using HomeBuyerHelper.Pages;
+using HomeBuyerHelper.Pages.Onboarding;
+using HomeBuyerHelper.Pages.Settings;
 using HomeBuyerHelper.ViewModels;
+using HomeBuyerHelper.ViewModels.Onboarding;
 using Microsoft.Extensions.Logging;
 
 namespace HomeBuyerHelper;
@@ -44,22 +47,50 @@ public static class MauiProgram
         builder.Services.AddSingleton<IPropertyService, PropertyService>();
         builder.Services.AddSingleton<ICalculationService, CalculationService>();
         builder.Services.AddSingleton<IExportService, ExportService>();
+        builder.Services.AddSingleton<IOnboardingStateService, OnboardingStateService>();
+        builder.Services.AddSingleton<IWeightBalancingService, WeightBalancingService>();
 
-        // Register view models (transient - new instance per page)
+        // Register main view models (transient - new instance per page)
         builder.Services.AddTransient<DashboardViewModel>();
         builder.Services.AddTransient<PropertyListViewModel>();
         builder.Services.AddTransient<PropertyDetailViewModel>();
-        builder.Services.AddTransient<OnboardingViewModel>();
         builder.Services.AddTransient<CriteriaViewModel>();
+        builder.Services.AddTransient<CriterionEditViewModel>();
         builder.Services.AddTransient<ComparisonViewModel>();
+        builder.Services.AddTransient<ScoringWalkthroughViewModel>();
+        builder.Services.AddTransient<LoanSettingsViewModel>();
+        builder.Services.AddTransient<DataManagementViewModel>();
 
-        // Register pages (transient - new instance per navigation)
+        // Register onboarding view models
+        builder.Services.AddTransient<WelcomeViewModel>();
+        builder.Services.AddTransient<GoalSelectionViewModel>();
+        builder.Services.AddTransient<PropertyCountViewModel>();
+        builder.Services.AddTransient<HouseholdViewModel>();
+        builder.Services.AddTransient<LocationPrioritiesViewModel>();
+        builder.Services.AddTransient<HomePrioritiesViewModel>();
+        builder.Services.AddTransient<CriteriaReviewViewModel>();
+        builder.Services.AddTransient<OnboardingCompleteViewModel>();
+
+        // Register main pages (transient - new instance per navigation)
         builder.Services.AddTransient<DashboardPage>();
         builder.Services.AddTransient<PropertyListPage>();
         builder.Services.AddTransient<PropertyDetailPage>();
-        builder.Services.AddTransient<OnboardingPage>();
         builder.Services.AddTransient<CriteriaPage>();
+        builder.Services.AddTransient<CriterionEditPage>();
         builder.Services.AddTransient<ComparisonPage>();
+        builder.Services.AddTransient<ScoringWalkthroughPage>();
+        builder.Services.AddTransient<LoanSettingsPage>();
+        builder.Services.AddTransient<DataManagementPage>();
+
+        // Register onboarding pages
+        builder.Services.AddTransient<WelcomePage>();
+        builder.Services.AddTransient<GoalSelectionPage>();
+        builder.Services.AddTransient<PropertyCountPage>();
+        builder.Services.AddTransient<HouseholdPage>();
+        builder.Services.AddTransient<LocationPrioritiesPage>();
+        builder.Services.AddTransient<HomePrioritiesPage>();
+        builder.Services.AddTransient<CriteriaReviewPage>();
+        builder.Services.AddTransient<OnboardingCompletePage>();
 
         return builder.Build();
     }

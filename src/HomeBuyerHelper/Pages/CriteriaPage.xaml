@@ -7,37 +7,56 @@
              x:DataType="vm:CriteriaViewModel"
              Title="{Binding Title}">
 
-    <Grid RowDefinitions="Auto,*" Padding="16">
+    <Grid RowDefinitions="Auto,*,Auto" Padding="16">
 
-        <!-- Add New Criterion -->
-        <Frame Grid.Row="0" Style="{StaticResource CardFrame}" Margin="0,0,0,16">
-            <VerticalStackLayout Spacing="8">
-                <Label Text="Add New Criterion" Style="{StaticResource Title}" />
-                <Entry Placeholder="Criterion name"
-                       Text="{Binding NewCriterionName}"
-                       AutomationProperties.Name="New criterion name" />
-                <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                    <Picker Grid.Column="0"
-                            ItemsSource="{Binding Categories}"
-                            SelectedItem="{Binding NewCriterionCategory}"
-                            Title="Category" />
-                    <VerticalStackLayout Grid.Column="1">
-                        <Label Text="{Binding NewCriterionWeight, StringFormat='Weight: {0}'}"
-                               Style="{StaticResource Caption}" />
-                        <Slider Minimum="1" Maximum="10"
-                                Value="{Binding NewCriterionWeight}" />
-                    </VerticalStackLayout>
-                </Grid>
-                <Button Text="Add Criterion"
-                        Command="{Binding AddCriterionCommand}" />
-            </VerticalStackLayout>
+        <!-- Weight Summary Header -->
+        <Frame Grid.Row="0" Style="{StaticResource CardFrame}" Margin="0,0,0,16" Padding="16,12">
+            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="16">
+                <VerticalStackLayout Grid.Column="0">
+                    <Label Text="{Binding Criteria.Count, StringFormat='{0} Criteria'}"
+                           Style="{StaticResource Title}"/>
+                    <Label Text="Tap to edit, swipe to delete"
+                           Style="{StaticResource Caption}"
+                           TextColor="{StaticResource Gray500}"/>
+                </VerticalStackLayout>
+                <VerticalStackLayout Grid.Column="1" HorizontalOptions="End">
+                    <Label Text="{Binding TotalWeight, StringFormat='{0}%'}"
+                           Style="{StaticResource Title}"
+                           TextColor="{Binding TotalWeightColor}"
+                           HorizontalTextAlignment="End"/>
+                    <Label Text="Total Weight"
+                           Style="{StaticResource Caption}"
+                           TextColor="{StaticResource Gray500}"
+                           HorizontalTextAlignment="End"/>
+                </VerticalStackLayout>
+                <Button Grid.Column="2"
+                        Text="Rebalance"
+                        Command="{Binding RebalanceCommand}"
+                        IsVisible="{Binding NeedsRebalancing}"
+                        Style="{StaticResource TextButton}"
+                        VerticalOptions="Center"/>
+            </Grid>
         </Frame>
 
         <!-- Criteria List -->
         <CollectionView Grid.Row="1"
                         ItemsSource="{Binding Criteria}"
-                        SelectionMode="None"
-                        EmptyView="No criteria yet. Add your first criterion above.">
+                        SelectionMode="None">
+            <CollectionView.EmptyView>
+                <VerticalStackLayout VerticalOptions="Center" Spacing="16" Padding="32">
+                    <Label Text="No Criteria Yet"
+                           Style="{StaticResource Title}"
+                           HorizontalTextAlignment="Center"/>
+                    <Label Text="Add your first criterion to start evaluating properties. Criteria help you score what matters most to you."
+                           Style="{StaticResource Body}"
+                           HorizontalTextAlignment="Center"
+                           TextColor="{StaticResource Gray500}"/>
+                    <Button Text="Add Criterion"
+                            Command="{Binding AddNewCommand}"
+                            Style="{StaticResource PrimaryButton}"
+                            HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:EvaluationCriterion">
                     <SwipeView>
@@ -51,25 +70,42 @@
                         </SwipeView.RightItems>
 
                         <Frame Style="{StaticResource CardFrame}" Margin="0,4">
-                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:CriteriaViewModel}}, Path=EditCriterionCommand}"
+                                    CommandParameter="{Binding}"/>
+                            </Frame.GestureRecognizers>
+                            <Grid ColumnDefinitions="*,Auto,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12">
                                 <Label Grid.Row="0" Grid.Column="0"
                                        Text="{Binding Name}"
-                                       Style="{StaticResource Title}" />
+                                       Style="{StaticResource Subtitle}"
+                                       LineBreakMode="TailTruncation"/>
                                 <Label Grid.Row="0" Grid.Column="1"
-                                       Text="{Binding Category}"
-                                       Style="{StaticResource Caption}"
-                                       VerticalOptions="Center" />
-                                <HorizontalStackLayout Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Spacing="8">
-                                    <Label Text="{Binding Weight, StringFormat='Weight: {0}'}"
-                                           Style="{StaticResource Caption}"
-                                           VerticalOptions="Center" />
-                                    <Slider WidthRequest="150"
-                                            Minimum="1" Maximum="10"
-                                            Value="{Binding Weight}" />
+                                       Text="{Binding Weight, StringFormat='{0}%'}"
+                                       Style="{StaticResource Body}"
+                                       TextColor="{StaticResource Primary}"
+                                       FontAttributes="Bold"
+                                       VerticalOptions="Center"/>
+                                <Image Grid.Row="0" Grid.Column="2"
+                                       Source="lock.png"
+                                       HeightRequest="16"
+                                       WidthRequest="16"
+                                       IsVisible="{Binding IsWeightLocked}"
+                                       VerticalOptions="Center"/>
+                                <HorizontalStackLayout Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Spacing="8">
+                                    <Frame BackgroundColor="{StaticResource SurfaceVariant}"
+                                           Padding="6,2"
+                                           CornerRadius="4"
+                                           BorderColor="Transparent">
+                                        <Label Text="{Binding Category}"
+                                               Style="{StaticResource Caption}"
+                                               TextColor="{StaticResource OnSurfaceVariant}"/>
+                                    </Frame>
                                     <Label Text="{Binding IsSystemSuggested, Converter={StaticResource SystemSuggestedConverter}}"
                                            Style="{StaticResource Caption}"
                                            TextColor="{StaticResource Gray500}"
-                                           VerticalOptions="Center" />
+                                           VerticalOptions="Center"
+                                           IsVisible="{Binding IsSystemSuggested}"/>
                                 </HorizontalStackLayout>
                             </Grid>
                         </Frame>
@@ -77,6 +113,14 @@
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
+
+        <!-- FAB for adding new criterion -->
+        <Button Grid.Row="2"
+                Text="+ Add Criterion"
+                Command="{Binding AddNewCommand}"
+                Style="{StaticResource PrimaryButton}"
+                Margin="0,16,0,0"
+                AutomationProperties.Name="Add new criterion"/>
 
         <!-- Loading -->
         <ActivityIndicator Grid.Row="1"

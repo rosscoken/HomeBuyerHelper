@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:HomeBuyerHelper.ViewModels.Onboarding"
+             x:Class="HomeBuyerHelper.Pages.Onboarding.WelcomePage"
+             x:DataType="vm:WelcomeViewModel"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{StaticResource Background}">
+
+    <Grid RowDefinitions="*,Auto,Auto" Padding="32">
+
+        <!-- Logo and Welcome Content -->
+        <VerticalStackLayout Grid.Row="0"
+                             VerticalOptions="Center"
+                             Spacing="24">
+
+            <!-- App Icon/Logo Placeholder -->
+            <Border StrokeThickness="0"
+                    BackgroundColor="{StaticResource Primary}"
+                    HeightRequest="120"
+                    WidthRequest="120"
+                    HorizontalOptions="Center">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="24"/>
+                </Border.StrokeShape>
+                <Label Text="HBH"
+                       FontSize="36"
+                       FontAttributes="Bold"
+                       TextColor="White"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"
+                       AutomationProperties.Name="HomeBuyerHelper Logo"/>
+            </Border>
+
+            <!-- Tagline -->
+            <Label Text="HomeBuyerHelper"
+                   Style="{StaticResource Headline}"
+                   HorizontalTextAlignment="Center"
+                   AutomationProperties.IsInAccessibleTree="True"/>
+
+            <Label Text="Make confident decisions about your biggest purchase"
+                   Style="{StaticResource Subtitle}"
+                   HorizontalTextAlignment="Center"
+                   Opacity="0.8"
+                   AutomationProperties.IsInAccessibleTree="True"/>
+
+            <!-- Feature Highlights -->
+            <VerticalStackLayout Spacing="16" Margin="0,24,0,0">
+                <HorizontalStackLayout Spacing="12" HorizontalOptions="Center">
+                    <Label Text="&#x2713;" TextColor="{StaticResource Primary}" FontSize="18"/>
+                    <Label Text="Compare properties side-by-side" Style="{StaticResource Body}"/>
+                </HorizontalStackLayout>
+                <HorizontalStackLayout Spacing="12" HorizontalOptions="Center">
+                    <Label Text="&#x2713;" TextColor="{StaticResource Primary}" FontSize="18"/>
+                    <Label Text="Score what matters most to you" Style="{StaticResource Body}"/>
+                </HorizontalStackLayout>
+                <HorizontalStackLayout Spacing="12" HorizontalOptions="Center">
+                    <Label Text="&#x2713;" TextColor="{StaticResource Primary}" FontSize="18"/>
+                    <Label Text="Your data stays on your device" Style="{StaticResource Body}"/>
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+
+        <!-- Get Started Button -->
+        <Button Grid.Row="1"
+                Text="Get Started"
+                Command="{Binding GetStartedCommand}"
+                Style="{StaticResource PrimaryButton}"
+                Margin="0,0,0,16"
+                HeightRequest="56"
+                AutomationProperties.Name="Get Started"
+                AutomationProperties.HelpText="Begin the setup process"/>
+
+        <!-- Import Backup Link -->
+        <HorizontalStackLayout Grid.Row="2"
+                               HorizontalOptions="Center"
+                               Spacing="8">
+            <Label Text="Have a backup?"
+                   Style="{StaticResource Caption}"
+                   VerticalOptions="Center"/>
+            <Button Text="Import"
+                    Command="{Binding ImportBackupCommand}"
+                    Style="{StaticResource TextButton}"
+                    AutomationProperties.Name="Import backup"
+                    AutomationProperties.HelpText="Restore from a previous backup file"/>
+        </HorizontalStackLayout>
+
+    </Grid>
+
+</ContentPage>

@@ -90,7 +90,9 @@ public class UserPreferencesRepository : IUserPreferencesRepository
         EnableNotifications = true,
         DefaultDownPaymentPercent = 20m,
         DefaultInterestRate = 7.0m,
-        DefaultMortgageTerm = 30
+        DefaultMortgageTerm = 30,
+        DefaultPropertyTaxRate = 0.96m,
+        DefaultMonthlyInsurance = 125m
     };
 
     private static UserPreferences MapToModel(UserPreferencesEntity entity) => new()
@@ -113,6 +115,8 @@ public class UserPreferencesRepository : IUserPreferencesRepository
         DefaultDownPaymentPercent = entity.DefaultDownPaymentPercent,
         DefaultInterestRate = entity.DefaultInterestRate,
         DefaultMortgageTerm = entity.DefaultMortgageTerm,
+        DefaultPropertyTaxRate = entity.DefaultPropertyTaxRate,
+        DefaultMonthlyInsurance = entity.DefaultMonthlyInsurance,
         CreatedAt = entity.CreatedAt,
         UpdatedAt = entity.UpdatedAt
     };
@@ -137,6 +141,8 @@ public class UserPreferencesRepository : IUserPreferencesRepository
         DefaultDownPaymentPercent = model.DefaultDownPaymentPercent,
         DefaultInterestRate = model.DefaultInterestRate,
         DefaultMortgageTerm = model.DefaultMortgageTerm,
+        DefaultPropertyTaxRate = model.DefaultPropertyTaxRate,
+        DefaultMonthlyInsurance = model.DefaultMonthlyInsurance,
         CreatedAt = model.CreatedAt,
         UpdatedAt = model.UpdatedAt
     };

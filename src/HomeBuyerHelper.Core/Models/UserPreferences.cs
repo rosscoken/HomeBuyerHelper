@@ -93,6 +93,16 @@ public class UserPreferences
     public int DefaultMortgageTerm { get; set; } = 30;
 
     /// <summary>
+    /// Default annual property tax rate (percentage).
+    /// </summary>
+    public decimal DefaultPropertyTaxRate { get; set; } = 0.96m;
+
+    /// <summary>
+    /// Default monthly insurance estimate.
+    /// </summary>
+    public decimal DefaultMonthlyInsurance { get; set; } = 125m;
+
+    /// <summary>
     /// When preferences were created.
     /// </summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

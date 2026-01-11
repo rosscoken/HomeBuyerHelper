@@ -13,6 +13,8 @@ public partial class PropertyDetailViewModel : BaseViewModel
 {
     private readonly IPropertyService _propertyService;
     private readonly ICalculationService _calculationService;
+    private readonly IUserPreferencesRepository _preferencesRepository;
+    private UserPreferences? _preferences;
 
     [ObservableProperty]
     private int? _propertyId;
@@ -74,14 +76,40 @@ public partial class PropertyDetailViewModel : BaseViewModel
     [ObservableProperty]
     private MonthlyCostBreakdown? _costBreakdown;
 
+    [ObservableProperty]
+    private decimal _overallScore;
+
+    [ObservableProperty]
+    private int _rank;
+
+    [ObservableProperty]
+    private int _scoredCriteriaCount;
+
+    [ObservableProperty]
+    private int _totalCriteriaCount;
+
+    [ObservableProperty]
+    private bool _isFullyScored;
+
+    [ObservableProperty]
+    private IReadOnlyList<PropertyScore> _scores = [];
+
     public IReadOnlyList<PropertyType> PropertyTypes { get; } = Enum.GetValues<PropertyType>();
 
     public PropertyDetailViewModel(
         IPropertyService propertyService,
-        ICalculationService calculationService)
+        ICalculationService calculationService,
+        IUserPreferencesRepository preferencesRepository)
     {
         _propertyService = propertyService;
         _calculationService = calculationService;
+        _preferencesRepository = preferencesRepository;
+    }
+
+    public override async Task OnAppearingAsync()
+    {
+        _preferences = await _preferencesRepository.GetAsync();
+        UpdateCostBreakdown();
     }
 
     partial void OnPropertyIdChanged(int? value)
@@ -135,6 +163,12 @@ public partial class PropertyDetailViewModel : BaseViewModel
                 AnnualInsurance = property.AnnualInsurance;
                 ListingUrl = property.ListingUrl;
                 Notes = property.Notes;
+                OverallScore = property.OverallScore;
+                Rank = property.Rank;
+                ScoredCriteriaCount = property.ScoredCriteriaCount;
+                TotalCriteriaCount = property.TotalCriteriaCount;
+                IsFullyScored = property.IsFullyScored;
+                Scores = property.Scores;
 
                 UpdateCostBreakdown();
             }
@@ -194,22 +228,63 @@ public partial class PropertyDetailViewModel : BaseViewModel
     }
 
     [RelayCommand]
+    private async Task DeleteAsync()
+    {
+        if (IsNewProperty || !PropertyId.HasValue) return;
+
+        var confirmed = await Shell.Current.DisplayAlert(
+            "Delete Property",
+            $"Are you sure you want to delete '{Nickname}'? This action cannot be undone.",
+            "Delete",
+            "Cancel");
+
+        if (confirmed)
+        {
+            await _propertyService.DeletePropertyAsync(PropertyId.Value);
+            await Shell.Current.GoToAsync("..");
+        }
+    }
+
+    [RelayCommand]
+    private async Task ScorePropertyAsync()
+    {
+        if (!PropertyId.HasValue) return;
+        await Shell.Current.GoToAsync($"ScoringWalkthrough?propertyId={PropertyId.Value}");
+    }
+
+    [RelayCommand]
     private void CalculateCosts()
     {
         UpdateCostBreakdown();
+    }
+
+    [RelayCommand]
+    private async Task OpenLoanSettingsAsync()
+    {
+        await Shell.Current.GoToAsync("LoanSettings");
     }
 
     private void UpdateCostBreakdown()
     {
         if (AskingPrice > 0)
         {
+            var downPayment = _preferences?.DefaultDownPaymentPercent ?? 20m;
+            var interestRate = _preferences?.DefaultInterestRate ?? 7.0m;
+            var term = _preferences?.DefaultMortgageTerm ?? 30;
+            var taxRate = _preferences?.DefaultPropertyTaxRate ?? 0.96m;
+            var defaultInsurance = _preferences?.DefaultMonthlyInsurance ?? 125m;
+
+            var effectivePrice = OfferPrice ?? AskingPrice;
+            var annualTax = AnnualPropertyTax ?? (effectivePrice * taxRate / 100);
+            var annualInsurance = AnnualInsurance ?? (defaultInsurance * 12);
+
             CostBreakdown = _calculationService.CalculateMonthlyHousingCost(
-                OfferPrice ?? AskingPrice,
-                20m, // Default down payment
-                7.0m, // Default interest rate
-                30, // Default term
-                AnnualPropertyTax ?? 0,
-                AnnualInsurance ?? 0,
+                effectivePrice,
+                downPayment,
+                interestRate,
+                term,
+                annualTax,
+                annualInsurance,
                 MonthlyHOA);
         }
     }

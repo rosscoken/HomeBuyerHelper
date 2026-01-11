@@ -11,15 +11,18 @@ public class ExportService : IExportService
     private readonly IPropertyRepository _propertyRepository;
     private readonly IScoreRepository _scoreRepository;
     private readonly ICriteriaRepository _criteriaRepository;
+    private readonly IUserPreferencesRepository _preferencesRepository;
 
     public ExportService(
         IPropertyRepository propertyRepository,
         IScoreRepository scoreRepository,
-        ICriteriaRepository criteriaRepository)
+        ICriteriaRepository criteriaRepository,
+        IUserPreferencesRepository preferencesRepository)
     {
         _propertyRepository = propertyRepository;
         _scoreRepository = scoreRepository;
         _criteriaRepository = criteriaRepository;
+        _preferencesRepository = preferencesRepository;
     }
 
     public async Task<string> ExportComparisonToPdfAsync(IEnumerable<int> propertyIds)
@@ -64,19 +67,33 @@ public class ExportService : IExportService
 
         var properties = await _propertyRepository.GetAllAsync();
         var criteria = await _criteriaRepository.GetAllAsync();
+        var preferences = await _preferencesRepository.GetAsync();
 
-        var exportData = new
+        // Get all scores for all properties
+        var allScores = new List<PropertyScore>();
+        foreach (var property in properties)
+        {
+            var scores = await _scoreRepository.GetByPropertyIdAsync(property.Id);
+            foreach (var score in scores)
+            {
+                allScores.Add(score);
+            }
+        }
+
+        var exportData = new ExportDataModel
         {
             ExportDate = DateTime.UtcNow,
             Version = "1.0",
-            Properties = properties,
-            Criteria = criteria
-            // Scores will be included with properties in full implementation
+            Properties = properties.ToList(),
+            Criteria = criteria.ToList(),
+            Scores = allScores,
+            Settings = preferences
         };
 
         var json = System.Text.Json.JsonSerializer.Serialize(exportData, new System.Text.Json.JsonSerializerOptions
         {
-            WriteIndented = true
+            WriteIndented = true,
+            PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
         });
 
         await File.WriteAllTextAsync(filePath, json);
@@ -91,8 +108,159 @@ public class ExportService : IExportService
             throw new FileNotFoundException("Import file not found", filePath);
         }
 
-        // TODO: Implement import logic
-        await Task.CompletedTask;
+        var json = await File.ReadAllTextAsync(filePath);
+        await ImportFromJsonAsync(json);
+    }
+
+    public async Task<bool> ImportFromJsonAsync(string jsonContent)
+    {
+        return await ImportFromJsonAsync(jsonContent, replaceExisting: false);
+    }
+
+    public async Task<bool> ImportFromJsonAsync(string jsonContent, bool replaceExisting)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(jsonContent))
+                return false;
+
+            // Validate JSON structure
+            var options = new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                PropertyNameCaseInsensitive = true
+            };
+            var importData = System.Text.Json.JsonSerializer.Deserialize<ExportDataModel>(jsonContent, options);
+            if (importData == null)
+                return false;
+
+            // Track ID mappings for updating score references
+            var criteriaIdMap = new Dictionary<int, int>();
+            var propertyIdMap = new Dictionary<int, int>();
+
+            // Clear existing data if replacing
+            if (replaceExisting)
+            {
+                var existingProperties = await _propertyRepository.GetAllAsync();
+                foreach (var prop in existingProperties)
+                {
+                    await _scoreRepository.DeleteByPropertyIdAsync(prop.Id);
+                    await _propertyRepository.DeleteAsync(prop.Id);
+                }
+
+                var existingCriteria = await _criteriaRepository.GetAllAsync();
+                foreach (var crit in existingCriteria)
+                {
+                    await _criteriaRepository.DeleteAsync(crit.Id);
+                }
+            }
+
+            // Import criteria first (properties/scores reference them)
+            if (importData.Criteria != null)
+            {
+                foreach (var criterion in importData.Criteria)
+                {
+                    var oldId = criterion.Id;
+                    criterion.Id = 0; // Reset ID for new insert
+                    var newId = await _criteriaRepository.CreateAsync(criterion);
+                    criteriaIdMap[oldId] = newId;
+                }
+            }
+
+            // Import properties
+            if (importData.Properties != null)
+            {
+                foreach (var property in importData.Properties)
+                {
+                    var oldId = property.Id;
+                    property.Id = 0; // Reset ID for new insert
+                    var newId = await _propertyRepository.CreateAsync(property);
+                    propertyIdMap[oldId] = newId;
+                }
+            }
+
+            // Import scores with updated IDs
+            if (importData.Scores != null)
+            {
+                var validScores = importData.Scores
+                    .Where(score => propertyIdMap.ContainsKey(score.PropertyId) &&
+                                   criteriaIdMap.ContainsKey(score.CriterionId));
+
+                foreach (var score in validScores)
+                {
+                    score.Id = 0;
+                    score.PropertyId = propertyIdMap[score.PropertyId];
+                    score.CriterionId = criteriaIdMap[score.CriterionId];
+                    await _scoreRepository.UpsertAsync(score);
+                }
+            }
+
+            // Import settings if replacing
+            if (replaceExisting && importData.Settings != null)
+            {
+                await _preferencesRepository.SaveAsync(importData.Settings);
+            }
+
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public async Task<ImportValidationResult> ValidateImportFileAsync(string jsonContent)
+    {
+        var result = new ImportValidationResult();
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(jsonContent))
+            {
+                result.IsValid = false;
+                result.ErrorMessage = "File is empty.";
+                return result;
+            }
+
+            var options = new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                PropertyNameCaseInsensitive = true
+            };
+            var importData = System.Text.Json.JsonSerializer.Deserialize<ExportDataModel>(jsonContent, options);
+
+            if (importData == null)
+            {
+                result.IsValid = false;
+                result.ErrorMessage = "Invalid file format.";
+                return result;
+            }
+
+            result.IsValid = true;
+            result.Version = importData.Version ?? "Unknown";
+            result.ExportDate = importData.ExportDate;
+            result.PropertyCount = importData.Properties?.Count ?? 0;
+            result.CriteriaCount = importData.Criteria?.Count ?? 0;
+            result.ScoreCount = importData.Scores?.Count ?? 0;
+            result.HasSettings = importData.Settings != null;
+        }
+        catch (Exception ex)
+        {
+            result.IsValid = false;
+            result.ErrorMessage = $"Error reading file: {ex.Message}";
+        }
+
+        return result;
+    }
+
+    private class ExportDataModel
+    {
+        public DateTime ExportDate { get; set; }
+        public string? Version { get; set; }
+        public List<Property>? Properties { get; set; }
+        public List<EvaluationCriterion>? Criteria { get; set; }
+        public List<PropertyScore>? Scores { get; set; }
+        public UserPreferences? Settings { get; set; }
     }
 
     public async Task<string> GenerateShareTextAsync(int propertyId)

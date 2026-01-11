@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:HomeBuyerHelper.ViewModels"
+             x:Class="HomeBuyerHelper.Pages.CriterionEditPage"
+             x:DataType="vm:CriterionEditViewModel"
+             Title="{Binding Title}"
+             Shell.NavBarIsVisible="True">
+
+    <Shell.TitleView>
+        <Grid ColumnDefinitions="*,Auto">
+            <Label Grid.Column="0"
+                   Text="{Binding Title}"
+                   Style="{StaticResource Title}"
+                   VerticalOptions="Center"/>
+            <Button Grid.Column="1"
+                    Text="Delete"
+                    Command="{Binding DeleteCommand}"
+                    IsVisible="{Binding IsNewCriterion, Converter={StaticResource InvertedBoolConverter}}"
+                    TextColor="{StaticResource Error}"
+                    BackgroundColor="Transparent"
+                    AutomationProperties.Name="Delete criterion"/>
+        </Grid>
+    </Shell.TitleView>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="16">
+
+            <!-- Basic Info Section -->
+            <Frame Style="{StaticResource CardFrame}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Basic Information" Style="{StaticResource Subtitle}"/>
+
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Name *" Style="{StaticResource Caption}"/>
+                        <Entry Text="{Binding Name}"
+                               Placeholder="e.g., Kitchen Quality"
+                               MaxLength="200"
+                               AutomationProperties.Name="Criterion name"/>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Description" Style="{StaticResource Caption}"/>
+                        <Editor Text="{Binding Description}"
+                                Placeholder="What does this criterion measure?"
+                                HeightRequest="80"
+                                AutomationProperties.Name="Criterion description"/>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Category" Style="{StaticResource Caption}"/>
+                        <Picker ItemsSource="{Binding Categories}"
+                                SelectedItem="{Binding Category}"
+                                AutomationProperties.Name="Category"/>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Weight Section -->
+            <Frame Style="{StaticResource CardFrame}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Weight" Style="{StaticResource Subtitle}"/>
+
+                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" RowSpacing="8">
+                        <Label Grid.Row="0" Grid.Column="0"
+                               Text="{Binding Weight, StringFormat='Importance: {0}%'}"
+                               Style="{StaticResource Body}"/>
+                        <Label Grid.Row="0" Grid.Column="1"
+                               Text="1-50%"
+                               Style="{StaticResource Caption}"
+                               TextColor="{StaticResource Gray500}"/>
+                        <Slider Grid.Row="1" Grid.ColumnSpan="2"
+                                Minimum="1" Maximum="50"
+                                Value="{Binding Weight}"
+                                AutomationProperties.Name="Weight slider"/>
+                    </Grid>
+
+                    <HorizontalStackLayout Spacing="8">
+                        <CheckBox IsChecked="{Binding IsWeightLocked}"
+                                  AutomationProperties.Name="Lock weight"/>
+                        <Label Text="Lock this weight during rebalancing"
+                               Style="{StaticResource Caption}"
+                               VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Score Anchors Section -->
+            <Frame Style="{StaticResource CardFrame}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Score Anchors" Style="{StaticResource Subtitle}"/>
+                    <Label Text="Help yourself score consistently by describing what each range means for this criterion."
+                           Style="{StaticResource Caption}"
+                           TextColor="{StaticResource Gray500}"/>
+
+                    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                          ColumnDefinitions="Auto,*"
+                          RowSpacing="8" ColumnSpacing="12">
+
+                        <Label Grid.Row="0" Grid.Column="0"
+                               Text="9-10:"
+                               Style="{StaticResource Body}"
+                               TextColor="{StaticResource Success}"
+                               VerticalOptions="Center"/>
+                        <Entry Grid.Row="0" Grid.Column="1"
+                               Text="{Binding ScoreAnchorHigh}"
+                               Placeholder="What does a 9-10 look like?"
+                               AutomationProperties.Name="Score 9-10 description"/>
+
+                        <Label Grid.Row="1" Grid.Column="0"
+                               Text="7-8:"
+                               Style="{StaticResource Body}"
+                               TextColor="{StaticResource Accent}"
+                               VerticalOptions="Center"/>
+                        <Entry Grid.Row="1" Grid.Column="1"
+                               Text="{Binding ScoreAnchorMidHigh}"
+                               Placeholder="What does a 7-8 look like?"
+                               AutomationProperties.Name="Score 7-8 description"/>
+
+                        <Label Grid.Row="2" Grid.Column="0"
+                               Text="5-6:"
+                               Style="{StaticResource Body}"
+                               TextColor="{StaticResource Warning}"
+                               VerticalOptions="Center"/>
+                        <Entry Grid.Row="2" Grid.Column="1"
+                               Text="{Binding ScoreAnchorMid}"
+                               Placeholder="What does a 5-6 look like?"
+                               AutomationProperties.Name="Score 5-6 description"/>
+
+                        <Label Grid.Row="3" Grid.Column="0"
+                               Text="3-4:"
+                               Style="{StaticResource Body}"
+                               TextColor="{StaticResource Warning}"
+                               VerticalOptions="Center"/>
+                        <Entry Grid.Row="3" Grid.Column="1"
+                               Text="{Binding ScoreAnchorMidLow}"
+                               Placeholder="What does a 3-4 look like?"
+                               AutomationProperties.Name="Score 3-4 description"/>
+
+                        <Label Grid.Row="4" Grid.Column="0"
+                               Text="1-2:"
+                               Style="{StaticResource Body}"
+                               TextColor="{StaticResource Error}"
+                               VerticalOptions="Center"/>
+                        <Entry Grid.Row="4" Grid.Column="1"
+                               Text="{Binding ScoreAnchorLow}"
+                               Placeholder="What does a 1-2 look like?"
+                               AutomationProperties.Name="Score 1-2 description"/>
+                    </Grid>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Action Buttons -->
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="12" Margin="0,16,0,0">
+                <Button Grid.Column="0"
+                        Text="Cancel"
+                        Command="{Binding CancelCommand}"
+                        Style="{StaticResource SecondaryButton}"
+                        AutomationProperties.Name="Cancel"/>
+                <Button Grid.Column="1"
+                        Text="Save"
+                        Command="{Binding SaveCommand}"
+                        Style="{StaticResource PrimaryButton}"
+                        AutomationProperties.Name="Save criterion"/>
+            </Grid>
+
+            <!-- Error Display -->
+            <Label Text="{Binding ErrorMessage}"
+                   IsVisible="{Binding HasError}"
+                   TextColor="{StaticResource Error}"
+                   HorizontalTextAlignment="Center"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+    <!-- Loading Overlay -->
+    <ContentPage.Behaviors>
+        <CommunityToolkit.Maui.Behaviors.StatusBarBehavior StatusBarColor="{StaticResource Primary}"/>
+    </ContentPage.Behaviors>
+
+</ContentPage>

@@ -152,3 +152,139 @@ public class OnboardingButtonTextConverter : IValueConverter
         throw new NotImplementedException();
     }
 }
+
+/// <summary>
+/// Returns appropriate command based on onboarding step.
+/// Note: This is a simplified converter - in production, use DataTriggers or VisualStateManager.
+/// </summary>
+public class OnboardingButtonCommandConverter : IValueConverter
+{
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        // This converter is a placeholder - the actual implementation
+        // would need access to the ViewModel commands
+        return null;
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+/// <summary>
+/// Converts boolean to background color for selection states.
+/// </summary>
+public class BoolToColorConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is bool isSelected && isSelected)
+        {
+            return Color.FromArgb("#F0EDF6"); // SurfaceVariant / selected
+        }
+        return Color.FromArgb("#FFFFFF"); // Surface / unselected
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+/// <summary>
+/// Converts boolean to stroke color for selection states.
+/// </summary>
+public class BoolToStrokeConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is bool isSelected && isSelected)
+        {
+            return Color.FromArgb("#512BD4"); // Primary / selected
+        }
+        return Color.FromArgb("#E0E0E0"); // Gray300 / unselected
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+/// <summary>
+/// Converts boolean (IsFullyScored) to score button text.
+/// </summary>
+public class BoolToScoreButtonTextConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        return value is true ? "Edit Scores" : "Score";
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+/// <summary>
+/// Converts a score (0-10) to a color based on thresholds.
+/// Green: 8-10, Yellow: 5-7, Red: 1-4
+/// </summary>
+public class ScoreToColorConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        decimal score = value switch
+        {
+            decimal d => d,
+            int i => i,
+            double dbl => (decimal)dbl,
+            _ => 0
+        };
+
+        if (score >= 8)
+            return Color.FromArgb("#4CAF50"); // Success green
+        if (score >= 5)
+            return Color.FromArgb("#FF9800"); // Warning yellow/orange
+        return Color.FromArgb("#F44336"); // Error red
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+/// <summary>
+/// Converts boolean (IsLastCriterion) to button text (Next/Finish).
+/// </summary>
+public class BoolToNextFinishConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        return value is true ? "Finish" : "Next";
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+/// <summary>
+/// Converts boolean (IsSelectingProperties) to button text (Done/Select).
+/// </summary>
+public class BoolToEditSelectConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        return value is true ? "Done" : "Select";
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}

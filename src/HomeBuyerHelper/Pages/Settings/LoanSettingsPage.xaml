@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:HomeBuyerHelper.ViewModels"
+             x:Class="HomeBuyerHelper.Pages.Settings.LoanSettingsPage"
+             x:DataType="vm:LoanSettingsViewModel"
+             Title="{Binding Title}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="16">
+
+            <Label Text="Configure your default loan parameters for monthly cost calculations."
+                   Style="{StaticResource Body}"
+                   TextColor="{StaticResource Gray500}"/>
+
+            <!-- Down Payment -->
+            <Frame Style="{StaticResource CardFrame}" Padding="16">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Down Payment Percentage" Style="{StaticResource Subtitle}"/>
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <Slider Minimum="5" Maximum="50" Value="{Binding DownPaymentPercent}"
+                                AutomationProperties.Name="Down Payment Slider"/>
+                        <Label Grid.Column="1"
+                               Text="{Binding DownPaymentPercent, StringFormat='{0:F0}%'}"
+                               WidthRequest="50"
+                               Style="{StaticResource Body}"
+                               FontAttributes="Bold"/>
+                    </Grid>
+                    <Label Text="Minimum 5%. Amounts below 20% require PMI."
+                           Style="{StaticResource Caption}"
+                           TextColor="{StaticResource Gray400}"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Interest Rate -->
+            <Frame Style="{StaticResource CardFrame}" Padding="16">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Interest Rate" Style="{StaticResource Subtitle}"/>
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <Slider Minimum="2" Maximum="12" Value="{Binding InterestRate}"
+                                AutomationProperties.Name="Interest Rate Slider"/>
+                        <Label Grid.Column="1"
+                               Text="{Binding InterestRate, StringFormat='{0:F2}%'}"
+                               WidthRequest="60"
+                               Style="{StaticResource Body}"
+                               FontAttributes="Bold"/>
+                    </Grid>
+                    <Label Text="Annual percentage rate (APR)."
+                           Style="{StaticResource Caption}"
+                           TextColor="{StaticResource Gray400}"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Loan Term -->
+            <Frame Style="{StaticResource CardFrame}" Padding="16">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Loan Term" Style="{StaticResource Subtitle}"/>
+                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                        <Button Text="15 years"
+                                Command="{Binding Path=.}"
+                                CommandParameter="15"
+                                Style="{Binding MortgageTermYears, Converter={StaticResource EqualToConverter}, ConverterParameter=15}"
+                                Clicked="OnTermSelected"
+                                AutomationProperties.Name="15 year term"/>
+                        <Button Grid.Column="1"
+                                Text="20 years"
+                                Command="{Binding Path=.}"
+                                CommandParameter="20"
+                                Clicked="OnTermSelected"
+                                AutomationProperties.Name="20 year term"/>
+                        <Button Grid.Column="2"
+                                Text="30 years"
+                                Clicked="OnTermSelected"
+                                AutomationProperties.Name="30 year term"/>
+                    </Grid>
+                    <Label Text="{Binding MortgageTermYears, StringFormat='Selected: {0} years'}"
+                           Style="{StaticResource Body}"
+                           FontAttributes="Bold"
+                           HorizontalTextAlignment="Center"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Property Tax Rate -->
+            <Frame Style="{StaticResource CardFrame}" Padding="16">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Property Tax Rate (Annual)" Style="{StaticResource Subtitle}"/>
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <Slider Minimum="0" Maximum="3" Value="{Binding PropertyTaxRate}"
+                                AutomationProperties.Name="Property Tax Rate Slider"/>
+                        <Label Grid.Column="1"
+                               Text="{Binding PropertyTaxRate, StringFormat='{0:F2}%'}"
+                               WidthRequest="60"
+                               Style="{StaticResource Body}"
+                               FontAttributes="Bold"/>
+                    </Grid>
+                    <Label Text="Used when property doesn't have specific tax info. US avg: ~0.96%"
+                           Style="{StaticResource Caption}"
+                           TextColor="{StaticResource Gray400}"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Monthly Insurance -->
+            <Frame Style="{StaticResource CardFrame}" Padding="16">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Default Monthly Insurance" Style="{StaticResource Subtitle}"/>
+                    <Entry Text="{Binding MonthlyInsurance}"
+                           Keyboard="Numeric"
+                           Placeholder="125"
+                           AutomationProperties.Name="Monthly Insurance Amount"/>
+                    <Label Text="Estimated monthly homeowner's insurance. US avg: ~$125/month"
+                           Style="{StaticResource Caption}"
+                           TextColor="{StaticResource Gray400}"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Error Message -->
+            <Label Text="{Binding ErrorMessage}"
+                   TextColor="{StaticResource Error}"
+                   IsVisible="{Binding HasError}"
+                   HorizontalTextAlignment="Center"/>
+
+            <!-- Action Buttons -->
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                <Button Grid.Column="0"
+                        Text="Reset Defaults"
+                        Command="{Binding ResetToDefaultsCommand}"
+                        Style="{StaticResource OutlineButton}"/>
+                <Button Grid.Column="1"
+                        Text="Save"
+                        Command="{Binding SaveSettingsCommand}"
+                        Style="{StaticResource PrimaryButton}"/>
+            </Grid>
+
+            <Button Text="Cancel"
+                    Command="{Binding CancelCommand}"
+                    Style="{StaticResource TextButton}"
+                    HorizontalOptions="Center"/>
+
+            <!-- Loading Indicator -->
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               IsVisible="{Binding IsBusy}"
+                               HorizontalOptions="Center"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>
