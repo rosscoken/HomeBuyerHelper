@@ -18,10 +18,10 @@ public partial class OnboardingCompleteViewModel : BaseViewModel
     private int _criteriaCount;
 
     [ObservableProperty]
-    private string _topPriority = string.Empty;
+    private readonly string _topPriority = string.Empty;
 
     [ObservableProperty]
-    private string _situation = string.Empty;
+    private readonly string _situation = string.Empty;
 
     public OnboardingCompleteViewModel(
         IOnboardingStateService stateService,

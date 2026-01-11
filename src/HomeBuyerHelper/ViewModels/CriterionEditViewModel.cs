@@ -17,16 +17,16 @@ public partial class CriterionEditViewModel : BaseViewModel
     private int _criterionId;
 
     [ObservableProperty]
-    private string _name = string.Empty;
+    private readonly string _name = string.Empty;
 
     [ObservableProperty]
     private string? _description;
 
     [ObservableProperty]
-    private int _weight = 5;
+    private readonly int _weight = 5;
 
     [ObservableProperty]
-    private CriterionCategory _category = CriterionCategory.Other;
+    private readonly CriterionCategory _category = CriterionCategory.Other;
 
     [ObservableProperty]
     private string? _scoreAnchorLow;

@@ -15,13 +15,13 @@ public partial class CriteriaReviewViewModel : BaseViewModel
     private readonly IOnboardingStateService _stateService;
 
     [ObservableProperty]
-    private ObservableCollection<CriterionItem> _criteria = new();
+    private readonly ObservableCollection<CriterionItem> _criteria = new();
 
     [ObservableProperty]
     private decimal _totalWeight;
 
     [ObservableProperty]
-    private Color _totalWeightColor = Colors.Green;
+    private readonly Color _totalWeightColor = Colors.Green;
 
     public bool CanContinue => Criteria.Any(c => c.IsIncluded) &&
                                 Math.Abs(TotalWeight - 100) < 1;
@@ -45,13 +45,14 @@ public partial class CriteriaReviewViewModel : BaseViewModel
             state.LocationPriorities,
             state.HomePriorities);
 
-        foreach (var suggestion in suggestions)
+        var criteriaItems = suggestions.Select(suggestion => new CriterionItem(
+            suggestion.Name,
+            suggestion.SuggestedWeight,
+            suggestion.SuggestionReason ?? "Based on your preferences",
+            this));
+
+        foreach (var item in criteriaItems)
         {
-            var item = new CriterionItem(
-                suggestion.Name,
-                suggestion.SuggestedWeight,
-                suggestion.SuggestionReason ?? "Based on your preferences",
-                this);
             Criteria.Add(item);
         }
 
@@ -108,7 +109,7 @@ public partial class CriterionItem : ObservableObject
     public string Reason { get; }
 
     [ObservableProperty]
-    private bool _isIncluded = true;
+    private readonly bool _isIncluded = true;
 
     [ObservableProperty]
     private decimal _weight;

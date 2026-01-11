@@ -182,16 +182,16 @@ public class ExportService : IExportService
             // Import scores with updated IDs
             if (importData.Scores != null)
             {
-                foreach (var score in importData.Scores)
+                var validScores = importData.Scores
+                    .Where(score => propertyIdMap.ContainsKey(score.PropertyId) &&
+                                   criteriaIdMap.ContainsKey(score.CriterionId));
+
+                foreach (var score in validScores)
                 {
-                    if (propertyIdMap.TryGetValue(score.PropertyId, out var newPropertyId) &&
-                        criteriaIdMap.TryGetValue(score.CriterionId, out var newCriterionId))
-                    {
-                        score.Id = 0;
-                        score.PropertyId = newPropertyId;
-                        score.CriterionId = newCriterionId;
-                        await _scoreRepository.CreateAsync(score);
-                    }
+                    score.Id = 0;
+                    score.PropertyId = propertyIdMap[score.PropertyId];
+                    score.CriterionId = criteriaIdMap[score.CriterionId];
+                    await _scoreRepository.UpsertAsync(score);
                 }
             }
 

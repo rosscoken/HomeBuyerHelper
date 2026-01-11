@@ -26,16 +26,16 @@ public partial class ComparisonViewModel : BaseViewModel
     private bool _isSelectingProperties;
 
     [ObservableProperty]
-    private ObservableCollection<SelectableProperty> _selectableProperties = new();
+    private readonly ObservableCollection<SelectableProperty> _selectableProperties = new();
 
     [ObservableProperty]
-    private IReadOnlyList<Property> _selectedProperties = [];
+    private readonly IReadOnlyList<Property> _selectedProperties = [];
 
     [ObservableProperty]
-    private IReadOnlyList<EvaluationCriterion> _criteria = [];
+    private readonly IReadOnlyList<EvaluationCriterion> _criteria = [];
 
     [ObservableProperty]
-    private IReadOnlyList<ComparisonRow> _comparisonRows = [];
+    private readonly IReadOnlyList<ComparisonRow> _comparisonRows = [];
 
     [ObservableProperty]
     private bool _showMatrix;
@@ -210,7 +210,7 @@ public partial class ComparisonViewModel : BaseViewModel
 public partial class SelectableProperty : ObservableObject
 {
     [ObservableProperty]
-    private Property _property = null!;
+    private readonly Property _property = null!;
 
     [ObservableProperty]
     private bool _isSelected;

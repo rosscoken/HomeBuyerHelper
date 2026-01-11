@@ -24,12 +24,10 @@ public class WeightBalancingService : IWeightBalancingService
         var totalWeight = criteria.Sum(c => c.Weight);
 
         // Check for high weight warnings
-        foreach (var criterion in criteria)
+        var highWeightCriteria = criteria.Where(c => c.Weight > WarningThreshold);
+        foreach (var criterion in highWeightCriteria)
         {
-            if (criterion.Weight > WarningThreshold)
-            {
-                result.Warnings.Add($"'{criterion.Name}' has a weight of {criterion.Weight}%, which exceeds the recommended maximum of {WarningThreshold}%.");
-            }
+            result.Warnings.Add($"'{criterion.Name}' has a weight of {criterion.Weight}%, which exceeds the recommended maximum of {WarningThreshold}%.");
         }
 
         // If already balanced, return early
@@ -52,11 +50,8 @@ public class WeightBalancingService : IWeightBalancingService
         // No unlocked criteria to adjust
         if (unlockedCriteria.Count == 0)
         {
-            if (totalWeight != 100)
-            {
-                result.Success = false;
-                result.Warnings.Add("All criteria are locked. Unlock some to rebalance weights.");
-            }
+            result.Success = false;
+            result.Warnings.Add("All criteria are locked. Unlock some to rebalance weights.");
             return result;
         }
 

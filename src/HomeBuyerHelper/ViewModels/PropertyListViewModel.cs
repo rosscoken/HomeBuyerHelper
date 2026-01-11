@@ -23,7 +23,7 @@ public partial class PropertyListViewModel : BaseViewModel
     private Property? _selectedProperty;
 
     [ObservableProperty]
-    private string _selectedSort = "Score";
+    private readonly string _selectedSort = "Score";
 
     [ObservableProperty]
     private bool _isRefreshing;

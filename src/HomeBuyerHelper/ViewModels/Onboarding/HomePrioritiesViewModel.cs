@@ -15,10 +15,10 @@ public partial class HomePrioritiesViewModel : BaseViewModel
     private readonly IOnboardingStateService _stateService;
 
     [ObservableProperty]
-    private ObservableCollection<PriorityOptionItem> _options = new();
+    private readonly ObservableCollection<PriorityOptionItem> _options = new();
 
     [ObservableProperty]
-    private string _selectionHint = "Select up to 3 priorities";
+    private readonly string _selectionHint = "Select up to 3 priorities";
 
     public bool HasSelection => Options.Any(o => o.IsSelected);
 
@@ -33,13 +33,14 @@ public partial class HomePrioritiesViewModel : BaseViewModel
     {
         var state = _stateService.GetState();
 
-        foreach (var priority in CommonCriteria.HomePriorities)
+        var optionItems = CommonCriteria.HomePriorities.Select(priority => new PriorityOptionItem(
+            priority.Key,
+            priority.DisplayName,
+            state.HomePriorities.Contains(priority.Key),
+            this));
+
+        foreach (var item in optionItems)
         {
-            var item = new PriorityOptionItem(
-                priority.Key,
-                priority.DisplayName,
-                state.HomePriorities.Contains(priority.Key),
-                this);
             Options.Add(item);
         }
 
