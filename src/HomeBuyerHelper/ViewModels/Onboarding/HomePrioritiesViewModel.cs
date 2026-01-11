@@ -15,10 +15,10 @@ public partial class HomePrioritiesViewModel : BaseViewModel
     private readonly IOnboardingStateService _stateService;
 
     [ObservableProperty]
-    private readonly ObservableCollection<PriorityOptionItem> _options = new();
+    private ObservableCollection<PriorityOptionItem> _options = new();
 
     [ObservableProperty]
-    private readonly string _selectionHint = "Select up to 3 priorities";
+    private string _selectionHint = "Select up to 3 priorities";
 
     public bool HasSelection => Options.Any(o => o.IsSelected);
 

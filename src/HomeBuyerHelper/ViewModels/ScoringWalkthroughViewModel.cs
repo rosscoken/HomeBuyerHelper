@@ -23,7 +23,7 @@ public partial class ScoringWalkthroughViewModel : BaseViewModel
     private int _propertyId;
 
     [ObservableProperty]
-    private readonly string _propertyName = string.Empty;
+    private string _propertyName = string.Empty;
 
     [ObservableProperty]
     private int _currentIndex;

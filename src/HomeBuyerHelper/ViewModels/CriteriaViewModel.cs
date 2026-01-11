@@ -24,7 +24,7 @@ public partial class CriteriaViewModel : BaseViewModel
     private int _totalWeight;
 
     [ObservableProperty]
-    private readonly Color _totalWeightColor = Colors.Black;
+    private Color _totalWeightColor = Colors.Black;
 
     [ObservableProperty]
     private bool _needsRebalancing;

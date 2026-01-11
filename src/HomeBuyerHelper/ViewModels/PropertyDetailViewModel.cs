@@ -92,7 +92,7 @@ public partial class PropertyDetailViewModel : BaseViewModel
     private bool _isFullyScored;
 
     [ObservableProperty]
-    private readonly IReadOnlyList<PropertyScore> _scores = [];
+    private IReadOnlyList<PropertyScore> _scores = [];
 
     public IReadOnlyList<PropertyType> PropertyTypes { get; } = Enum.GetValues<PropertyType>();
 

@@ -12,19 +12,19 @@ public partial class LoanSettingsViewModel : BaseViewModel
     private readonly IUserPreferencesRepository _preferencesRepository;
 
     [ObservableProperty]
-    private readonly decimal _downPaymentPercent = 20m;
+    private decimal _downPaymentPercent = 20m;
 
     [ObservableProperty]
-    private readonly decimal _interestRate = 7.0m;
+    private decimal _interestRate = 7.0m;
 
     [ObservableProperty]
-    private readonly int _mortgageTermYears = 30;
+    private int _mortgageTermYears = 30;
 
     [ObservableProperty]
-    private readonly decimal _propertyTaxRate = 0.96m;
+    private decimal _propertyTaxRate = 0.96m;
 
     [ObservableProperty]
-    private readonly decimal _monthlyInsurance = 125m;
+    private decimal _monthlyInsurance = 125m;
 
     public IReadOnlyList<int> TermOptions { get; } = new[] { 15, 20, 30 };
 
