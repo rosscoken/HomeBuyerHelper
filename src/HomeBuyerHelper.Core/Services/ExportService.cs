@@ -117,11 +117,20 @@ public class ExportService : IExportService
         return await ImportFromJsonAsync(jsonContent, replaceExisting: false);
     }
 
+    /// <summary>
+    /// Maximum allowed import file size (10MB) to prevent memory exhaustion.
+    /// </summary>
+    private const int MaxImportSizeBytes = 10_000_000;
+
     public async Task<bool> ImportFromJsonAsync(string jsonContent, bool replaceExisting)
     {
         try
         {
             if (string.IsNullOrWhiteSpace(jsonContent))
+                return false;
+
+            // Security: Reject oversized files to prevent memory exhaustion
+            if (jsonContent.Length > MaxImportSizeBytes)
                 return false;
 
             // Validate JSON structure
@@ -184,7 +193,8 @@ public class ExportService : IExportService
             {
                 var validScores = importData.Scores
                     .Where(score => propertyIdMap.ContainsKey(score.PropertyId) &&
-                                   criteriaIdMap.ContainsKey(score.CriterionId));
+                                   criteriaIdMap.ContainsKey(score.CriterionId) &&
+                                   score.Score >= 1 && score.Score <= 10); // Security: Validate score range
 
                 foreach (var score in validScores)
                 {
@@ -203,8 +213,14 @@ public class ExportService : IExportService
 
             return true;
         }
-        catch
+        catch (System.Text.Json.JsonException)
         {
+            // Invalid JSON format - expected failure case
+            return false;
+        }
+        catch (InvalidOperationException)
+        {
+            // Data mapping failure - expected failure case
             return false;
         }
     }
@@ -219,6 +235,14 @@ public class ExportService : IExportService
             {
                 result.IsValid = false;
                 result.ErrorMessage = "File is empty.";
+                return result;
+            }
+
+            // Security: Reject oversized files
+            if (jsonContent.Length > MaxImportSizeBytes)
+            {
+                result.IsValid = false;
+                result.ErrorMessage = "File is too large. Maximum allowed size is 10MB.";
                 return result;
             }
 
@@ -244,10 +268,15 @@ public class ExportService : IExportService
             result.ScoreCount = importData.Scores?.Count ?? 0;
             result.HasSettings = importData.Settings != null;
         }
-        catch (Exception ex)
+        catch (System.Text.Json.JsonException)
         {
             result.IsValid = false;
-            result.ErrorMessage = $"Error reading file: {ex.Message}";
+            result.ErrorMessage = "Invalid file format. Please ensure the file is a valid HomeBuyerHelper backup.";
+        }
+        catch (Exception)
+        {
+            result.IsValid = false;
+            result.ErrorMessage = "Error reading file. Please ensure the file is valid and not corrupted.";
         }
 
         return result;

@@ -97,6 +97,19 @@ public class DatabaseService : IDatabaseService
             throw new FileNotFoundException("Backup file not found", backupPath);
         }
 
+        // Security: Validate path is within expected backup directory to prevent path traversal
+        var allowedBackupDir = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "HomeBuyerHelper",
+            "Backups");
+        var normalizedBackupPath = Path.GetFullPath(backupPath);
+        var normalizedAllowedDir = Path.GetFullPath(allowedBackupDir);
+
+        if (!normalizedBackupPath.StartsWith(normalizedAllowedDir, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException("Backup file must be located in the application's backup directory.", nameof(backupPath));
+        }
+
         // Close connection before replacing
         if (_database != null)
         {

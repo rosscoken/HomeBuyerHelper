@@ -25,8 +25,9 @@ public class OnboardingStateService : IOnboardingStateService
             {
                 _cachedState = JsonSerializer.Deserialize<OnboardingState>(json);
             }
-            catch
+            catch (JsonException)
             {
+                // Invalid stored state - reset to default
                 _cachedState = null;
             }
         }

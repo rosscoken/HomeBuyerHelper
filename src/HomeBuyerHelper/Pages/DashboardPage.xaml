@@ -21,7 +21,9 @@
                            HorizontalOptions="Center" />
                     <Button Text="Start Setup"
                             Command="{Binding NavigateToOnboardingCommand}"
-                            HorizontalOptions="Center" />
+                            HorizontalOptions="Center"
+                            AutomationProperties.Name="Start setup wizard"
+                            AutomationProperties.HelpText="Begin home buyer setup to configure your preferences" />
                 </VerticalStackLayout>
             </Frame>
 
@@ -72,14 +74,20 @@
                 <Button Grid.Row="0" Grid.Column="0"
                         Text="Add Property"
                         Command="{Binding NavigateToAddPropertyCommand}"
-                        Style="{StaticResource SecondaryButton}" />
+                        Style="{StaticResource SecondaryButton}"
+                        AutomationProperties.Name="Add new property"
+                        AutomationProperties.HelpText="Opens form to add a new property for evaluation" />
                 <Button Grid.Row="0" Grid.Column="1"
                         Text="View All"
                         Command="{Binding NavigateToPropertyListCommand}"
-                        Style="{StaticResource OutlineButton}" />
+                        Style="{StaticResource OutlineButton}"
+                        AutomationProperties.Name="View all properties"
+                        AutomationProperties.HelpText="Shows complete list of your saved properties" />
                 <Button Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
                         Text="Compare Properties"
-                        Command="{Binding NavigateToComparisonCommand}" />
+                        Command="{Binding NavigateToComparisonCommand}"
+                        AutomationProperties.Name="Compare properties"
+                        AutomationProperties.HelpText="Opens side-by-side comparison of your properties" />
             </Grid>
 
             <!-- Settings Section -->
@@ -89,11 +97,15 @@
                 <Button Grid.Column="0"
                         Text="Loan Settings"
                         Command="{Binding NavigateToLoanSettingsCommand}"
-                        Style="{StaticResource OutlineButton}" />
+                        Style="{StaticResource OutlineButton}"
+                        AutomationProperties.Name="Loan settings"
+                        AutomationProperties.HelpText="Configure default loan and mortgage calculation settings" />
                 <Button Grid.Column="1"
                         Text="Export/Import"
                         Command="{Binding NavigateToDataManagementCommand}"
-                        Style="{StaticResource OutlineButton}" />
+                        Style="{StaticResource OutlineButton}"
+                        AutomationProperties.Name="Export and import data"
+                        AutomationProperties.HelpText="Backup or restore your property data" />
             </Grid>
 
             <!-- Loading Indicator -->
