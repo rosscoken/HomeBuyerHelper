@@ -33,13 +33,14 @@ public partial class LocationPrioritiesViewModel : BaseViewModel
     {
         var state = _stateService.GetState();
 
-        foreach (var priority in CommonCriteria.LocationPriorities)
+        var optionItems = CommonCriteria.LocationPriorities.Select(priority => new PriorityOptionItem(
+            priority.Key,
+            priority.DisplayName,
+            state.LocationPriorities.Contains(priority.Key),
+            this));
+
+        foreach (var item in optionItems)
         {
-            var item = new PriorityOptionItem(
-                priority.Key,
-                priority.DisplayName,
-                state.LocationPriorities.Contains(priority.Key),
-                this);
             Options.Add(item);
         }
 

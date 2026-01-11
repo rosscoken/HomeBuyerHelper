@@ -33,13 +33,14 @@ public partial class HomePrioritiesViewModel : BaseViewModel
     {
         var state = _stateService.GetState();
 
-        foreach (var priority in CommonCriteria.HomePriorities)
+        var optionItems = CommonCriteria.HomePriorities.Select(priority => new PriorityOptionItem(
+            priority.Key,
+            priority.DisplayName,
+            state.HomePriorities.Contains(priority.Key),
+            this));
+
+        foreach (var item in optionItems)
         {
-            var item = new PriorityOptionItem(
-                priority.Key,
-                priority.DisplayName,
-                state.HomePriorities.Contains(priority.Key),
-                this);
             Options.Add(item);
         }
 

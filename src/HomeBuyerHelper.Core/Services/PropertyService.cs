@@ -49,7 +49,7 @@ public class PropertyService : IPropertyService
                     var criterion = allCriteria.FirstOrDefault(c => c.Id == score.CriterionId);
                     if (criterion != null)
                     {
-                        weightedSum += score.Score * criterion.Weight;
+                        weightedSum += (decimal)score.Score * criterion.Weight;
                         scoredWeight += criterion.Weight;
                     }
                 }
@@ -97,7 +97,7 @@ public class PropertyService : IPropertyService
                 var criterion = allCriteria.FirstOrDefault(c => c.Id == score.CriterionId);
                 if (criterion != null)
                 {
-                    weightedSum += score.Score * criterion.Weight;
+                    weightedSum += (decimal)score.Score * criterion.Weight;
                     scoredWeight += criterion.Weight;
                 }
             }

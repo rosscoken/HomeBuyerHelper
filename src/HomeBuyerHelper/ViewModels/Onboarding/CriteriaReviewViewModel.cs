@@ -45,13 +45,14 @@ public partial class CriteriaReviewViewModel : BaseViewModel
             state.LocationPriorities,
             state.HomePriorities);
 
-        foreach (var suggestion in suggestions)
+        var criteriaItems = suggestions.Select(suggestion => new CriterionItem(
+            suggestion.Name,
+            suggestion.SuggestedWeight,
+            suggestion.SuggestionReason ?? "Based on your preferences",
+            this));
+
+        foreach (var item in criteriaItems)
         {
-            var item = new CriterionItem(
-                suggestion.Name,
-                suggestion.SuggestedWeight,
-                suggestion.SuggestionReason ?? "Based on your preferences",
-                this);
             Criteria.Add(item);
         }
 
