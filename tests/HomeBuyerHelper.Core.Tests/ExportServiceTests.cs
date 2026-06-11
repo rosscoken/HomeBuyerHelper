@@ -16,17 +16,30 @@ public class ExportServiceTests : IDisposable
     private readonly IScoreRepository _scoreRepository = Substitute.For<IScoreRepository>();
     private readonly ICriteriaRepository _criteriaRepository = Substitute.For<ICriteriaRepository>();
     private readonly IUserPreferencesRepository _preferencesRepository = Substitute.For<IUserPreferencesRepository>();
+    private readonly IIncomeRepository _incomeRepository = Substitute.For<IIncomeRepository>();
+    private readonly IExpenseRepository _expenseRepository = Substitute.For<IExpenseRepository>();
+    private readonly IOneTimeEventRepository _oneTimeEventRepository = Substitute.For<IOneTimeEventRepository>();
     private readonly ExportService _service;
     private readonly List<string> _createdFiles = new();
 
     public ExportServiceTests()
     {
+        var incomeScenarioService = new IncomeScenarioService();
+        _incomeRepository.GetAllAsync().Returns(new List<IncomeSource>());
+        _expenseRepository.GetAllAsync().Returns(new List<Expense>());
+        _oneTimeEventRepository.GetAllAsync().Returns(new List<OneTimeEvent>());
+
         _service = new ExportService(
             _propertyRepository,
             _scoreRepository,
             _criteriaRepository,
             _preferencesRepository,
-            new CalculationService());
+            new CalculationService(),
+            _incomeRepository,
+            _expenseRepository,
+            _oneTimeEventRepository,
+            new CashFlowProjectionService(incomeScenarioService),
+            new AffordabilityService(incomeScenarioService));
     }
 
     public void Dispose()

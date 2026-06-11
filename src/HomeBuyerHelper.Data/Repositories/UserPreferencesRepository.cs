@@ -92,7 +92,9 @@ public class UserPreferencesRepository : IUserPreferencesRepository
         DefaultInterestRate = 7.0m,
         DefaultMortgageTerm = 30,
         DefaultPropertyTaxRate = 0.96m,
-        DefaultMonthlyInsurance = 125m
+        DefaultMonthlyInsurance = 125m,
+        EmergencyFundBalance = 0m,
+        EmergencyFundTargetMonths = 6
     };
 
     private static UserPreferences MapToModel(UserPreferencesEntity entity) => new()
@@ -117,6 +119,8 @@ public class UserPreferencesRepository : IUserPreferencesRepository
         DefaultMortgageTerm = entity.DefaultMortgageTerm,
         DefaultPropertyTaxRate = entity.DefaultPropertyTaxRate,
         DefaultMonthlyInsurance = entity.DefaultMonthlyInsurance,
+        EmergencyFundBalance = entity.EmergencyFundBalance,
+        EmergencyFundTargetMonths = entity.EmergencyFundTargetMonths,
         CreatedAt = entity.CreatedAt,
         UpdatedAt = entity.UpdatedAt
     };
@@ -143,6 +147,8 @@ public class UserPreferencesRepository : IUserPreferencesRepository
         DefaultMortgageTerm = model.DefaultMortgageTerm,
         DefaultPropertyTaxRate = model.DefaultPropertyTaxRate,
         DefaultMonthlyInsurance = model.DefaultMonthlyInsurance,
+        EmergencyFundBalance = model.EmergencyFundBalance,
+        EmergencyFundTargetMonths = model.EmergencyFundTargetMonths,
         CreatedAt = model.CreatedAt,
         UpdatedAt = model.UpdatedAt
     };

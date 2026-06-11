@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:HomeBuyerHelper.ViewModels"
+             xmlns:interfaces="clr-namespace:HomeBuyerHelper.Core.Interfaces;assembly=HomeBuyerHelper.Core"
              x:Class="HomeBuyerHelper.Pages.PropertyDetailPage"
              x:DataType="vm:PropertyDetailViewModel"
              Title="{Binding Title}">
@@ -162,6 +163,42 @@
                             </Label.FormattedText>
                         </Label>
                     </Grid>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Affordability by Scenario (P2-AFF-002) -->
+            <Frame Style="{StaticResource CardFrame}"
+                   IsVisible="{Binding HasAffordabilityData}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Affordability" Style="{StaticResource Title}"/>
+                    <Label Text="⚠ This home stretches your budget in at least one scenario. Review your income and expenses on the Budget tab."
+                           Style="{StaticResource Caption}"
+                           TextColor="{StaticResource Error}"
+                           IsVisible="{Binding ShowAffordabilityWarning}"/>
+                    <CollectionView ItemsSource="{Binding Affordability}" SelectionMode="None">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="interfaces:AffordabilityAssessment">
+                                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12" Padding="0,4">
+                                    <Label Grid.Column="0"
+                                           Text="{Binding Scenario}"
+                                           Style="{StaticResource Body}"/>
+                                    <Label Grid.Column="1"
+                                           Text="{Binding HousingPercentage, StringFormat='{0:F1}%'}"
+                                           Style="{StaticResource Body}"
+                                           FontAttributes="Bold"/>
+                                    <Frame Grid.Column="2"
+                                           BackgroundColor="{Binding Zone, Converter={StaticResource AffordabilityZoneToColorConverter}}"
+                                           Padding="8,2"
+                                           CornerRadius="4"
+                                           BorderColor="Transparent">
+                                        <Label Text="{Binding ZoneLabel}"
+                                               Style="{StaticResource Caption}"
+                                               TextColor="White"/>
+                                    </Frame>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
                 </VerticalStackLayout>
             </Frame>
 

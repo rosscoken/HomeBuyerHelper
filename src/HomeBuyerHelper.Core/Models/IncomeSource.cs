@@ -38,6 +38,32 @@ public class IncomeSource
     public bool IsReliable { get; set; } = true;
 
     /// <summary>
+    /// For non-monthly income (bonus, annual/quarterly vests): the calendar
+    /// month (1-12) the payment lands in. For quarterly frequency this is the
+    /// first month of the cycle. Null uses sensible defaults (Dec for annual,
+    /// Mar for quarterly).
+    /// </summary>
+    public int? PaymentMonth { get; set; }
+
+    /// <summary>
+    /// Likelihood (0-100) of receiving this income at the expected amount.
+    /// Used by the Realistic planning scenario for variable income.
+    /// Defaults to 70 for variable income semantics per the design spec.
+    /// </summary>
+    public decimal Probability { get; set; } = 100m;
+
+    /// <summary>
+    /// When this income begins (e.g., partner contribution starting later).
+    /// Null means already active.
+    /// </summary>
+    public DateTime? StartDate { get; set; }
+
+    /// <summary>
+    /// When this income ends. Null means indefinite.
+    /// </summary>
+    public DateTime? EndDate { get; set; }
+
+    /// <summary>
     /// Optional notes about this income source.
     /// </summary>
     public string? Notes { get; set; }
@@ -99,5 +125,8 @@ public enum IncomeType
     Disability,
     Alimony,
     ChildSupport,
-    Other
+    Other,
+    Bonus,
+    RSU,
+    PartnerContribution
 }

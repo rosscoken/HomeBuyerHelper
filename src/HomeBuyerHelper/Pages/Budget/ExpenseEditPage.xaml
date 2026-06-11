@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:HomeBuyerHelper.ViewModels.Budget"
+             x:Class="HomeBuyerHelper.Pages.Budget.ExpenseEditPage"
+             x:DataType="vm:ExpenseEditViewModel"
+             Title="{Binding Title}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="12">
+
+            <Label Text="Name" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+            <Entry Text="{Binding Name}"
+                   Placeholder="e.g., Car Payment, Groceries"
+                   AutomationProperties.Name="Expense name"/>
+
+            <Label Text="Amount" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+            <Entry Text="{Binding Amount}"
+                   Keyboard="Numeric"
+                   Placeholder="0"
+                   AutomationProperties.Name="Expense amount"/>
+
+            <Label Text="Frequency" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+            <Picker ItemsSource="{Binding Frequencies}"
+                    SelectedItem="{Binding Frequency}"
+                    AutomationProperties.Name="Expense frequency"/>
+
+            <Label Text="Category" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+            <Picker ItemsSource="{Binding Categories}"
+                    SelectedItem="{Binding Category}"
+                    AutomationProperties.Name="Expense category"/>
+
+            <Grid ColumnDefinitions="*,Auto">
+                <VerticalStackLayout>
+                    <Label Text="Variable expense" Style="{StaticResource Body}"/>
+                    <Label Text="Fluctuates month to month (groceries, gas, dining)"
+                           Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                </VerticalStackLayout>
+                <Switch Grid.Column="1" IsToggled="{Binding IsVariable}"
+                        AutomationProperties.Name="Expense is variable"/>
+            </Grid>
+
+            <Grid ColumnDefinitions="*,Auto">
+                <Label Text="Essential / non-discretionary"
+                       Style="{StaticResource Body}" VerticalOptions="Center"/>
+                <Switch Grid.Column="1" IsToggled="{Binding IsEssential}"
+                        AutomationProperties.Name="Expense is essential"/>
+            </Grid>
+
+            <Grid ColumnDefinitions="*,Auto">
+                <Label Text="Continues after home purchase"
+                       Style="{StaticResource Body}" VerticalOptions="Center"/>
+                <Switch Grid.Column="1" IsToggled="{Binding ContinuesAfterPurchase}"
+                        AutomationProperties.Name="Expense continues after purchase"/>
+            </Grid>
+
+            <Label Text="Notes" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+            <Editor Text="{Binding Notes}" HeightRequest="80" Placeholder="Optional notes"
+                    AutomationProperties.Name="Expense notes"/>
+
+            <Label Text="{Binding ErrorMessage}"
+                   IsVisible="{Binding HasError}"
+                   TextColor="{StaticResource Error}"
+                   Style="{StaticResource Body}"/>
+
+            <Button Text="Save"
+                    Command="{Binding SaveCommand}"
+                    Style="{StaticResource PrimaryButton}"
+                    AutomationProperties.Name="Save expense"/>
+            <Button Text="Cancel"
+                    Command="{Binding CancelCommand}"
+                    Style="{StaticResource TextButton}"
+                    AutomationProperties.Name="Cancel"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

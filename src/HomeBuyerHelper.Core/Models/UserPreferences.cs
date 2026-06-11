@@ -103,6 +103,16 @@ public class UserPreferences
     public decimal DefaultMonthlyInsurance { get; set; } = 125m;
 
     /// <summary>
+    /// Current emergency fund balance for budget projections.
+    /// </summary>
+    public decimal EmergencyFundBalance { get; set; }
+
+    /// <summary>
+    /// Emergency fund target expressed in months of expenses. Default 6.
+    /// </summary>
+    public int EmergencyFundTargetMonths { get; set; } = 6;
+
+    /// <summary>
     /// When preferences were created.
     /// </summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

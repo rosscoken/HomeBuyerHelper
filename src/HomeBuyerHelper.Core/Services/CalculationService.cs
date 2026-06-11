@@ -157,15 +157,6 @@ public class CalculationService : ICalculationService
         };
     }
 
-    public Task<IReadOnlyList<BudgetMonth>> GenerateBudgetProjectionsAsync(
-        int propertyId,
-        int monthsToProject = 12)
-    {
-        // This would typically fetch income/expense data and generate projections
-        // For now, return empty list - will be implemented in Phase 2
-        return Task.FromResult<IReadOnlyList<BudgetMonth>>(new List<BudgetMonth>());
-    }
-
     public IReadOnlyList<AmortizationEntry> CalculateAmortizationSchedule(
         decimal principal,
         decimal annualInterestRate,

@@ -72,6 +72,8 @@ public class GreaterThanConverter : IValueConverter
     {
         if (value is int intValue && int.TryParse(parameter?.ToString(), out var intParam))
             return intValue > intParam;
+        if (value is decimal decimalValue && decimal.TryParse(parameter?.ToString(), out var decimalParam))
+            return decimalValue > decimalParam;
         return false;
     }
 
@@ -281,6 +283,92 @@ public class BoolToEditSelectConverter : IValueConverter
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         return value is true ? "Done" : "Select";
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+/// <summary>
+/// Converts a numeric value to green (positive/zero) or red (negative).
+/// Used for surplus/deficit display.
+/// </summary>
+public class PositiveNegativeColorConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        var isNegative = value switch
+        {
+            decimal d => d < 0,
+            int i => i < 0,
+            double db => db < 0,
+            _ => false
+        };
+        return isNegative ? Color.FromArgb("#F44336") : Color.FromArgb("#4CAF50");
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+/// <summary>
+/// Converts a warning flag to red (true) or gray (false) text color.
+/// </summary>
+public class BoolToAlertColorConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        return value is bool warning && warning
+            ? Color.FromArgb("#F44336")
+            : Color.FromArgb("#9E9E9E");
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+/// <summary>
+/// Joins a list of strings with commas for display.
+/// </summary>
+public class ListToStringConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is IEnumerable<string> items)
+            return string.Join(", ", items);
+        return string.Empty;
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+/// <summary>
+/// Maps an affordability zone to its display color.
+/// </summary>
+public class AffordabilityZoneToColorConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is Core.Interfaces.AffordabilityZone zone)
+        {
+            return zone switch
+            {
+                Core.Interfaces.AffordabilityZone.Comfortable => Color.FromArgb("#4CAF50"),
+                Core.Interfaces.AffordabilityZone.Stretching => Color.FromArgb("#FFC107"),
+                Core.Interfaces.AffordabilityZone.Aggressive => Color.FromArgb("#FF9800"),
+                _ => Color.FromArgb("#F44336")
+            };
+        }
+        return Color.FromArgb("#9E9E9E");
     }
 
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)

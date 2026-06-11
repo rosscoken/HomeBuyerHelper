@@ -24,6 +24,14 @@ public class IncomeSourceEntity
 
     public bool IsReliable { get; set; }
 
+    public int? PaymentMonth { get; set; }
+
+    public decimal Probability { get; set; } = 100m;
+
+    public DateTime? StartDate { get; set; }
+
+    public DateTime? EndDate { get; set; }
+
     public string? Notes { get; set; }
 
     public DateTime CreatedAt { get; set; }

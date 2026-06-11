@@ -6,6 +6,29 @@
              x:DataType="vm:DashboardViewModel"
              Title="{Binding Title}">
 
+    <!-- Desktop menu bar with keyboard shortcuts (P2-DSK-004). Ignored on mobile. -->
+    <ContentPage.MenuBarItems>
+        <MenuBarItem Text="File">
+            <MenuFlyoutItem Text="New Property" Command="{Binding NavigateToAddPropertyCommand}">
+                <MenuFlyoutItem.KeyboardAccelerators>
+                    <KeyboardAccelerator Modifiers="Ctrl" Key="N"/>
+                </MenuFlyoutItem.KeyboardAccelerators>
+            </MenuFlyoutItem>
+            <MenuFlyoutItem Text="Import / Export Data" Command="{Binding NavigateToDataManagementCommand}">
+                <MenuFlyoutItem.KeyboardAccelerators>
+                    <KeyboardAccelerator Modifiers="Ctrl" Key="E"/>
+                </MenuFlyoutItem.KeyboardAccelerators>
+            </MenuFlyoutItem>
+        </MenuBarItem>
+        <MenuBarItem Text="Settings">
+            <MenuFlyoutItem Text="Loan Settings" Command="{Binding NavigateToLoanSettingsCommand}">
+                <MenuFlyoutItem.KeyboardAccelerators>
+                    <KeyboardAccelerator Modifiers="Ctrl" Key="OemComma"/>
+                </MenuFlyoutItem.KeyboardAccelerators>
+            </MenuFlyoutItem>
+        </MenuBarItem>
+    </ContentPage.MenuBarItems>
+
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="16">
 

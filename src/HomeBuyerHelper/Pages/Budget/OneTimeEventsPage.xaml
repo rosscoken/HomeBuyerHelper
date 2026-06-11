@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:HomeBuyerHelper.ViewModels.Budget"
+             xmlns:models="clr-namespace:HomeBuyerHelper.Core.Models;assembly=HomeBuyerHelper.Core"
+             x:Class="HomeBuyerHelper.Pages.Budget.OneTimeEventsPage"
+             x:DataType="vm:OneTimeEventsViewModel"
+             Title="{Binding Title}">
+
+    <Grid RowDefinitions="Auto,*,Auto" Padding="16">
+
+        <Frame Grid.Row="0" Style="{StaticResource CardFrame}" Margin="0,0,0,16" Padding="16,12">
+            <VerticalStackLayout>
+                <Label Text="{Binding TotalUpcoming, StringFormat='{0:C0}'}"
+                       Style="{StaticResource Title}"/>
+                <Label Text="Total upcoming one-time expenses"
+                       Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+            </VerticalStackLayout>
+        </Frame>
+
+        <CollectionView Grid.Row="1"
+                        ItemsSource="{Binding Events}"
+                        SelectionMode="None">
+            <CollectionView.EmptyView>
+                <VerticalStackLayout VerticalOptions="Center" Spacing="16" Padding="32">
+                    <Label Text="No Events Yet"
+                           Style="{StaticResource Title}"
+                           HorizontalTextAlignment="Center"/>
+                    <Label Text="Add expected one-time expenses like moving costs, trips, or big purchases. They appear in your cash flow for their month."
+                           Style="{StaticResource Body}"
+                           HorizontalTextAlignment="Center"
+                           TextColor="{StaticResource Gray500}"/>
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:OneTimeEvent">
+                    <SwipeView>
+                        <SwipeView.RightItems>
+                            <SwipeItems>
+                                <SwipeItem Text="Delete"
+                                           BackgroundColor="{StaticResource Error}"
+                                           Command="{Binding Source={RelativeSource AncestorType={x:Type vm:OneTimeEventsViewModel}}, Path=DeleteEventCommand}"
+                                           CommandParameter="{Binding}" />
+                            </SwipeItems>
+                        </SwipeView.RightItems>
+
+                        <Frame Style="{StaticResource CardFrame}" Margin="0,4">
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:OneTimeEventsViewModel}}, Path=EditEventCommand}"
+                                    CommandParameter="{Binding}"/>
+                            </Frame.GestureRecognizers>
+                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                                <Label Grid.Row="0" Grid.Column="0"
+                                       Text="{Binding Name}"
+                                       Style="{StaticResource Subtitle}"/>
+                                <Label Grid.Row="0" Grid.Column="1"
+                                       Text="{Binding Amount, StringFormat='{0:C0}'}"
+                                       Style="{StaticResource Body}" FontAttributes="Bold"/>
+                                <HorizontalStackLayout Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Spacing="8">
+                                    <Label Text="{Binding Date, StringFormat='{0:MMMM yyyy}'}"
+                                           Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                                    <Label Text="{Binding Category}"
+                                           Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                                </HorizontalStackLayout>
+                            </Grid>
+                        </Frame>
+                    </SwipeView>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <Button Grid.Row="2"
+                Text="+ Add Event"
+                Command="{Binding AddNewCommand}"
+                Style="{StaticResource PrimaryButton}"
+                Margin="0,16,0,0"
+                AutomationProperties.Name="Add new one-time event"/>
+
+        <ActivityIndicator Grid.Row="1"
+                           IsRunning="{Binding IsBusy}"
+                           IsVisible="{Binding IsBusy}"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center" />
+
+    </Grid>
+
+</ContentPage>

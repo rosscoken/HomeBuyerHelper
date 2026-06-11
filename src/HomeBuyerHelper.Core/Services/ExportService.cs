@@ -26,12 +26,21 @@ public class ExportService : IExportService
 
     private static readonly string[] ComparisonSummaryHeaders = { "Rank", "Property", "Price", "Weighted Score", "Score %" };
     private static readonly string[] ScoreDetailHeaders = { "Criterion", "Score", "Weighted", "Notes" };
+    private static readonly string[] IncomeSummaryHeaders = { "Source", "Type", "Monthly Avg", "Reliability" };
+    private static readonly string[] AffordabilityHeaders = { "Scenario", "Monthly Income", "Housing %", "Zone" };
+    private static readonly string[] ExpenseHeaders = { "Expense", "Category", "Kind", "Monthly" };
+    private static readonly string[] CashFlowHeaders = { "Month", "Income", "Expenses", "Surplus", "Cumulative", "Emergency Fund" };
 
     private readonly IPropertyRepository _propertyRepository;
     private readonly IScoreRepository _scoreRepository;
     private readonly ICriteriaRepository _criteriaRepository;
     private readonly IUserPreferencesRepository _preferencesRepository;
     private readonly ICalculationService _calculationService;
+    private readonly IIncomeRepository _incomeRepository;
+    private readonly IExpenseRepository _expenseRepository;
+    private readonly IOneTimeEventRepository _oneTimeEventRepository;
+    private readonly ICashFlowProjectionService _cashFlowProjectionService;
+    private readonly IAffordabilityService _affordabilityService;
 
     static ExportService()
     {
@@ -43,13 +52,23 @@ public class ExportService : IExportService
         IScoreRepository scoreRepository,
         ICriteriaRepository criteriaRepository,
         IUserPreferencesRepository preferencesRepository,
-        ICalculationService calculationService)
+        ICalculationService calculationService,
+        IIncomeRepository incomeRepository,
+        IExpenseRepository expenseRepository,
+        IOneTimeEventRepository oneTimeEventRepository,
+        ICashFlowProjectionService cashFlowProjectionService,
+        IAffordabilityService affordabilityService)
     {
         _propertyRepository = propertyRepository;
         _scoreRepository = scoreRepository;
         _criteriaRepository = criteriaRepository;
         _preferencesRepository = preferencesRepository;
         _calculationService = calculationService;
+        _incomeRepository = incomeRepository;
+        _expenseRepository = expenseRepository;
+        _oneTimeEventRepository = oneTimeEventRepository;
+        _cashFlowProjectionService = cashFlowProjectionService;
+        _affordabilityService = affordabilityService;
     }
 
     public async Task<string> ExportComparisonToPdfAsync(IEnumerable<int> propertyIds)
@@ -205,6 +224,34 @@ public class ExportService : IExportService
         var totalPayments = monthlyPayment * preferences.DefaultMortgageTerm * 12;
         var totalInterest = totalPayments - loanAmount;
 
+        // Budget plan data (Phase 2): income structure, expenses, projection.
+        var incomeSources = (await _incomeRepository.GetAllAsync()).ToList();
+        var expenses = (await _expenseRepository.GetAllAsync()).ToList();
+        var oneTimeEvents = (await _oneTimeEventRepository.GetAllAsync()).ToList();
+        var hasBudgetData = incomeSources.Count > 0 || expenses.Count > 0;
+
+        var affordability = incomeSources.Count > 0
+            ? _affordabilityService.AssessAllScenarios(breakdown.Total, incomeSources)
+            : Array.Empty<AffordabilityAssessment>();
+
+        IReadOnlyList<MonthlyProjection> projection = Array.Empty<MonthlyProjection>();
+        if (hasBudgetData)
+        {
+            projection = _cashFlowProjectionService.Project(new CashFlowProjectionInput
+            {
+                IncomeSources = incomeSources,
+                Expenses = expenses,
+                OneTimeEvents = oneTimeEvents,
+                Scenario = IncomeScenario.Realistic,
+                MonthlyHousingCost = breakdown.Total,
+                EmergencyFund = new EmergencyFundConfig
+                {
+                    TargetMonths = preferences.EmergencyFundTargetMonths,
+                    CurrentBalance = preferences.EmergencyFundBalance
+                }
+            });
+        }
+
         Document.Create(container =>
         {
             container.Page(page =>
@@ -260,6 +307,27 @@ public class ExportService : IExportService
                         ("Total Interest Paid", $"{totalInterest:C0}"),
                         ("Cash Needed at Closing", $"{downPayment + closingCosts.Total:C0}")
                     }));
+
+                    if (incomeSources.Count > 0)
+                    {
+                        column.Item().Element(item => ComposeIncomeSummary(item, incomeSources));
+                    }
+
+                    if (affordability.Count > 0)
+                    {
+                        column.Item().Element(item => ComposeAffordabilitySection(item, affordability));
+                    }
+
+                    if (expenses.Count > 0)
+                    {
+                        column.Item().Element(item => ComposeExpenseBreakdown(item, expenses));
+                    }
+
+                    if (projection.Count > 0)
+                    {
+                        column.Item().PageBreak();
+                        column.Item().Element(item => ComposeCashFlowTable(item, projection));
+                    }
                 });
 
                 page.Footer().Element(ComposeReportFooter);
@@ -292,11 +360,14 @@ public class ExportService : IExportService
         var exportData = new ExportDataModel
         {
             ExportDate = DateTime.UtcNow,
-            Version = "1.0",
+            Version = "1.1",
             Properties = properties.ToList(),
             Criteria = criteria.ToList(),
             Scores = allScores,
-            Settings = preferences
+            Settings = preferences,
+            IncomeSources = (await _incomeRepository.GetAllAsync()).ToList(),
+            Expenses = (await _expenseRepository.GetAllAsync()).ToList(),
+            OneTimeEvents = (await _oneTimeEventRepository.GetAllAsync()).ToList()
         };
 
         var json = JsonSerializer.Serialize(exportData, WriteOptions);
@@ -395,6 +466,44 @@ public class ExportService : IExportService
                 }
             }
 
+            // Import budget data (income, expenses, events)
+            if (replaceExisting)
+            {
+                foreach (var existing in await _incomeRepository.GetAllAsync())
+                    await _incomeRepository.DeleteAsync(existing.Id);
+                foreach (var existing in await _expenseRepository.GetAllAsync())
+                    await _expenseRepository.DeleteAsync(existing.Id);
+                foreach (var existing in await _oneTimeEventRepository.GetAllAsync())
+                    await _oneTimeEventRepository.DeleteAsync(existing.Id);
+            }
+
+            if (importData.IncomeSources != null)
+            {
+                foreach (var income in importData.IncomeSources)
+                {
+                    income.Id = 0;
+                    await _incomeRepository.CreateAsync(income);
+                }
+            }
+
+            if (importData.Expenses != null)
+            {
+                foreach (var expense in importData.Expenses)
+                {
+                    expense.Id = 0;
+                    await _expenseRepository.CreateAsync(expense);
+                }
+            }
+
+            if (importData.OneTimeEvents != null)
+            {
+                foreach (var oneTimeEvent in importData.OneTimeEvents)
+                {
+                    oneTimeEvent.Id = 0;
+                    await _oneTimeEventRepository.CreateAsync(oneTimeEvent);
+                }
+            }
+
             // Import settings if replacing
             if (replaceExisting && importData.Settings != null)
             {
@@ -456,6 +565,9 @@ public class ExportService : IExportService
         public List<EvaluationCriterion>? Criteria { get; set; }
         public List<PropertyScore>? Scores { get; set; }
         public UserPreferences? Settings { get; set; }
+        public List<IncomeSource>? IncomeSources { get; set; }
+        public List<Expense>? Expenses { get; set; }
+        public List<OneTimeEvent>? OneTimeEvents { get; set; }
     }
 
     public async Task<string> GenerateShareTextAsync(int propertyId)
@@ -790,6 +902,197 @@ public class ExportService : IExportService
 
         return container
             .Background(background)
+            .BorderBottom(0.5f)
+            .BorderColor(Colors.Grey.Lighten2)
+            .PaddingVertical(4)
+            .PaddingHorizontal(6);
+    }
+
+    private static void ComposeIncomeSummary(IContainer container, List<IncomeSource> incomeSources)
+    {
+        container.Column(column =>
+        {
+            column.Spacing(6);
+            column.Item().Text("Income Structure").FontSize(12).SemiBold();
+
+            column.Item().Table(table =>
+            {
+                table.ColumnsDefinition(columns =>
+                {
+                    columns.RelativeColumn(3);
+                    columns.RelativeColumn(2);
+                    columns.RelativeColumn(2);
+                    columns.RelativeColumn(2);
+                });
+
+                table.Header(header =>
+                {
+                    foreach (var label in IncomeSummaryHeaders)
+                    {
+                        header.Cell().Element(HeaderCellStyle).Text(label);
+                    }
+                });
+
+                foreach (var source in incomeSources)
+                {
+                    table.Cell().Element(cell => BodyCellStyle(cell, highlight: false)).Text(source.Name);
+                    table.Cell().Element(cell => BodyCellStyle(cell, highlight: false)).Text(source.IncomeType.ToString());
+                    table.Cell().Element(cell => BodyCellStyle(cell, highlight: false)).Text($"{source.MonthlyGrossIncome:C0}/mo avg");
+                    table.Cell().Element(cell => BodyCellStyle(cell, highlight: false))
+                        .Text(source.IsReliable ? "Guaranteed" : $"Variable ({source.Probability:F0}%)");
+                }
+            });
+        });
+    }
+
+    private static void ComposeAffordabilitySection(IContainer container, IReadOnlyList<AffordabilityAssessment> assessments)
+    {
+        container.Column(column =>
+        {
+            column.Spacing(6);
+            column.Item().Text("Affordability by Scenario").FontSize(12).SemiBold();
+
+            column.Item().Table(table =>
+            {
+                table.ColumnsDefinition(columns =>
+                {
+                    columns.RelativeColumn(2);
+                    columns.RelativeColumn(2);
+                    columns.RelativeColumn(2);
+                    columns.RelativeColumn(2);
+                });
+
+                table.Header(header =>
+                {
+                    foreach (var label in AffordabilityHeaders)
+                    {
+                        header.Cell().Element(HeaderCellStyle).Text(label);
+                    }
+                });
+
+                foreach (var assessment in assessments)
+                {
+                    table.Cell().Element(cell => BodyCellStyle(cell, highlight: false)).Text(assessment.Scenario.ToString());
+                    table.Cell().Element(cell => BodyCellStyle(cell, highlight: false)).Text($"{assessment.GrossMonthlyIncome:C0}");
+                    table.Cell().Element(cell => BodyCellStyle(cell, highlight: false)).Text($"{assessment.HousingPercentage:F1}%");
+                    table.Cell().Element(cell => AffordabilityCellStyle(cell, assessment.Zone)).Text(assessment.ZoneLabel);
+                }
+            });
+        });
+    }
+
+    private static void ComposeExpenseBreakdown(IContainer container, List<Expense> expenses)
+    {
+        container.Column(column =>
+        {
+            column.Spacing(6);
+            column.Item().Text("Monthly Expenses").FontSize(12).SemiBold();
+
+            column.Item().Table(table =>
+            {
+                table.ColumnsDefinition(columns =>
+                {
+                    columns.RelativeColumn(3);
+                    columns.RelativeColumn(2);
+                    columns.RelativeColumn(2);
+                    columns.RelativeColumn(2);
+                });
+
+                table.Header(header =>
+                {
+                    foreach (var label in ExpenseHeaders)
+                    {
+                        header.Cell().Element(HeaderCellStyle).Text(label);
+                    }
+                });
+
+                foreach (var expense in expenses.OrderBy(e => e.IsVariable).ThenByDescending(e => e.MonthlyAmount))
+                {
+                    table.Cell().Element(cell => BodyCellStyle(cell, highlight: false)).Text(expense.Name);
+                    table.Cell().Element(cell => BodyCellStyle(cell, highlight: false)).Text(expense.Category.ToString());
+                    table.Cell().Element(cell => BodyCellStyle(cell, highlight: false)).Text(expense.IsVariable ? "Variable" : "Fixed");
+                    table.Cell().Element(cell => BodyCellStyle(cell, highlight: false)).Text($"{expense.MonthlyAmount:C0}");
+                }
+
+                table.Cell().Element(cell => BodyCellStyle(cell, highlight: true)).Text("Total").SemiBold();
+                table.Cell().Element(cell => BodyCellStyle(cell, highlight: true)).Text("");
+                table.Cell().Element(cell => BodyCellStyle(cell, highlight: true)).Text("");
+                table.Cell().Element(cell => BodyCellStyle(cell, highlight: true))
+                    .Text($"{expenses.Sum(e => e.MonthlyAmount):C0}").SemiBold();
+            });
+        });
+    }
+
+    private static void ComposeCashFlowTable(IContainer container, IReadOnlyList<MonthlyProjection> projection)
+    {
+        container.Column(column =>
+        {
+            column.Spacing(6);
+            column.Item().Text("24-Month Cash Flow Projection (Realistic Scenario)").FontSize(12).SemiBold();
+
+            column.Item().Table(table =>
+            {
+                table.ColumnsDefinition(columns =>
+                {
+                    columns.RelativeColumn(2);
+                    columns.RelativeColumn(2);
+                    columns.RelativeColumn(2);
+                    columns.RelativeColumn(2);
+                    columns.RelativeColumn(2);
+                    columns.RelativeColumn(2);
+                });
+
+                table.Header(header =>
+                {
+                    foreach (var label in CashFlowHeaders)
+                    {
+                        header.Cell().Element(HeaderCellStyle).Text(label);
+                    }
+                });
+
+                foreach (var month in projection)
+                {
+                    table.Cell().Element(cell => BodyCellStyle(cell, highlight: false)).Text($"{month.Month:MMM yyyy}");
+                    table.Cell().Element(cell => BodyCellStyle(cell, highlight: false)).Text($"{month.TotalIncome:C0}");
+                    table.Cell().Element(cell => BodyCellStyle(cell, highlight: false)).Text($"{month.TotalExpenses:C0}");
+                    table.Cell().Element(cell => SurplusCellStyle(cell, month.Surplus)).Text($"{month.Surplus:C0}");
+                    table.Cell().Element(cell => BodyCellStyle(cell, highlight: false)).Text($"{month.CumulativeSurplus:C0}");
+                    table.Cell().Element(cell => BodyCellStyle(cell, highlight: false))
+                        .Text(month.EmergencyFundWarning ? $"{month.EmergencyFundBalance:C0} (!)" : $"{month.EmergencyFundBalance:C0}");
+                }
+            });
+
+            var crunchMonths = projection.Where(m => m.IsCrunchMonth).ToList();
+            if (crunchMonths.Count > 0)
+            {
+                column.Item().Text($"Crunch months requiring emergency fund draws: {string.Join(", ", crunchMonths.Select(m => m.Month.ToString("MMM yyyy", System.Globalization.CultureInfo.CurrentCulture)))}")
+                    .FontSize(8).FontColor(Colors.Red.Darken1);
+            }
+        });
+    }
+
+    private static IContainer AffordabilityCellStyle(IContainer container, AffordabilityZone zone)
+    {
+        var background = zone switch
+        {
+            AffordabilityZone.Comfortable => Colors.Green.Lighten3,
+            AffordabilityZone.Stretching => Colors.Yellow.Lighten3,
+            AffordabilityZone.Aggressive => Colors.Orange.Lighten3,
+            _ => Colors.Red.Lighten3
+        };
+
+        return container
+            .Background(background)
+            .BorderBottom(0.5f)
+            .BorderColor(Colors.Grey.Lighten2)
+            .PaddingVertical(4)
+            .PaddingHorizontal(6);
+    }
+
+    private static IContainer SurplusCellStyle(IContainer container, decimal surplus)
+    {
+        return container
+            .Background(surplus >= 0 ? Colors.Green.Lighten4 : Colors.Red.Lighten3)
             .BorderBottom(0.5f)
             .BorderColor(Colors.Grey.Lighten2)
             .PaddingVertical(4)

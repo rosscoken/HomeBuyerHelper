@@ -71,6 +71,7 @@ public class DatabaseService : IDatabaseService
         await _database.CreateTableAsync<IncomeSourceEntity>();
         await _database.CreateTableAsync<ExpenseEntity>();
         await _database.CreateTableAsync<FundingSourceEntity>();
+        await _database.CreateTableAsync<OneTimeEventEntity>();
     }
 
     public async Task<string> ExportBackupAsync()
@@ -130,5 +131,6 @@ public class DatabaseService : IDatabaseService
         await db.DeleteAllAsync<IncomeSourceEntity>();
         await db.DeleteAllAsync<ExpenseEntity>();
         await db.DeleteAllAsync<FundingSourceEntity>();
+        await db.DeleteAllAsync<OneTimeEventEntity>();
     }
 }

@@ -14,7 +14,10 @@ public partial class PropertyDetailViewModel : BaseViewModel
     private readonly IPropertyService _propertyService;
     private readonly ICalculationService _calculationService;
     private readonly IUserPreferencesRepository _preferencesRepository;
+    private readonly IIncomeRepository _incomeRepository;
+    private readonly IAffordabilityService _affordabilityService;
     private UserPreferences? _preferences;
+    private IReadOnlyList<IncomeSource> _incomeSources = [];
 
     [ObservableProperty]
     private int? _propertyId;
@@ -77,6 +80,15 @@ public partial class PropertyDetailViewModel : BaseViewModel
     private MonthlyCostBreakdown? _costBreakdown;
 
     [ObservableProperty]
+    private IReadOnlyList<AffordabilityAssessment> _affordability = [];
+
+    [ObservableProperty]
+    private bool _hasAffordabilityData;
+
+    [ObservableProperty]
+    private bool _showAffordabilityWarning;
+
+    [ObservableProperty]
     private decimal _overallScore;
 
     [ObservableProperty]
@@ -99,16 +111,21 @@ public partial class PropertyDetailViewModel : BaseViewModel
     public PropertyDetailViewModel(
         IPropertyService propertyService,
         ICalculationService calculationService,
-        IUserPreferencesRepository preferencesRepository)
+        IUserPreferencesRepository preferencesRepository,
+        IIncomeRepository incomeRepository,
+        IAffordabilityService affordabilityService)
     {
         _propertyService = propertyService;
         _calculationService = calculationService;
         _preferencesRepository = preferencesRepository;
+        _incomeRepository = incomeRepository;
+        _affordabilityService = affordabilityService;
     }
 
     public override async Task OnAppearingAsync()
     {
         _preferences = await _preferencesRepository.GetAsync();
+        _incomeSources = await _incomeRepository.GetAllAsync();
         UpdateCostBreakdown();
     }
 
@@ -286,6 +303,24 @@ public partial class PropertyDetailViewModel : BaseViewModel
                 annualTax,
                 annualInsurance,
                 MonthlyHOA);
+
+            UpdateAffordability();
         }
+    }
+
+    private void UpdateAffordability()
+    {
+        if (CostBreakdown == null || _incomeSources.Count == 0)
+        {
+            Affordability = [];
+            HasAffordabilityData = false;
+            ShowAffordabilityWarning = false;
+            return;
+        }
+
+        Affordability = _affordabilityService.AssessAllScenarios(CostBreakdown.Total, _incomeSources);
+        HasAffordabilityData = true;
+        ShowAffordabilityWarning = Affordability.Any(a =>
+            a.Zone is AffordabilityZone.Aggressive or AffordabilityZone.Risky);
     }
 }

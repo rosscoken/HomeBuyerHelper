@@ -50,6 +50,10 @@ public class UserPreferencesEntity
 
     public decimal DefaultMonthlyInsurance { get; set; }
 
+    public decimal EmergencyFundBalance { get; set; }
+
+    public int EmergencyFundTargetMonths { get; set; } = 6;
+
     public DateTime CreatedAt { get; set; }
 
     public DateTime UpdatedAt { get; set; }

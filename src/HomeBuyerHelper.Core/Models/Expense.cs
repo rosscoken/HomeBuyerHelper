@@ -33,6 +33,12 @@ public class Expense
     public bool IsEssential { get; set; } = true;
 
     /// <summary>
+    /// Whether this is a variable expense (groceries, gas, entertainment)
+    /// as opposed to a fixed recurring expense (rent, car payment).
+    /// </summary>
+    public bool IsVariable { get; set; }
+
+    /// <summary>
     /// Whether this expense will continue after home purchase.
     /// </summary>
     public bool ContinuesAfterPurchase { get; set; } = true;
