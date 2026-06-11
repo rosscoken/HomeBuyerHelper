@@ -1,4 +1,5 @@
 using HomeBuyerHelper.Pages.Budget;
+using HomeBuyerHelper.Pages.Funding;
 using HomeBuyerHelper.Pages.Onboarding;
 using HomeBuyerHelper.Pages.Settings;
 
@@ -32,6 +33,13 @@ public partial class AppShell : Shell
         Routing.RegisterRoute("OneTimeEvents", typeof(OneTimeEventsPage));
         Routing.RegisterRoute("OneTimeEventEdit", typeof(OneTimeEventEditPage));
         Routing.RegisterRoute("CashFlowTimeline", typeof(CashFlowTimelinePage));
+
+        // Register funding and analysis routes
+        Routing.RegisterRoute("FundingSetup", typeof(FundingSetupPage));
+        Routing.RegisterRoute("FundingEdit", typeof(FundingEditPage));
+        Routing.RegisterRoute("TaxSettings", typeof(TaxSettingsPage));
+        Routing.RegisterRoute("CommuteSettings", typeof(CommuteSettingsPage));
+        Routing.RegisterRoute("SyncSettings", typeof(SyncSettingsPage));
 
         // Register onboarding flow routes
         Routing.RegisterRoute("Welcome", typeof(WelcomePage));

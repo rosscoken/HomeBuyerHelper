@@ -26,6 +26,9 @@
                     <KeyboardAccelerator Modifiers="Ctrl" Key="OemComma"/>
                 </MenuFlyoutItem.KeyboardAccelerators>
             </MenuFlyoutItem>
+            <MenuFlyoutItem Text="Commute Settings" Command="{Binding NavigateToCommuteSettingsCommand}"/>
+            <MenuFlyoutItem Text="Tax Settings" Command="{Binding NavigateToTaxSettingsCommand}"/>
+            <MenuFlyoutItem Text="Cloud Backup" Command="{Binding NavigateToSyncSettingsCommand}"/>
         </MenuBarItem>
     </ContentPage.MenuBarItems>
 

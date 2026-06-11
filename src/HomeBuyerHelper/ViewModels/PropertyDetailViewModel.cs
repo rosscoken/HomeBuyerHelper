@@ -16,6 +16,9 @@ public partial class PropertyDetailViewModel : BaseViewModel
     private readonly IUserPreferencesRepository _preferencesRepository;
     private readonly IIncomeRepository _incomeRepository;
     private readonly IAffordabilityService _affordabilityService;
+    private readonly ITrueTotalCostService _trueTotalCostService;
+    private readonly IPhotoService _photoService;
+    private readonly IProConRepository _proConRepository;
     private UserPreferences? _preferences;
     private IReadOnlyList<IncomeSource> _incomeSources = [];
 
@@ -89,6 +92,39 @@ public partial class PropertyDetailViewModel : BaseViewModel
     private bool _showAffordabilityWarning;
 
     [ObservableProperty]
+    private int? _commuteMinutesPrimary;
+
+    [ObservableProperty]
+    private int? _commuteMinutesSecondary;
+
+    [ObservableProperty]
+    private decimal _monthlyUtilities;
+
+    [ObservableProperty]
+    private TrueTotalCost? _trueCost;
+
+    [ObservableProperty]
+    private CommuteAnalysis? _commuteAnalysis;
+
+    [ObservableProperty]
+    private bool _hasCommuteAnalysis;
+
+    [ObservableProperty]
+    private System.Collections.ObjectModel.ObservableCollection<PropertyPhoto> _photos = new();
+
+    [ObservableProperty]
+    private System.Collections.ObjectModel.ObservableCollection<PropertyProCon> _pros = new();
+
+    [ObservableProperty]
+    private System.Collections.ObjectModel.ObservableCollection<PropertyProCon> _cons = new();
+
+    [ObservableProperty]
+    private string _newProText = string.Empty;
+
+    [ObservableProperty]
+    private string _newConText = string.Empty;
+
+    [ObservableProperty]
     private decimal _overallScore;
 
     [ObservableProperty]
@@ -113,13 +149,19 @@ public partial class PropertyDetailViewModel : BaseViewModel
         ICalculationService calculationService,
         IUserPreferencesRepository preferencesRepository,
         IIncomeRepository incomeRepository,
-        IAffordabilityService affordabilityService)
+        IAffordabilityService affordabilityService,
+        ITrueTotalCostService trueTotalCostService,
+        IPhotoService photoService,
+        IProConRepository proConRepository)
     {
         _propertyService = propertyService;
         _calculationService = calculationService;
         _preferencesRepository = preferencesRepository;
         _incomeRepository = incomeRepository;
         _affordabilityService = affordabilityService;
+        _trueTotalCostService = trueTotalCostService;
+        _photoService = photoService;
+        _proConRepository = proConRepository;
     }
 
     public override async Task OnAppearingAsync()
@@ -178,6 +220,9 @@ public partial class PropertyDetailViewModel : BaseViewModel
                 MonthlyHOA = property.MonthlyHOA;
                 AnnualPropertyTax = property.AnnualPropertyTax;
                 AnnualInsurance = property.AnnualInsurance;
+                CommuteMinutesPrimary = property.CommuteMinutesPrimary;
+                CommuteMinutesSecondary = property.CommuteMinutesSecondary;
+                MonthlyUtilities = property.MonthlyUtilities;
                 ListingUrl = property.ListingUrl;
                 Notes = property.Notes;
                 OverallScore = property.OverallScore;
@@ -188,8 +233,23 @@ public partial class PropertyDetailViewModel : BaseViewModel
                 Scores = property.Scores;
 
                 UpdateCostBreakdown();
+                await LoadPhotosAsync(id);
+                await LoadProsConsAsync(id);
             }
         });
+    }
+
+    private async Task LoadPhotosAsync(int id)
+    {
+        var photos = await _photoService.GetPhotosAsync(id);
+        Photos = new System.Collections.ObjectModel.ObservableCollection<PropertyPhoto>(photos);
+    }
+
+    private async Task LoadProsConsAsync(int id)
+    {
+        var items = await _proConRepository.GetByPropertyIdAsync(id);
+        Pros = new System.Collections.ObjectModel.ObservableCollection<PropertyProCon>(items.Where(i => i.IsPro));
+        Cons = new System.Collections.ObjectModel.ObservableCollection<PropertyProCon>(items.Where(i => !i.IsPro));
     }
 
     [RelayCommand]
@@ -221,6 +281,9 @@ public partial class PropertyDetailViewModel : BaseViewModel
                 MonthlyHOA = MonthlyHOA,
                 AnnualPropertyTax = AnnualPropertyTax,
                 AnnualInsurance = AnnualInsurance,
+                CommuteMinutesPrimary = CommuteMinutesPrimary,
+                CommuteMinutesSecondary = CommuteMinutesSecondary,
+                MonthlyUtilities = MonthlyUtilities,
                 ListingUrl = ListingUrl,
                 Notes = Notes
             };
@@ -306,6 +369,8 @@ public partial class PropertyDetailViewModel : BaseViewModel
 
             UpdateAffordability();
         }
+
+        UpdateTrueCost();
     }
 
     private void UpdateAffordability()
@@ -322,5 +387,121 @@ public partial class PropertyDetailViewModel : BaseViewModel
         HasAffordabilityData = true;
         ShowAffordabilityWarning = Affordability.Any(a =>
             a.Zone is AffordabilityZone.Aggressive or AffordabilityZone.Risky);
+    }
+
+    /// <summary>
+    /// True total cost + commute analysis (P3-TTC-002, P3-COM-004).
+    /// </summary>
+    private void UpdateTrueCost()
+    {
+        if (_preferences == null || AskingPrice <= 0)
+        {
+            TrueCost = null;
+            HasCommuteAnalysis = false;
+            return;
+        }
+
+        var property = new Property
+        {
+            Nickname = Nickname.Length > 0 ? Nickname : "Property",
+            AskingPrice = AskingPrice,
+            OfferPrice = OfferPrice,
+            MonthlyHOA = MonthlyHOA,
+            AnnualPropertyTax = AnnualPropertyTax,
+            AnnualInsurance = AnnualInsurance,
+            MonthlyUtilities = MonthlyUtilities,
+            CommuteMinutesPrimary = CommuteMinutesPrimary,
+            CommuteMinutesSecondary = CommuteMinutesSecondary
+        };
+
+        TrueCost = _trueTotalCostService.Calculate(property, _preferences);
+        CommuteAnalysis = TrueCost.Commute;
+        HasCommuteAnalysis = CommuteAnalysis?.HasCommuteData == true;
+    }
+
+    [RelayCommand]
+    private async Task AddPhotoFromCameraAsync()
+    {
+        if (!PropertyId.HasValue || PropertyId.Value <= 0)
+        {
+            SetError("Save the property before adding photos.");
+            return;
+        }
+
+        var photo = await _photoService.CapturePhotoAsync(PropertyId.Value);
+        if (photo != null)
+        {
+            Photos.Add(photo);
+        }
+    }
+
+    [RelayCommand]
+    private async Task AddPhotoFromGalleryAsync()
+    {
+        if (!PropertyId.HasValue || PropertyId.Value <= 0)
+        {
+            SetError("Save the property before adding photos.");
+            return;
+        }
+
+        var photo = await _photoService.PickPhotoAsync(PropertyId.Value);
+        if (photo != null)
+        {
+            Photos.Add(photo);
+        }
+    }
+
+    [RelayCommand]
+    private async Task DeletePhotoAsync(PropertyPhoto photo)
+    {
+        var confirmed = await Shell.Current.DisplayAlert(
+            "Delete Photo", "Remove this photo?", "Delete", "Cancel");
+        if (!confirmed) return;
+
+        await _photoService.DeletePhotoAsync(photo);
+        Photos.Remove(photo);
+    }
+
+    [RelayCommand]
+    private async Task AddProAsync()
+    {
+        await AddProConAsync(isPro: true, NewProText);
+        NewProText = string.Empty;
+    }
+
+    [RelayCommand]
+    private async Task AddConAsync()
+    {
+        await AddProConAsync(isPro: false, NewConText);
+        NewConText = string.Empty;
+    }
+
+    private async Task AddProConAsync(bool isPro, string text)
+    {
+        if (!PropertyId.HasValue || PropertyId.Value <= 0)
+        {
+            SetError("Save the property before adding pros and cons.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(text)) return;
+
+        var list = isPro ? Pros : Cons;
+        var item = new PropertyProCon
+        {
+            PropertyId = PropertyId.Value,
+            IsPro = isPro,
+            Description = text.Trim(),
+            SortOrder = list.Count
+        };
+        item.Id = await _proConRepository.CreateAsync(item);
+        list.Add(item);
+    }
+
+    [RelayCommand]
+    private async Task DeleteProConAsync(PropertyProCon item)
+    {
+        await _proConRepository.DeleteAsync(item.Id);
+        (item.IsPro ? Pros : Cons).Remove(item);
     }
 }

@@ -113,6 +113,37 @@ public class UserPreferences
     public int EmergencyFundTargetMonths { get; set; } = 6;
 
     /// <summary>
+    /// Primary commute destination (work address) for commute analysis.
+    /// </summary>
+    public string? WorkAddress { get; set; }
+
+    /// <summary>
+    /// What the user values their time at, per hour. Default $100 (spec 2.5.2).
+    /// </summary>
+    public decimal TimeValueHourlyRate { get; set; } = 100m;
+
+    /// <summary>
+    /// Working days per month for commute calculations. Default 22.
+    /// </summary>
+    public int WorkdaysPerMonth { get; set; } = 22;
+
+    /// <summary>
+    /// Tax filing status for funding strategy calculations.
+    /// </summary>
+    public TaxFilingStatus FilingStatus { get; set; } = TaxFilingStatus.Single;
+
+    /// <summary>
+    /// Estimated taxable income, used to determine the marginal bracket.
+    /// </summary>
+    public decimal EstimatedTaxableIncome { get; set; }
+
+    /// <summary>
+    /// State marginal income tax rate (percent). Entered manually since
+    /// state schedules vary; 0 for no-income-tax states.
+    /// </summary>
+    public decimal StateMarginalTaxRate { get; set; }
+
+    /// <summary>
     /// When preferences were created.
     /// </summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -121,6 +152,17 @@ public class UserPreferences
     /// When preferences were last modified.
     /// </summary>
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+}
+
+/// <summary>
+/// Federal tax filing status.
+/// </summary>
+public enum TaxFilingStatus
+{
+    Single,
+    MarriedFilingJointly,
+    MarriedFilingSeparately,
+    HeadOfHousehold
 }
 
 /// <summary>

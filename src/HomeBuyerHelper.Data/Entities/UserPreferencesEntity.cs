@@ -54,6 +54,18 @@ public class UserPreferencesEntity
 
     public int EmergencyFundTargetMonths { get; set; } = 6;
 
+    public string? WorkAddress { get; set; }
+
+    public decimal TimeValueHourlyRate { get; set; } = 100m;
+
+    public int WorkdaysPerMonth { get; set; } = 22;
+
+    public int FilingStatus { get; set; }
+
+    public decimal EstimatedTaxableIncome { get; set; }
+
+    public decimal StateMarginalTaxRate { get; set; }
+
     public DateTime CreatedAt { get; set; }
 
     public DateTime UpdatedAt { get; set; }

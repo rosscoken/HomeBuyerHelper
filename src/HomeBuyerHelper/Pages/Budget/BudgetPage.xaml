@@ -48,6 +48,10 @@
                             Command="{Binding NavigateToEventsCommand}"
                             Style="{StaticResource SecondaryButton}"
                             AutomationProperties.Name="Manage one-time events"/>
+                    <Button Text="Down Payment Funding Plan"
+                            Command="{Binding NavigateToFundingCommand}"
+                            Style="{StaticResource SecondaryButton}"
+                            AutomationProperties.Name="Manage down payment funding plan"/>
                     <Button Text="View Cash Flow Timeline"
                             Command="{Binding NavigateToCashFlowCommand}"
                             Style="{StaticResource PrimaryButton}"

@@ -15,6 +15,9 @@ public partial class ComparisonViewModel : BaseViewModel
     private readonly IExportService _exportService;
     private readonly ICriteriaRepository _criteriaRepository;
     private readonly IScoreRepository _scoreRepository;
+    private readonly ITrueTotalCostService _trueTotalCostService;
+    private readonly IUserPreferencesRepository _preferencesRepository;
+    private readonly IProConRepository _proConRepository;
 
     [ObservableProperty]
     private IReadOnlyList<PropertyRanking> _comparisonResults = [];
@@ -40,18 +43,33 @@ public partial class ComparisonViewModel : BaseViewModel
     [ObservableProperty]
     private bool _showMatrix;
 
+    [ObservableProperty]
+    private IReadOnlyList<TrueCostSummary> _trueCostSummaries = [];
+
+    [ObservableProperty]
+    private IReadOnlyList<ProConSummary> _proConSummaries = [];
+
+    [ObservableProperty]
+    private bool _showProsCons;
+
     public int SelectedCount => SelectableProperties.Count(p => p.IsSelected);
 
     public ComparisonViewModel(
         IPropertyService propertyService,
         IExportService exportService,
         ICriteriaRepository criteriaRepository,
-        IScoreRepository scoreRepository)
+        IScoreRepository scoreRepository,
+        ITrueTotalCostService trueTotalCostService,
+        IUserPreferencesRepository preferencesRepository,
+        IProConRepository proConRepository)
     {
         _propertyService = propertyService;
         _exportService = exportService;
         _criteriaRepository = criteriaRepository;
         _scoreRepository = scoreRepository;
+        _trueTotalCostService = trueTotalCostService;
+        _preferencesRepository = preferencesRepository;
+        _proConRepository = proConRepository;
         Title = "Compare Properties";
     }
 
@@ -152,6 +170,61 @@ public partial class ComparisonViewModel : BaseViewModel
 
         ComparisonRows = rows;
         ShowMatrix = true;
+
+        await BuildTrueCostSummariesAsync(selected);
+        await BuildProConSummariesAsync(selected);
+    }
+
+    /// <summary>
+    /// True Total Cost comparison (P3-TTC-003): housing + utilities + commute
+    /// time value per property, with the lowest highlighted.
+    /// </summary>
+    private async Task BuildTrueCostSummariesAsync(IReadOnlyList<Property> selected)
+    {
+        var preferences = await _preferencesRepository.GetAsync();
+
+        var summaries = selected.Select(property =>
+        {
+            var cost = _trueTotalCostService.Calculate(property, preferences);
+            return new TrueCostSummary
+            {
+                PropertyName = property.Nickname,
+                MonthlyHousing = cost.MonthlyHousing,
+                MonthlyCommuteValue = cost.MonthlyCommuteValue,
+                MonthlyTotal = cost.MonthlyTotal,
+                ThirtyYearTotal = cost.ThirtyYearTotal
+            };
+        }).ToList();
+
+        var lowest = summaries.Where(s => s.MonthlyTotal > 0).MinBy(s => s.MonthlyTotal);
+        if (lowest != null)
+        {
+            lowest.IsLowest = true;
+        }
+
+        TrueCostSummaries = summaries;
+    }
+
+    /// <summary>
+    /// Pros/cons comparison (P3-NOT-003).
+    /// </summary>
+    private async Task BuildProConSummariesAsync(IReadOnlyList<Property> selected)
+    {
+        var summaries = new List<ProConSummary>();
+
+        foreach (var property in selected)
+        {
+            var items = await _proConRepository.GetByPropertyIdAsync(property.Id);
+            summaries.Add(new ProConSummary
+            {
+                PropertyName = property.Nickname,
+                Pros = items.Where(i => i.IsPro).Select(i => i.Description).ToList(),
+                Cons = items.Where(i => !i.IsPro).Select(i => i.Description).ToList()
+            });
+        }
+
+        ProConSummaries = summaries;
+        ShowProsCons = summaries.Any(s => s.Pros.Count > 0 || s.Cons.Count > 0);
     }
 
     [RelayCommand]
@@ -202,6 +275,31 @@ public partial class ComparisonViewModel : BaseViewModel
             });
         }
     }
+}
+
+/// <summary>
+/// True total cost summary for one property in the comparison.
+/// </summary>
+public class TrueCostSummary
+{
+    public string PropertyName { get; set; } = string.Empty;
+    public decimal MonthlyHousing { get; set; }
+    public decimal MonthlyCommuteValue { get; set; }
+    public decimal MonthlyTotal { get; set; }
+    public decimal ThirtyYearTotal { get; set; }
+    public bool IsLowest { get; set; }
+}
+
+/// <summary>
+/// Pros/cons summary for one property in the comparison.
+/// </summary>
+public class ProConSummary
+{
+    public string PropertyName { get; set; } = string.Empty;
+    public List<string> Pros { get; set; } = new();
+    public List<string> Cons { get; set; } = new();
+    public string ProsText => Pros.Count > 0 ? string.Join("\n", Pros.Select(p => $"+ {p}")) : "(none)";
+    public string ConsText => Cons.Count > 0 ? string.Join("\n", Cons.Select(c => $"- {c}")) : "(none)";
 }
 
 /// <summary>

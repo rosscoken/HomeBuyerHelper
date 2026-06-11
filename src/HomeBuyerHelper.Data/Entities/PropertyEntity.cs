@@ -49,6 +49,12 @@ public class PropertyEntity
     public decimal? AnnualInsurance { get; set; }
 
     [MaxLength(1000)]
+    public int? CommuteMinutesPrimary { get; set; }
+
+    public int? CommuteMinutesSecondary { get; set; }
+
+    public decimal MonthlyUtilities { get; set; }
+
     public string? ListingUrl { get; set; }
 
     public string? Notes { get; set; }

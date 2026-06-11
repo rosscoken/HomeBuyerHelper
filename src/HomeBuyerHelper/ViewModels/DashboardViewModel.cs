@@ -84,6 +84,24 @@ public partial class DashboardViewModel : BaseViewModel
     }
 
     [RelayCommand]
+    private async Task NavigateToCommuteSettingsAsync()
+    {
+        await Shell.Current.GoToAsync("CommuteSettings");
+    }
+
+    [RelayCommand]
+    private async Task NavigateToTaxSettingsAsync()
+    {
+        await Shell.Current.GoToAsync("TaxSettings");
+    }
+
+    [RelayCommand]
+    private async Task NavigateToSyncSettingsAsync()
+    {
+        await Shell.Current.GoToAsync("SyncSettings");
+    }
+
+    [RelayCommand]
     private async Task NavigateToLoanSettingsAsync()
     {
         await Shell.Current.GoToAsync("LoanSettings");

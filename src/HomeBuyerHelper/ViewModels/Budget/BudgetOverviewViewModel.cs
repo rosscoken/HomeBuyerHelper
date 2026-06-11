@@ -159,4 +159,10 @@ public partial class BudgetOverviewViewModel : BaseViewModel
     {
         await Shell.Current.GoToAsync("CashFlowTimeline");
     }
+
+    [RelayCommand]
+    private async Task NavigateToFundingAsync()
+    {
+        await Shell.Current.GoToAsync("FundingSetup");
+    }
 }

@@ -88,6 +88,21 @@ public class Property
     public decimal? AnnualInsurance { get; set; }
 
     /// <summary>
+    /// Round-trip commute minutes for the primary commuter (spec 2.5).
+    /// </summary>
+    public int? CommuteMinutesPrimary { get; set; }
+
+    /// <summary>
+    /// Round-trip commute minutes for a second commuter (partner).
+    /// </summary>
+    public int? CommuteMinutesSecondary { get; set; }
+
+    /// <summary>
+    /// Estimated monthly utilities for this property (spec 2.6.1).
+    /// </summary>
+    public decimal MonthlyUtilities { get; set; }
+
+    /// <summary>
     /// Optional URL to the property listing.
     /// </summary>
     public string? ListingUrl { get; set; }

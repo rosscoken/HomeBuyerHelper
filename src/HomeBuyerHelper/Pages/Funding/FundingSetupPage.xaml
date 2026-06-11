@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:HomeBuyerHelper.ViewModels.Funding"
+             xmlns:interfaces="clr-namespace:HomeBuyerHelper.Core.Interfaces;assembly=HomeBuyerHelper.Core"
+             x:Class="HomeBuyerHelper.Pages.Funding.FundingSetupPage"
+             x:DataType="vm:FundingSetupViewModel"
+             Title="{Binding Title}">
+
+    <Grid RowDefinitions="Auto,*,Auto" Padding="16">
+
+        <!-- Plan Summary -->
+        <Frame Grid.Row="0" Style="{StaticResource CardFrame}" Margin="0,0,0,16" Padding="16,12">
+            <VerticalStackLayout Spacing="8">
+                <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto" ColumnSpacing="8">
+                    <Label Grid.Row="0" Grid.Column="0" Text="{Binding TotalGross, StringFormat='{0:C0}'}"
+                           Style="{StaticResource Subtitle}" HorizontalTextAlignment="Center"/>
+                    <Label Grid.Row="0" Grid.Column="1" Text="{Binding TotalTax, StringFormat='{0:C0}'}"
+                           Style="{StaticResource Subtitle}" TextColor="{StaticResource Error}" HorizontalTextAlignment="Center"/>
+                    <Label Grid.Row="0" Grid.Column="2" Text="{Binding TotalNet, StringFormat='{0:C0}'}"
+                           Style="{StaticResource Subtitle}" TextColor="{StaticResource Success}" HorizontalTextAlignment="Center"/>
+                    <Label Grid.Row="1" Grid.Column="0" Text="Gross" Style="{StaticResource Caption}"
+                           TextColor="{StaticResource Gray500}" HorizontalTextAlignment="Center"/>
+                    <Label Grid.Row="1" Grid.Column="1" Text="Est. Tax" Style="{StaticResource Caption}"
+                           TextColor="{StaticResource Gray500}" HorizontalTextAlignment="Center"/>
+                    <Label Grid.Row="1" Grid.Column="2" Text="Net Available" Style="{StaticResource Caption}"
+                           TextColor="{StaticResource Gray500}" HorizontalTextAlignment="Center"/>
+                </Grid>
+
+                <VerticalStackLayout IsVisible="{Binding HasTarget}" Spacing="2">
+                    <Label Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="{Binding TargetAmount, StringFormat='Needed for {0:C0}'}"/>
+                                <Span Text="{Binding TargetPropertyName, StringFormat=' ({0}: down payment + closing)'}"/>
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                    <Label Text="{Binding Surplus, StringFormat='Surplus after funding: {0:C0}'}"
+                           Style="{StaticResource Body}"
+                           TextColor="{Binding Surplus, Converter={StaticResource PositiveNegativeColorConverter}}"/>
+                </VerticalStackLayout>
+
+                <Button Text="Set Aside Taxes in Budget"
+                        Command="{Binding AddTaxSetAsideToBudgetCommand}"
+                        Style="{StaticResource TextButton}"
+                        IsVisible="{Binding HasTaxLiability}"
+                        AutomationProperties.Name="Add tax set-aside to budget"/>
+            </VerticalStackLayout>
+        </Frame>
+
+        <!-- Sources List -->
+        <CollectionView Grid.Row="1"
+                        ItemsSource="{Binding Sources}"
+                        SelectionMode="None">
+            <CollectionView.EmptyView>
+                <VerticalStackLayout VerticalOptions="Center" Spacing="16" Padding="32">
+                    <Label Text="Where is your down payment coming from?"
+                           Style="{StaticResource Title}"
+                           HorizontalTextAlignment="Center"/>
+                    <Label Text="Add savings, brokerage, retirement accounts, or family gifts. We'll estimate the taxes for each so you know your real number."
+                           Style="{StaticResource Body}"
+                           HorizontalTextAlignment="Center"
+                           TextColor="{StaticResource Gray500}"/>
+                    <Button Text="Set Up Tax Info First"
+                            Command="{Binding OpenTaxSettingsCommand}"
+                            Style="{StaticResource SecondaryButton}"
+                            HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="interfaces:FundingSourceTaxResult">
+                    <SwipeView>
+                        <SwipeView.RightItems>
+                            <SwipeItems>
+                                <SwipeItem Text="Delete"
+                                           BackgroundColor="{StaticResource Error}"
+                                           Command="{Binding Source={RelativeSource AncestorType={x:Type vm:FundingSetupViewModel}}, Path=DeleteSourceCommand}"
+                                           CommandParameter="{Binding}" />
+                            </SwipeItems>
+                        </SwipeView.RightItems>
+
+                        <Frame Style="{StaticResource CardFrame}" Margin="0,4">
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:FundingSetupViewModel}}, Path=EditSourceCommand}"
+                                    CommandParameter="{Binding}"/>
+                            </Frame.GestureRecognizers>
+                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12">
+                                <Label Grid.Row="0" Grid.Column="0"
+                                       Text="{Binding Source.Name}"
+                                       Style="{StaticResource Subtitle}"
+                                       LineBreakMode="TailTruncation"/>
+                                <Label Grid.Row="0" Grid.Column="1"
+                                       Text="{Binding NetAmount, StringFormat='{0:C0} net'}"
+                                       Style="{StaticResource Body}"
+                                       TextColor="{StaticResource Primary}"
+                                       FontAttributes="Bold"/>
+                                <Label Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                                       Style="{StaticResource Caption}"
+                                       TextColor="{StaticResource Gray500}">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="{Binding GrossAmount, StringFormat='Gross {0:C0}'}"/>
+                                            <Span Text="{Binding TotalTax, StringFormat=' · Tax {0:C0}'}"/>
+                                            <Span Text="{Binding EffectiveRate, StringFormat=' ({0:F1}%)'}"/>
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                            </Grid>
+                        </Frame>
+                    </SwipeView>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <VerticalStackLayout Grid.Row="2" Spacing="8" Margin="0,16,0,0">
+            <Button Text="+ Add Funding Source"
+                    Command="{Binding AddNewCommand}"
+                    Style="{StaticResource PrimaryButton}"
+                    AutomationProperties.Name="Add new funding source"/>
+            <Button Text="Tax Settings"
+                    Command="{Binding OpenTaxSettingsCommand}"
+                    Style="{StaticResource TextButton}"
+                    AutomationProperties.Name="Open tax settings"/>
+        </VerticalStackLayout>
+
+        <ActivityIndicator Grid.Row="1"
+                           IsRunning="{Binding IsBusy}"
+                           IsVisible="{Binding IsBusy}"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center" />
+
+    </Grid>
+
+</ContentPage>
