@@ -173,9 +173,4 @@
         </VerticalStackLayout>
     </ScrollView>
 
-    <!-- Loading Overlay -->
-    <ContentPage.Behaviors>
-        <CommunityToolkit.Maui.Behaviors.StatusBarBehavior StatusBarColor="{StaticResource Primary}"/>
-    </ContentPage.Behaviors>
-
 </ContentPage>
