@@ -12,6 +12,7 @@
     <!-- MAUI packages -->
     <PackageVersion Include="CommunityToolkit.Maui" Version="7.0.1" />
     <PackageVersion Include="LiveChartsCore.SkiaSharpView.Maui" Version="2.0.0-rc2" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
 
     <!-- Test packages -->
     <PackageVersion Include="xunit" Version="2.6.6" />

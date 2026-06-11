@@ -107,7 +107,7 @@ public partial class ScoringWalkthroughViewModel : BaseViewModel
             }
 
             // Load existing scores
-            var scores = await _scoreRepository.GetScoresForPropertyAsync(PropertyId);
+            var scores = await _scoreRepository.GetByPropertyIdAsync(PropertyId);
             _existingScores = scores.ToDictionary(s => s.CriterionId);
 
             CurrentIndex = 0;
@@ -205,17 +205,8 @@ public partial class ScoringWalkthroughViewModel : BaseViewModel
             Notes = Notes?.Trim()
         };
 
-        if (_existingScores.TryGetValue(CurrentCriterion.Id, out var existingScore))
-        {
-            score.Id = existingScore.Id;
-            await _scoreRepository.UpdateAsync(score);
-            _existingScores[CurrentCriterion.Id] = score;
-        }
-        else
-        {
-            var savedScore = await _scoreRepository.CreateAsync(score);
-            _existingScores[CurrentCriterion.Id] = savedScore;
-        }
+        score.Id = await _scoreRepository.UpsertAsync(score);
+        _existingScores[CurrentCriterion.Id] = score;
     }
 
     [RelayCommand]
