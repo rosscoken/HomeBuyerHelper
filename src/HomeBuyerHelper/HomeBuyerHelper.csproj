@@ -49,7 +49,6 @@
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Maui" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
-    <PackageReference Include="LiveChartsCore.SkiaSharpView.Maui" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
   </ItemGroup>
 
