@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:HomeBuyerHelper.ViewModels.Analysis"
+             xmlns:interfaces="clr-namespace:HomeBuyerHelper.Core.Interfaces;assembly=HomeBuyerHelper.Core"
+             x:Class="HomeBuyerHelper.Pages.Analysis.ScenariosPage"
+             x:DataType="vm:ScenariosViewModel"
+             Title="{Binding Title}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="12">
+
+            <!-- Scenario builder -->
+            <Frame Style="{StaticResource CardFrame}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Build a Scenario" Style="{StaticResource Subtitle}"/>
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="4">
+                        <Label Grid.Row="0" Grid.Column="0" Text="Name" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                        <Label Grid.Row="0" Grid.Column="1" Text="Purchase Price" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                        <Entry Grid.Row="1" Grid.Column="0" Text="{Binding ScenarioName}"
+                               AutomationProperties.Name="Scenario name"/>
+                        <Entry Grid.Row="1" Grid.Column="1" Text="{Binding PurchasePrice}" Keyboard="Numeric"
+                               AutomationProperties.Name="Scenario purchase price"/>
+                        <Label Grid.Row="2" Grid.Column="0" Text="Down Payment %" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                        <Label Grid.Row="2" Grid.Column="1" Text="Interest Rate %" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                        <Entry Grid.Row="3" Grid.Column="0" Text="{Binding DownPaymentPercent}" Keyboard="Numeric"
+                               AutomationProperties.Name="Scenario down payment percent"/>
+                        <Entry Grid.Row="3" Grid.Column="1" Text="{Binding InterestRate}" Keyboard="Numeric"
+                               AutomationProperties.Name="Scenario interest rate"/>
+                    </Grid>
+                    <Button Text="+ Add Scenario"
+                            Command="{Binding AddScenarioCommand}"
+                            Style="{StaticResource PrimaryButton}"
+                            AutomationProperties.Name="Add scenario"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Wait inputs -->
+            <Frame Style="{StaticResource CardFrame}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="What if we wait?" Style="{StaticResource Subtitle}"/>
+                    <Label Text="Tap ⏳ on any scenario below to add a delayed version: rent keeps going out, savings grow your down payment, and prices move with the market."
+                           Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="4">
+                        <Label Grid.Row="0" Grid.Column="0" Text="Months to wait" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                        <Label Grid.Row="0" Grid.Column="1" Text="Savings/month" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                        <Entry Grid.Row="1" Grid.Column="0" Text="{Binding MonthsToWait}" Keyboard="Numeric"
+                               AutomationProperties.Name="Months to wait"/>
+                        <Entry Grid.Row="1" Grid.Column="1" Text="{Binding MonthlySavings}" Keyboard="Numeric"
+                               AutomationProperties.Name="Monthly savings while waiting"/>
+                        <Label Grid.Row="2" Grid.Column="0" Text="Market change %/yr" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                        <Label Grid.Row="2" Grid.Column="1" Text="Current rent/month" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                        <Entry Grid.Row="3" Grid.Column="0" Text="{Binding MarketChangePercent}" Keyboard="Numeric"
+                               AutomationProperties.Name="Market change percent per year"/>
+                        <Entry Grid.Row="3" Grid.Column="1" Text="{Binding CurrentRent}" Keyboard="Numeric"
+                               AutomationProperties.Name="Current monthly rent"/>
+                    </Grid>
+                </VerticalStackLayout>
+            </Frame>
+
+            <Label Text="{Binding ErrorMessage}"
+                   IsVisible="{Binding HasError}"
+                   TextColor="{StaticResource Error}"
+                   Style="{StaticResource Body}"/>
+
+            <!-- Scenario comparison (P5-SCN-002) -->
+            <CollectionView ItemsSource="{Binding Results}" SelectionMode="None">
+                <CollectionView.EmptyView>
+                    <Label Text="Add a property and scenarios to compare options side by side."
+                           Style="{StaticResource Body}" TextColor="{StaticResource Gray500}"
+                           HorizontalTextAlignment="Center" Padding="16"/>
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="interfaces:ScenarioResult">
+                        <Frame Style="{StaticResource CardFrame}" Margin="0,4">
+                            <Grid ColumnDefinitions="*,Auto,Auto,Auto" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="4" RowSpacing="2">
+                                <Label Grid.Row="0" Grid.Column="0"
+                                       Text="{Binding Scenario.Name}"
+                                       Style="{StaticResource Subtitle}"/>
+                                <Button Grid.Row="0" Grid.Column="1" Text="⏳"
+                                        Style="{StaticResource TextButton}"
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ScenariosViewModel}}, Path=AddWaitScenarioCommand}"
+                                        CommandParameter="{Binding}"
+                                        AutomationProperties.Name="Add wait scenario from this"/>
+                                <Button Grid.Row="0" Grid.Column="2" Text="⧉"
+                                        Style="{StaticResource TextButton}"
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ScenariosViewModel}}, Path=DuplicateScenarioCommand}"
+                                        CommandParameter="{Binding}"
+                                        AutomationProperties.Name="Duplicate scenario into the editor"/>
+                                <Button Grid.Row="0" Grid.Column="3" Text="✕"
+                                        Style="{StaticResource TextButton}"
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ScenariosViewModel}}, Path=RemoveScenarioCommand}"
+                                        CommandParameter="{Binding}"
+                                        AutomationProperties.Name="Remove scenario"/>
+
+                                <Label Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="4"
+                                       Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="{Binding Scenario.PurchasePrice, StringFormat='{0:C0}'}"/>
+                                            <Span Text="{Binding Scenario.DownPaymentPercent, StringFormat=' · {0:F0}% down'}"/>
+                                            <Span Text="{Binding Scenario.InterestRate, StringFormat=' · {0:F2}%'}"/>
+                                            <Span Text="{Binding Scenario.SunkCosts, StringFormat=' · {0:C0} sunk'}"/>
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+
+                                <Label Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4"
+                                       Style="{StaticResource Body}">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="{Binding MonthlyPayment, StringFormat='{0:C0}/mo'}" FontAttributes="Bold"/>
+                                            <Span Text="{Binding CashToClose, StringFormat=' · {0:C0} to close'}"/>
+                                            <Span Text="{Binding HousingPercentage, StringFormat=' · {0:F0}% of income'}"/>
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

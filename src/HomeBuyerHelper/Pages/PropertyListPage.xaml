@@ -30,6 +30,12 @@
                      Command="{Binding RefreshCommand}">
             <CollectionView ItemsSource="{Binding Properties}"
                             SelectionMode="None">
+                <!-- Multi-column grid on tablets/desktop (P4-TAB-001/002) -->
+                <CollectionView.ItemsLayout>
+                    <GridItemsLayout Orientation="Vertical"
+                                     Span="{OnIdiom Phone=1, Tablet=2, Desktop=2, Default=1}"
+                                     HorizontalItemSpacing="8"/>
+                </CollectionView.ItemsLayout>
                 <CollectionView.EmptyView>
                     <VerticalStackLayout VerticalOptions="Center" Spacing="16" Padding="32">
                         <Label Text="No Properties Yet"

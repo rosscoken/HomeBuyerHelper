@@ -115,12 +115,22 @@
         </CollectionView>
 
         <!-- FAB for adding new criterion -->
-        <Button Grid.Row="2"
-                Text="+ Add Criterion"
-                Command="{Binding AddNewCommand}"
-                Style="{StaticResource PrimaryButton}"
-                Margin="0,16,0,0"
-                AutomationProperties.Name="Add new criterion"/>
+        <VerticalStackLayout Grid.Row="2" Spacing="8" Margin="0,16,0,0">
+            <Button Text="+ Add Criterion"
+                    Command="{Binding AddNewCommand}"
+                    Style="{StaticResource PrimaryButton}"
+                    AutomationProperties.Name="Add new criterion"/>
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                <Button Grid.Column="0" Text="Export Template"
+                        Command="{Binding ExportTemplateCommand}"
+                        Style="{StaticResource TextButton}"
+                        AutomationProperties.Name="Export criteria as template"/>
+                <Button Grid.Column="1" Text="Import Template"
+                        Command="{Binding ImportTemplateCommand}"
+                        Style="{StaticResource TextButton}"
+                        AutomationProperties.Name="Import criteria template"/>
+            </Grid>
+        </VerticalStackLayout>
 
         <!-- Loading -->
         <ActivityIndicator Grid.Row="1"

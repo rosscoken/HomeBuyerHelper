@@ -38,6 +38,8 @@ public class UserPreferencesEntity
 
     public bool UseDarkMode { get; set; }
 
+    public int ThemePreference { get; set; }
+
     public bool EnableNotifications { get; set; }
 
     public decimal DefaultDownPaymentPercent { get; set; }

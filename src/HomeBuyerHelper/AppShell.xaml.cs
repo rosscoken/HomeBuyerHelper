@@ -1,3 +1,4 @@
+using HomeBuyerHelper.Pages.Analysis;
 using HomeBuyerHelper.Pages.Budget;
 using HomeBuyerHelper.Pages.Funding;
 using HomeBuyerHelper.Pages.Onboarding;
@@ -40,6 +41,8 @@ public partial class AppShell : Shell
         Routing.RegisterRoute("TaxSettings", typeof(TaxSettingsPage));
         Routing.RegisterRoute("CommuteSettings", typeof(CommuteSettingsPage));
         Routing.RegisterRoute("SyncSettings", typeof(SyncSettingsPage));
+        Routing.RegisterRoute("RentVsBuy", typeof(RentVsBuyPage));
+        Routing.RegisterRoute("Scenarios", typeof(ScenariosPage));
 
         // Register onboarding flow routes
         Routing.RegisterRoute("Welcome", typeof(WelcomePage));

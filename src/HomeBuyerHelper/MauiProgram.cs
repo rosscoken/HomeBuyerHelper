@@ -4,11 +4,13 @@ using HomeBuyerHelper.Core.Services;
 using HomeBuyerHelper.Data;
 using HomeBuyerHelper.Data.Repositories;
 using HomeBuyerHelper.Pages;
+using HomeBuyerHelper.Pages.Analysis;
 using HomeBuyerHelper.Pages.Budget;
 using HomeBuyerHelper.Pages.Funding;
 using HomeBuyerHelper.Pages.Onboarding;
 using HomeBuyerHelper.Pages.Settings;
 using HomeBuyerHelper.ViewModels;
+using HomeBuyerHelper.ViewModels.Analysis;
 using HomeBuyerHelper.ViewModels.Budget;
 using HomeBuyerHelper.ViewModels.Funding;
 using HomeBuyerHelper.ViewModels.Settings;
@@ -71,6 +73,9 @@ public static class MauiProgram
         builder.Services.AddSingleton<ICommuteValueService, CommuteValueService>();
         builder.Services.AddSingleton<ITrueTotalCostService, TrueTotalCostService>();
         builder.Services.AddSingleton<ITaxImpactService, TaxImpactService>();
+        builder.Services.AddSingleton<IRentVsBuyService, RentVsBuyService>();
+        builder.Services.AddSingleton<IScenarioService, ScenarioService>();
+        builder.Services.AddSingleton<ICriteriaTemplateService, CriteriaTemplateService>();
 
         // Register main view models (transient - new instance per page)
         builder.Services.AddTransient<DashboardViewModel>();
@@ -92,6 +97,10 @@ public static class MauiProgram
         builder.Services.AddTransient<OneTimeEventsViewModel>();
         builder.Services.AddTransient<OneTimeEventEditViewModel>();
         builder.Services.AddTransient<CashFlowTimelineViewModel>();
+
+        // Register analysis view models
+        builder.Services.AddTransient<RentVsBuyViewModel>();
+        builder.Services.AddTransient<ScenariosViewModel>();
 
         // Register funding and settings view models
         builder.Services.AddTransient<FundingSetupViewModel>();
@@ -130,6 +139,10 @@ public static class MauiProgram
         builder.Services.AddTransient<OneTimeEventsPage>();
         builder.Services.AddTransient<OneTimeEventEditPage>();
         builder.Services.AddTransient<CashFlowTimelinePage>();
+
+        // Register analysis pages
+        builder.Services.AddTransient<RentVsBuyPage>();
+        builder.Services.AddTransient<ScenariosPage>();
 
         // Register funding and settings pages
         builder.Services.AddTransient<FundingSetupPage>();

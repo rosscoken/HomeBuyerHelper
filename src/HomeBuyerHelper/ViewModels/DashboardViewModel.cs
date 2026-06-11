@@ -84,6 +84,18 @@ public partial class DashboardViewModel : BaseViewModel
     }
 
     [RelayCommand]
+    private async Task NavigateToRentVsBuyAsync()
+    {
+        await Shell.Current.GoToAsync("RentVsBuy");
+    }
+
+    [RelayCommand]
+    private async Task NavigateToScenariosAsync()
+    {
+        await Shell.Current.GoToAsync("Scenarios");
+    }
+
+    [RelayCommand]
     private async Task NavigateToCommuteSettingsAsync()
     {
         await Shell.Current.GoToAsync("CommuteSettings");

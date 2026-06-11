@@ -605,9 +605,193 @@ public class ExportService : IExportService
         {
             new() { Name = "PDF", Extension = ".pdf", MimeType = "application/pdf", IsSupported = true },
             new() { Name = "JSON", Extension = ".json", MimeType = "application/json", IsSupported = true },
-            new() { Name = "CSV", Extension = ".csv", MimeType = "text/csv", IsSupported = false }
+            new() { Name = "CSV", Extension = ".csv", MimeType = "text/csv", IsSupported = true },
+            new() { Name = "HTML", Extension = ".html", MimeType = "text/html", IsSupported = true }
         };
     }
+
+    public async Task<string> ExportComparisonToCsvAsync(IEnumerable<int> propertyIds)
+    {
+        var exportDir = GetExportDirectory();
+        var filePath = Path.Combine(exportDir, $"comparison_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
+
+        var criteria = (await _criteriaRepository.GetAllAsync()).OrderBy(c => c.DisplayOrder).ToList();
+        var properties = new List<Property>();
+        foreach (var id in propertyIds)
+        {
+            var property = await _propertyRepository.GetByIdAsync(id);
+            if (property == null) continue;
+            property.Scores = (await _scoreRepository.GetByPropertyIdAsync(id)).ToList();
+            properties.Add(property);
+        }
+
+        var lines = new List<string>
+        {
+            Csv("Criterion", "Weight %", properties.Select(p => p.Nickname).ToArray())
+        };
+
+        foreach (var criterion in criteria)
+        {
+            var cells = properties
+                .Select(p => p.Scores.FirstOrDefault(score => score.CriterionId == criterion.Id)?.Score.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "")
+                .ToArray();
+            lines.Add(Csv(criterion.Name, criterion.Weight.ToString(System.Globalization.CultureInfo.InvariantCulture), cells));
+        }
+
+        lines.Add(Csv("Total Weighted Score", "",
+            properties.Select(p => p.Scores.Sum(score => score.WeightedScore).ToString(System.Globalization.CultureInfo.InvariantCulture)).ToArray()));
+        lines.Add(Csv("Price", "",
+            properties.Select(p => p.EffectivePrice.ToString("F0", System.Globalization.CultureInfo.InvariantCulture)).ToArray()));
+        lines.Add(Csv("Square Feet", "",
+            properties.Select(p => p.SquareFeet.ToString(System.Globalization.CultureInfo.InvariantCulture)).ToArray()));
+
+        await File.WriteAllLinesAsync(filePath, lines);
+        return filePath;
+    }
+
+    public async Task<string> ExportCashFlowToCsvAsync()
+    {
+        var exportDir = GetExportDirectory();
+        var filePath = Path.Combine(exportDir, $"cashflow_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
+
+        var preferences = await _preferencesRepository.GetAsync();
+        var projection = _cashFlowProjectionService.Project(new CashFlowProjectionInput
+        {
+            IncomeSources = await _incomeRepository.GetAllAsync(),
+            Expenses = await _expenseRepository.GetAllAsync(),
+            OneTimeEvents = await _oneTimeEventRepository.GetAllAsync(),
+            Scenario = IncomeScenario.Realistic,
+            EmergencyFund = new EmergencyFundConfig
+            {
+                TargetMonths = preferences.EmergencyFundTargetMonths,
+                CurrentBalance = preferences.EmergencyFundBalance
+            }
+        });
+
+        var lines = new List<string>
+        {
+            Csv("Month", "Income", "Fixed Expenses", "Variable Expenses", "One-Time", "Surplus", "Cumulative", "Emergency Fund")
+        };
+
+        foreach (var month in projection)
+        {
+            lines.Add(Csv(
+                month.Month.ToString("yyyy-MM", System.Globalization.CultureInfo.InvariantCulture),
+                F(month.TotalIncome), F(month.FixedExpenses), F(month.VariableExpenses),
+                F(month.OneTimeExpenses), F(month.Surplus), F(month.CumulativeSurplus),
+                F(month.EmergencyFundBalance)));
+        }
+
+        await File.WriteAllLinesAsync(filePath, lines);
+        return filePath;
+    }
+
+    public async Task<string> ExportShareableHtmlAsync(ShareReportOptions options)
+    {
+        var exportDir = GetExportDirectory();
+        var filePath = Path.Combine(exportDir, $"share_{DateTime.Now:yyyyMMdd_HHmmss}.html");
+
+        var criteria = (await _criteriaRepository.GetAllAsync()).OrderBy(c => c.DisplayOrder).ToList();
+        var properties = (await _propertyRepository.GetActiveAsync()).ToList();
+        foreach (var property in properties)
+        {
+            property.Scores = (await _scoreRepository.GetByPropertyIdAsync(property.Id)).ToList();
+        }
+        properties = properties.OrderByDescending(p => p.Scores.Sum(score => score.WeightedScore)).ToList();
+        var maxScore = await _scoreRepository.GetMaxPossibleScoreAsync();
+
+        var html = new System.Text.StringBuilder();
+        html.AppendLine("<!DOCTYPE html><html><head><meta charset=\"utf-8\">");
+        html.AppendLine("<title>HomeBuyerHelper - Property Comparison</title>");
+        html.AppendLine("<style>body{font-family:system-ui,sans-serif;margin:24px;color:#222}" +
+            "table{border-collapse:collapse;margin:12px 0}th,td{border:1px solid #ddd;padding:6px 10px;text-align:left}" +
+            "th{background:#512BD4;color:#fff}.good{background:#C8E6C9}.mid{background:#FFF9C4}.bad{background:#FFCDD2}" +
+            "h1{color:#512BD4}.muted{color:#777;font-size:0.85em}</style></head><body>");
+        html.AppendLine("<h1>Property Comparison</h1>");
+        html.AppendLine(System.Globalization.CultureInfo.CurrentCulture,
+            $"<p class=\"muted\">Generated {DateTime.Now:MMMM d, yyyy} by HomeBuyerHelper · Read-only share</p>");
+
+        // Properties overview
+        html.AppendLine("<h2>Properties</h2><table><tr><th>Rank</th><th>Property</th>");
+        if (options.IncludePrices) html.AppendLine("<th>Price</th>");
+        html.AppendLine("<th>Beds/Baths</th><th>Sqft</th><th>Score</th></tr>");
+        for (var i = 0; i < properties.Count; i++)
+        {
+            var property = properties[i];
+            var total = property.Scores.Sum(score => score.WeightedScore);
+            var percent = maxScore > 0 ? (decimal)total / maxScore * 100 : 0;
+            html.AppendLine(System.Globalization.CultureInfo.CurrentCulture, $"<tr><td>#{i + 1}</td><td>{Encode(property.Nickname)}</td>");
+            if (options.IncludePrices)
+                html.AppendLine(System.Globalization.CultureInfo.CurrentCulture, $"<td>{property.EffectivePrice:C0}</td>");
+            html.AppendLine(System.Globalization.CultureInfo.CurrentCulture,
+                $"<td>{property.Bedrooms}/{property.Bathrooms}</td><td>{property.SquareFeet:N0}</td><td>{percent:F0}%</td></tr>");
+        }
+        html.AppendLine("</table>");
+
+        // Score matrix
+        if (options.IncludeScores && criteria.Count > 0)
+        {
+            html.AppendLine("<h2>Scores by Criterion</h2><table><tr><th>Criterion (Weight)</th>");
+            foreach (var property in properties)
+                html.AppendLine(System.Globalization.CultureInfo.CurrentCulture, $"<th>{Encode(property.Nickname)}</th>");
+            html.AppendLine("</tr>");
+
+            foreach (var criterion in criteria)
+            {
+                html.AppendLine(System.Globalization.CultureInfo.CurrentCulture, $"<tr><td>{Encode(criterion.Name)} ({criterion.Weight}%)</td>");
+                foreach (var property in properties)
+                {
+                    var score = property.Scores.FirstOrDefault(sc => sc.CriterionId == criterion.Id);
+                    if (score == null)
+                    {
+                        html.AppendLine("<td>-</td>");
+                    }
+                    else
+                    {
+                        var cls = score.Score >= 8 ? "good" : score.Score >= 5 ? "mid" : "bad";
+                        html.AppendLine(System.Globalization.CultureInfo.CurrentCulture, $"<td class=\"{cls}\">{score.Score}</td>");
+                    }
+                }
+                html.AppendLine("</tr>");
+            }
+            html.AppendLine("</table>");
+        }
+
+        // Notes
+        if (options.IncludeNotes)
+        {
+            var withNotes = properties.Where(p => !string.IsNullOrWhiteSpace(p.Notes)).ToList();
+            if (withNotes.Count > 0)
+            {
+                html.AppendLine("<h2>Notes</h2>");
+                foreach (var property in withNotes)
+                {
+                    html.AppendLine(System.Globalization.CultureInfo.CurrentCulture,
+                        $"<h3>{Encode(property.Nickname)}</h3><p>{Encode(property.Notes!)}</p>");
+                }
+            }
+        }
+
+        html.AppendLine("<p class=\"muted\">Shared from HomeBuyerHelper - private, offline home buying decisions.</p>");
+        html.AppendLine("</body></html>");
+
+        await File.WriteAllTextAsync(filePath, html.ToString());
+        return filePath;
+    }
+
+    private static string F(decimal value) => value.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
+
+    private static string Csv(string first, string second, params string[] rest)
+    {
+        static string Escape(string cell) =>
+            cell.Contains(',', StringComparison.Ordinal) || cell.Contains('"', StringComparison.Ordinal)
+                ? $"\"{cell.Replace("\"", "\"\"", StringComparison.Ordinal)}\""
+                : cell;
+
+        return string.Join(",", new[] { first, second }.Concat(rest).Select(Escape));
+    }
+
+    private static string Encode(string text) => System.Net.WebUtility.HtmlEncode(text);
 
     private static string GetExportDirectory()
     {

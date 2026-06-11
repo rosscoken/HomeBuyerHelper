@@ -376,3 +376,19 @@ public class AffordabilityZoneToColorConverter : IValueConverter
         throw new NotImplementedException();
     }
 }
+
+/// <summary>
+/// Converts the "buying is ahead" flag to a Buy/Rent label.
+/// </summary>
+public class BoolToBuyRentConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        return value is bool buyAhead && buyAhead ? "Buy" : "Rent";
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}

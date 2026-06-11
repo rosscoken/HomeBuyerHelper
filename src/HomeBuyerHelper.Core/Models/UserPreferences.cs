@@ -68,9 +68,14 @@ public class UserPreferences
     public string Currency { get; set; } = "USD";
 
     /// <summary>
-    /// Whether to use dark mode.
+    /// Whether to use dark mode (legacy; superseded by ThemePreference).
     /// </summary>
     public bool UseDarkMode { get; set; }
+
+    /// <summary>
+    /// Theme selection: 0 = follow system, 1 = light, 2 = dark (P4-DRK-002).
+    /// </summary>
+    public int ThemePreference { get; set; }
 
     /// <summary>
     /// Whether to enable notifications.

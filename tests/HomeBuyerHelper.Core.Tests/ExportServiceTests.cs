@@ -230,6 +230,92 @@ public class ExportServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task ExportComparisonToCsv_WritesMatrixWithTotals()
+    {
+        // Arrange
+        SetupTwoPropertyComparison();
+
+        // Act
+        var filePath = await _service.ExportComparisonToCsvAsync(new[] { 1, 2 });
+        _createdFiles.Add(filePath);
+
+        // Assert
+        var lines = await File.ReadAllLinesAsync(filePath);
+        lines[0].Should().Be("Criterion,Weight %,Blue House,Brick Townhome");
+        lines.Should().Contain(line => line.StartsWith("Commute Time,8,9,6"));
+        lines.Should().Contain(line => line.StartsWith("Total Weighted Score"));
+    }
+
+    [Fact]
+    public async Task ExportCashFlowToCsv_WritesProjection()
+    {
+        // Arrange
+        _preferencesRepository.GetAsync().Returns(new UserPreferences());
+        _incomeRepository.GetAllAsync().Returns(new List<IncomeSource>
+        {
+            new() { Name = "Salary", GrossAmount = 5_000m, Frequency = IncomeFrequency.Monthly, IsReliable = true }
+        });
+
+        // Act
+        var filePath = await _service.ExportCashFlowToCsvAsync();
+        _createdFiles.Add(filePath);
+
+        // Assert
+        var lines = await File.ReadAllLinesAsync(filePath);
+        lines[0].Should().StartWith("Month,Income,Fixed Expenses");
+        lines.Should().HaveCount(25); // header + 24 months
+        lines[1].Should().Contain("5000.00");
+    }
+
+    [Fact]
+    public async Task ExportShareableHtml_HonorsPrivacyOptions()
+    {
+        // Arrange
+        SetupTwoPropertyComparison();
+        var first = MakeProperty(1, "Blue House", 450_000m);
+        first.Notes = "Secret negotiation strategy";
+        _propertyRepository.GetActiveAsync().Returns(new List<Property>
+        {
+            first,
+            MakeProperty(2, "Brick Townhome", 410_000m)
+        });
+
+        // Act - exclude prices and notes
+        var filePath = await _service.ExportShareableHtmlAsync(new ShareReportOptions
+        {
+            IncludePrices = false,
+            IncludeScores = true,
+            IncludeNotes = false
+        });
+        _createdFiles.Add(filePath);
+
+        // Assert
+        var html = await File.ReadAllTextAsync(filePath);
+        html.Should().Contain("Blue House");
+        html.Should().Contain("Scores by Criterion");
+        html.Should().NotContain("450,000");
+        html.Should().NotContain("Secret negotiation strategy");
+    }
+
+    [Fact]
+    public async Task ExportShareableHtml_EscapesHtmlInUserContent()
+    {
+        // Arrange
+        SetupTwoPropertyComparison();
+        var sneaky = MakeProperty(1, "<script>alert(1)</script>", 450_000m);
+        _propertyRepository.GetActiveAsync().Returns(new List<Property> { sneaky });
+
+        // Act
+        var filePath = await _service.ExportShareableHtmlAsync(new ShareReportOptions());
+        _createdFiles.Add(filePath);
+
+        // Assert - injection-safe share files (P4-QG-002)
+        var html = await File.ReadAllTextAsync(filePath);
+        html.Should().NotContain("<script>alert(1)</script>");
+        html.Should().Contain("&lt;script&gt;");
+    }
+
+    [Fact]
     public async Task ImportFromJson_EmptyContent_ReturnsFalse()
     {
         // Act

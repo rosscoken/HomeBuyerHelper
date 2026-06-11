@@ -12,4 +12,13 @@ public partial class DataManagementPage : ContentPage
         InitializeComponent();
         BindingContext = viewModel;
     }
+
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        if (BindingContext is DataManagementViewModel vm)
+        {
+            await vm.OnAppearingAsync();
+        }
+    }
 }
