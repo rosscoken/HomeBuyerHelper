@@ -410,3 +410,74 @@ public class LocalFundingRepository : IFundingRepository
         return Task.CompletedTask;
     }
 }
+
+/// <summary>
+/// localStorage-backed photo records (no file storage in the browser preview;
+/// kept so shared services like PropertyService can cascade cleanly).
+/// </summary>
+public class LocalPhotoRepository : IPhotoRepository
+{
+    private readonly LocalStore<PropertyPhoto> _store;
+
+    public LocalPhotoRepository(IJSRuntime js)
+    {
+        _store = new LocalStore<PropertyPhoto>(js, "photos", p => p.Id, (p, id) => p.Id = id);
+    }
+
+    public Task<IReadOnlyList<PropertyPhoto>> GetByPropertyIdAsync(int propertyId) =>
+        Task.FromResult<IReadOnlyList<PropertyPhoto>>(
+            _store.Items.Where(p => p.PropertyId == propertyId).OrderBy(p => p.SortOrder).ToList());
+
+    public Task<int> CreateAsync(PropertyPhoto photo) => Task.FromResult(_store.Add(photo));
+
+    public Task DeleteAsync(int id)
+    {
+        _store.Delete(id);
+        return Task.CompletedTask;
+    }
+
+    public Task DeleteByPropertyIdAsync(int propertyId)
+    {
+        _store.Items.RemoveAll(p => p.PropertyId == propertyId);
+        _store.Save();
+        return Task.CompletedTask;
+    }
+}
+
+/// <summary>
+/// localStorage-backed pros/cons repository.
+/// </summary>
+public class LocalProConRepository : IProConRepository
+{
+    private readonly LocalStore<PropertyProCon> _store;
+
+    public LocalProConRepository(IJSRuntime js)
+    {
+        _store = new LocalStore<PropertyProCon>(js, "proscons", p => p.Id, (p, id) => p.Id = id);
+    }
+
+    public Task<IReadOnlyList<PropertyProCon>> GetByPropertyIdAsync(int propertyId) =>
+        Task.FromResult<IReadOnlyList<PropertyProCon>>(
+            _store.Items.Where(p => p.PropertyId == propertyId).OrderBy(p => p.SortOrder).ToList());
+
+    public Task<int> CreateAsync(PropertyProCon item) => Task.FromResult(_store.Add(item));
+
+    public Task UpdateAsync(PropertyProCon item)
+    {
+        _store.Update(item);
+        return Task.CompletedTask;
+    }
+
+    public Task DeleteAsync(int id)
+    {
+        _store.Delete(id);
+        return Task.CompletedTask;
+    }
+
+    public Task DeleteByPropertyIdAsync(int propertyId)
+    {
+        _store.Items.RemoveAll(p => p.PropertyId == propertyId);
+        _store.Save();
+        return Task.CompletedTask;
+    }
+}

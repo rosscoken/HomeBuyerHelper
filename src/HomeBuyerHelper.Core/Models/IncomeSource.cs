@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace HomeBuyerHelper.Core.Models;
 
 /// <summary>
@@ -81,6 +83,7 @@ public class IncomeSource
     /// <summary>
     /// Calculates the monthly gross income.
     /// </summary>
+    [JsonIgnore]
     public decimal MonthlyGrossIncome => Frequency switch
     {
         IncomeFrequency.Weekly => GrossAmount * 52 / 12,
@@ -95,6 +98,7 @@ public class IncomeSource
     /// <summary>
     /// Calculates the annual gross income.
     /// </summary>
+    [JsonIgnore]
     public decimal AnnualGrossIncome => MonthlyGrossIncome * 12;
 }
 

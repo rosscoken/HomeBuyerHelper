@@ -136,8 +136,39 @@ else
     {
         _error = null;
         _scoring = null;
-        _editing = property;
+        // Edit a copy so typing (and Cancel) never mutates the stored object.
+        _editing = Clone(property);
     }
+
+    private static Property Clone(Property source) => new()
+    {
+        Id = source.Id,
+        Nickname = source.Nickname,
+        Address = source.Address,
+        City = source.City,
+        State = source.State,
+        ZipCode = source.ZipCode,
+        AskingPrice = source.AskingPrice,
+        OfferPrice = source.OfferPrice,
+        Bedrooms = source.Bedrooms,
+        Bathrooms = source.Bathrooms,
+        SquareFeet = source.SquareFeet,
+        LotSquareFeet = source.LotSquareFeet,
+        YearBuilt = source.YearBuilt,
+        PropertyType = source.PropertyType,
+        MonthlyHOA = source.MonthlyHOA,
+        AnnualPropertyTax = source.AnnualPropertyTax,
+        AnnualInsurance = source.AnnualInsurance,
+        CommuteMinutesPrimary = source.CommuteMinutesPrimary,
+        CommuteMinutesSecondary = source.CommuteMinutesSecondary,
+        MonthlyUtilities = source.MonthlyUtilities,
+        ListingUrl = source.ListingUrl,
+        Notes = source.Notes,
+        IsFavorite = source.IsFavorite,
+        IsArchived = source.IsArchived,
+        CreatedAt = source.CreatedAt,
+        UpdatedAt = source.UpdatedAt
+    };
 
     private async Task SaveAsync()
     {
@@ -162,7 +193,7 @@ else
         await LoadAsync();
     }
 
-    private async void StartScore(Property property)
+    private async Task StartScore(Property property)
     {
         _editing = null;
         _scoring = property;
@@ -170,7 +201,6 @@ else
         _scoreDraft = _criteria.ToDictionary(
             c => c.Id,
             c => existing.FirstOrDefault(s => s.CriterionId == c.Id)?.Score ?? 0);
-        StateHasChanged();
     }
 
     private async Task SaveScoresAsync()

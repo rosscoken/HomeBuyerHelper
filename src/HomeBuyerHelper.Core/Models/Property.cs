@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace HomeBuyerHelper.Core.Models;
 
 /// <summary>
@@ -135,21 +137,25 @@ public class Property
     /// <summary>
     /// Calculates the effective price (offer price if set, otherwise asking price).
     /// </summary>
+    [JsonIgnore]
     public decimal EffectivePrice => OfferPrice ?? AskingPrice;
 
     /// <summary>
     /// Calculates the price per square foot.
     /// </summary>
+    [JsonIgnore]
     public decimal PricePerSquareFoot => SquareFeet > 0 ? EffectivePrice / SquareFeet : 0;
 
     /// <summary>
     /// Calculates the estimated monthly property tax.
     /// </summary>
+    [JsonIgnore]
     public decimal MonthlyPropertyTax => (AnnualPropertyTax ?? 0) / 12;
 
     /// <summary>
     /// Calculates the estimated monthly insurance.
     /// </summary>
+    [JsonIgnore]
     public decimal MonthlyInsurance => (AnnualInsurance ?? 0) / 12;
 
     // Score-related properties (populated when loading with scores)
@@ -157,37 +163,44 @@ public class Property
     /// <summary>
     /// Overall weighted score (0-10 scale).
     /// </summary>
+    [JsonIgnore]
     public decimal OverallScore { get; set; }
 
     /// <summary>
     /// Rank among all properties (1 = best).
     /// </summary>
+    [JsonIgnore]
     public int Rank { get; set; }
 
     /// <summary>
     /// Number of criteria that have been scored.
     /// </summary>
+    [JsonIgnore]
     public int ScoredCriteriaCount { get; set; }
 
     /// <summary>
     /// Total number of criteria to score.
     /// </summary>
+    [JsonIgnore]
     public int TotalCriteriaCount { get; set; }
 
     /// <summary>
     /// Score completion percentage (0-100).
     /// </summary>
+    [JsonIgnore]
     public int ScoreCompletionPercent =>
         TotalCriteriaCount > 0 ? (int)(ScoredCriteriaCount * 100.0 / TotalCriteriaCount) : 0;
 
     /// <summary>
     /// Whether all criteria have been scored.
     /// </summary>
+    [JsonIgnore]
     public bool IsFullyScored => TotalCriteriaCount > 0 && ScoredCriteriaCount >= TotalCriteriaCount;
 
     /// <summary>
     /// Color for score display (green for 8+, yellow for 5-7, red for 1-4).
     /// </summary>
+    [JsonIgnore]
     public string ScoreColor =>
         OverallScore >= 8 ? "#4CAF50" :
         OverallScore >= 5 ? "#FF9800" :
@@ -196,6 +209,7 @@ public class Property
     /// <summary>
     /// List of individual criterion scores.
     /// </summary>
+    [JsonIgnore]
     public List<PropertyScore> Scores { get; set; } = new();
 }
 

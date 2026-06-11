@@ -161,7 +161,7 @@ public class CalculationService : ICalculationService
             RequiredDownPayment = downPaymentAmount,
             EstimatedMonthlyPayment = Math.Round(estimatedPayment, 2),
             DTIWithMaxPrice = dtiAtMax,
-            MeetsConventionalGuidelines = dtiAtMax <= 43
+            MeetsConventionalGuidelines = dtiAtMax <= maxDTI
         };
     }
 

@@ -33,6 +33,9 @@ jobs:
         # Site is served at https://<owner>.github.io/<repo>/
         run: |
           sed -i 's|<base href="/" />|<base href="/${{ github.event.repository.name }}/" />|' publish/wwwroot/index.html
+          # Fail loudly if the rewrite no-opped (e.g., index.html formatting changed);
+          # a silent miss would deploy a site whose asset paths all 404.
+          grep -q '<base href="/${{ github.event.repository.name }}/" />' publish/wwwroot/index.html
 
       - name: Add SPA fallback and disable Jekyll
         run: |

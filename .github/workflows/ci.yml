@@ -27,3 +27,11 @@ jobs:
 
       - name: Build web app
         run: dotnet build src/HomeBuyerHelper.Web/HomeBuyerHelper.Web.csproj -c Release
+
+      # Compile the MAUI head so DI/XAML/ViewModel breakage can't merge green.
+      # Hosted ubuntu runners ship the Android SDK and JDK.
+      - name: Install MAUI Android workload
+        run: dotnet workload install maui-android
+
+      - name: Build MAUI app (Android)
+        run: dotnet build src/HomeBuyerHelper/HomeBuyerHelper.csproj -f net8.0-android -c Release

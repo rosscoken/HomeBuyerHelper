@@ -18,6 +18,8 @@ builder.Services.AddSingleton<IIncomeRepository, LocalIncomeRepository>();
 builder.Services.AddSingleton<IExpenseRepository, LocalExpenseRepository>();
 builder.Services.AddSingleton<IOneTimeEventRepository, LocalOneTimeEventRepository>();
 builder.Services.AddSingleton<IFundingRepository, LocalFundingRepository>();
+builder.Services.AddSingleton<IPhotoRepository, LocalPhotoRepository>();
+builder.Services.AddSingleton<IProConRepository, LocalProConRepository>();
 
 // Core business services (shared with the native app)
 builder.Services.AddSingleton<IPropertyService, PropertyService>();

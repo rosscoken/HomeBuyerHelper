@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace HomeBuyerHelper.Core.Models;
 
 /// <summary>
@@ -104,6 +106,7 @@ public class FundingSource
     /// <summary>
     /// Gets the effective amount (expected if set, otherwise current).
     /// </summary>
+    [JsonIgnore]
     public decimal EffectiveAmount => ExpectedAmount ?? CurrentAmount;
 }
 

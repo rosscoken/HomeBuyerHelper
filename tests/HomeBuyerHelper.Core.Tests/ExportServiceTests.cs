@@ -19,6 +19,7 @@ public class ExportServiceTests : IDisposable
     private readonly IIncomeRepository _incomeRepository = Substitute.For<IIncomeRepository>();
     private readonly IExpenseRepository _expenseRepository = Substitute.For<IExpenseRepository>();
     private readonly IOneTimeEventRepository _oneTimeEventRepository = Substitute.For<IOneTimeEventRepository>();
+    private readonly IFundingRepository _fundingRepository = Substitute.For<IFundingRepository>();
     private readonly ExportService _service;
     private readonly List<string> _createdFiles = new();
 
@@ -28,6 +29,7 @@ public class ExportServiceTests : IDisposable
         _incomeRepository.GetAllAsync().Returns(new List<IncomeSource>());
         _expenseRepository.GetAllAsync().Returns(new List<Expense>());
         _oneTimeEventRepository.GetAllAsync().Returns(new List<OneTimeEvent>());
+        _fundingRepository.GetAllAsync().Returns(new List<FundingSource>());
 
         _service = new ExportService(
             _propertyRepository,
@@ -39,7 +41,8 @@ public class ExportServiceTests : IDisposable
             _expenseRepository,
             _oneTimeEventRepository,
             new CashFlowProjectionService(incomeScenarioService),
-            new AffordabilityService(incomeScenarioService));
+            new AffordabilityService(incomeScenarioService),
+            _fundingRepository);
     }
 
     public void Dispose()
@@ -313,6 +316,74 @@ public class ExportServiceTests : IDisposable
         var html = await File.ReadAllTextAsync(filePath);
         html.Should().NotContain("<script>alert(1)</script>");
         html.Should().Contain("&lt;script&gt;");
+    }
+
+    [Fact]
+    public async Task ExportAllData_IncludesFundingSources()
+    {
+        // Arrange
+        SetupTwoPropertyComparison();
+        _propertyRepository.GetAllAsync().Returns(new List<Property>());
+        _preferencesRepository.GetAsync().Returns(new UserPreferences());
+        _fundingRepository.GetAllAsync().Returns(new List<FundingSource>
+        {
+            new() { Name = "Chase Savings", CurrentAmount = 25_000m, FundingType = FundingType.Savings }
+        });
+
+        // Act
+        var filePath = await _service.ExportAllDataAsync();
+        _createdFiles.Add(filePath);
+
+        // Assert - funding data survives the backup (was silently dropped before)
+        var json = await File.ReadAllTextAsync(filePath);
+        json.Should().Contain("fundingSources");
+        json.Should().Contain("Chase Savings");
+    }
+
+    [Fact]
+    public async Task ImportFromJson_FundingSources_AreRestored()
+    {
+        // Arrange
+        var json = "{\"version\":\"1.1\",\"fundingSources\":[{\"name\":\"Gift\",\"currentAmount\":50000,\"fundingType\":5}]}";
+
+        // Act
+        var result = await _service.ImportFromJsonAsync(json);
+
+        // Assert
+        result.Should().BeTrue();
+        await _fundingRepository.Received(1).CreateAsync(
+            Arg.Is<FundingSource>(f => f.Name == "Gift" && f.CurrentAmount == 50_000m && f.Id == 0));
+    }
+
+    [Fact]
+    public async Task ImportFromJson_UnknownSchemaVersion_IsRejected()
+    {
+        var json = "{\"version\":\"9.0\",\"properties\":[]}";
+
+        (await _service.ImportFromJsonAsync(json)).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ExportAllData_OmitsNavigationAndComputedProperties()
+    {
+        // Arrange
+        SetupTwoPropertyComparison();
+        _propertyRepository.GetAllAsync().Returns(new List<Property>
+        {
+            MakeProperty(1, "Blue House", 450_000m)
+        });
+        _preferencesRepository.GetAsync().Returns(new UserPreferences());
+
+        // Act
+        var filePath = await _service.ExportAllDataAsync();
+        _createdFiles.Add(filePath);
+
+        // Assert - backups carry data, not embedded criteria or computed display values
+        var json = await File.ReadAllTextAsync(filePath);
+        json.Should().NotContain("\"criterion\"");
+        json.Should().NotContain("weightedScore");
+        json.Should().NotContain("effectivePrice");
+        json.Should().NotContain("monthlyGrossIncome");
     }
 
     [Fact]

@@ -41,6 +41,7 @@ public class ExportService : IExportService
     private readonly IOneTimeEventRepository _oneTimeEventRepository;
     private readonly ICashFlowProjectionService _cashFlowProjectionService;
     private readonly IAffordabilityService _affordabilityService;
+    private readonly IFundingRepository _fundingRepository;
 
     static ExportService()
     {
@@ -57,7 +58,8 @@ public class ExportService : IExportService
         IExpenseRepository expenseRepository,
         IOneTimeEventRepository oneTimeEventRepository,
         ICashFlowProjectionService cashFlowProjectionService,
-        IAffordabilityService affordabilityService)
+        IAffordabilityService affordabilityService,
+        IFundingRepository fundingRepository)
     {
         _propertyRepository = propertyRepository;
         _scoreRepository = scoreRepository;
@@ -69,6 +71,7 @@ public class ExportService : IExportService
         _oneTimeEventRepository = oneTimeEventRepository;
         _cashFlowProjectionService = cashFlowProjectionService;
         _affordabilityService = affordabilityService;
+        _fundingRepository = fundingRepository;
     }
 
     public async Task<string> ExportComparisonToPdfAsync(IEnumerable<int> propertyIds)
@@ -369,7 +372,8 @@ public class ExportService : IExportService
             Settings = preferences,
             IncomeSources = (await _incomeRepository.GetAllAsync()).ToList(),
             Expenses = (await _expenseRepository.GetAllAsync()).ToList(),
-            OneTimeEvents = (await _oneTimeEventRepository.GetAllAsync()).ToList()
+            OneTimeEvents = (await _oneTimeEventRepository.GetAllAsync()).ToList(),
+            FundingSources = (await _fundingRepository.GetAllAsync()).ToList()
         };
 
         var json = JsonSerializer.Serialize(exportData, WriteOptions);
@@ -407,6 +411,12 @@ public class ExportService : IExportService
             // Validate JSON structure
             var importData = JsonSerializer.Deserialize<ExportDataModel>(jsonContent, ReadOptions);
             if (importData == null)
+            {
+                return false;
+            }
+
+            // Known backup schema versions; reject anything newer/unknown.
+            if (importData.Version is not (null or "1.0" or "1.1"))
             {
                 return false;
             }
@@ -489,6 +499,11 @@ public class ExportService : IExportService
                 {
                     await _oneTimeEventRepository.DeleteAsync(existing.Id);
                 }
+
+                foreach (var existing in await _fundingRepository.GetAllAsync())
+                {
+                    await _fundingRepository.DeleteAsync(existing.Id);
+                }
             }
 
             if (importData.IncomeSources != null)
@@ -515,6 +530,15 @@ public class ExportService : IExportService
                 {
                     oneTimeEvent.Id = 0;
                     await _oneTimeEventRepository.CreateAsync(oneTimeEvent);
+                }
+            }
+
+            if (importData.FundingSources != null)
+            {
+                foreach (var fundingSource in importData.FundingSources)
+                {
+                    fundingSource.Id = 0;
+                    await _fundingRepository.CreateAsync(fundingSource);
                 }
             }
 
@@ -582,6 +606,7 @@ public class ExportService : IExportService
         public List<IncomeSource>? IncomeSources { get; set; }
         public List<Expense>? Expenses { get; set; }
         public List<OneTimeEvent>? OneTimeEvents { get; set; }
+        public List<FundingSource>? FundingSources { get; set; }
     }
 
     public async Task<string> GenerateShareTextAsync(int propertyId)
