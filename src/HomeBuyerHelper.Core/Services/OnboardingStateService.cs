@@ -6,19 +6,25 @@ namespace HomeBuyerHelper.Core.Services;
 
 /// <summary>
 /// Service for managing onboarding flow state.
-/// Persists state to Preferences for session continuity.
+/// Persists state to a key/value store for session continuity.
 /// </summary>
 public class OnboardingStateService : IOnboardingStateService
 {
     private const string StateKey = "onboarding_state";
+    private readonly IKeyValueStore _store;
     private OnboardingState? _cachedState;
+
+    public OnboardingStateService(IKeyValueStore store)
+    {
+        _store = store;
+    }
 
     public OnboardingState GetState()
     {
         if (_cachedState != null)
             return _cachedState;
 
-        var json = Preferences.Get(StateKey, string.Empty);
+        var json = _store.Get(StateKey, string.Empty);
         if (!string.IsNullOrEmpty(json))
         {
             try
@@ -41,13 +47,13 @@ public class OnboardingStateService : IOnboardingStateService
         _cachedState = state;
 
         var json = JsonSerializer.Serialize(state);
-        Preferences.Set(StateKey, json);
+        _store.Set(StateKey, json);
     }
 
     public void ClearState()
     {
         _cachedState = null;
-        Preferences.Remove(StateKey);
+        _store.Remove(StateKey);
     }
 
     public bool IsOnboardingInProgress()

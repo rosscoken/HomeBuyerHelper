@@ -117,8 +117,8 @@ public class ScoreRepository : IScoreRepository
     public async Task<int> GetMaxPossibleScoreAsync()
     {
         var criteria = await _criteriaRepository.GetAllAsync();
-        // Max score is 5, so max weighted score = sum of (5 * weight) for all criteria
-        return criteria.Sum(c => 5 * c.Weight);
+        // Scores use a 1-10 scale, so max weighted score = sum of (10 * weight) for all criteria
+        return criteria.Sum(c => 10 * c.Weight);
     }
 
     private async Task<PropertyScore> MapToModelAsync(PropertyScoreEntity entity)

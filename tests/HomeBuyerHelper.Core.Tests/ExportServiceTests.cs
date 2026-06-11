@@ -1,0 +1,228 @@
+using Xunit;
+using FluentAssertions;
+using HomeBuyerHelper.Core.Interfaces;
+using HomeBuyerHelper.Core.Models;
+using HomeBuyerHelper.Core.Services;
+using NSubstitute;
+
+namespace HomeBuyerHelper.Core.Tests;
+
+/// <summary>
+/// Tests for the ExportService (PDF generation, JSON backup/restore).
+/// </summary>
+public class ExportServiceTests : IDisposable
+{
+    private readonly IPropertyRepository _propertyRepository = Substitute.For<IPropertyRepository>();
+    private readonly IScoreRepository _scoreRepository = Substitute.For<IScoreRepository>();
+    private readonly ICriteriaRepository _criteriaRepository = Substitute.For<ICriteriaRepository>();
+    private readonly IUserPreferencesRepository _preferencesRepository = Substitute.For<IUserPreferencesRepository>();
+    private readonly ExportService _service;
+    private readonly List<string> _createdFiles = new();
+
+    public ExportServiceTests()
+    {
+        _service = new ExportService(
+            _propertyRepository,
+            _scoreRepository,
+            _criteriaRepository,
+            _preferencesRepository,
+            new CalculationService());
+    }
+
+    public void Dispose()
+    {
+        foreach (var file in _createdFiles.Where(File.Exists))
+        {
+            File.Delete(file);
+        }
+        GC.SuppressFinalize(this);
+    }
+
+    private static EvaluationCriterion MakeCriterion(int id, string name, int weight) => new()
+    {
+        Id = id,
+        Name = name,
+        Weight = weight
+    };
+
+    private static Property MakeProperty(int id, string nickname, decimal price) => new()
+    {
+        Id = id,
+        Nickname = nickname,
+        AskingPrice = price,
+        Bedrooms = 3,
+        Bathrooms = 2,
+        SquareFeet = 1800,
+        YearBuilt = 1995,
+        MonthlyHOA = 50
+    };
+
+    private static PropertyScore MakeScore(int propertyId, EvaluationCriterion criterion, int score) => new()
+    {
+        PropertyId = propertyId,
+        CriterionId = criterion.Id,
+        Score = score,
+        Criterion = criterion
+    };
+
+    private void SetupTwoPropertyComparison()
+    {
+        var commute = MakeCriterion(1, "Commute Time", 8);
+        var kitchen = MakeCriterion(2, "Kitchen Quality", 5);
+
+        _criteriaRepository.GetAllAsync().Returns(new List<EvaluationCriterion> { commute, kitchen });
+        _scoreRepository.GetMaxPossibleScoreAsync().Returns(10 * (8 + 5));
+
+        var first = MakeProperty(1, "Blue House", 450_000m);
+        var second = MakeProperty(2, "Brick Townhome", 410_000m);
+
+        _propertyRepository.GetByIdAsync(1).Returns(first);
+        _propertyRepository.GetByIdAsync(2).Returns(second);
+
+        _scoreRepository.GetByPropertyIdAsync(1).Returns(new List<PropertyScore>
+        {
+            MakeScore(1, commute, 9),
+            MakeScore(1, kitchen, 4)
+        });
+        _scoreRepository.GetByPropertyIdAsync(2).Returns(new List<PropertyScore>
+        {
+            MakeScore(2, commute, 6),
+            MakeScore(2, kitchen, 8)
+        });
+    }
+
+    [Fact]
+    public async Task ExportComparisonToPdf_GeneratesPdfFile()
+    {
+        // Arrange
+        SetupTwoPropertyComparison();
+
+        // Act
+        var filePath = await _service.ExportComparisonToPdfAsync(new[] { 1, 2 });
+        _createdFiles.Add(filePath);
+
+        // Assert
+        File.Exists(filePath).Should().BeTrue();
+        var bytes = await File.ReadAllBytesAsync(filePath);
+        bytes.Length.Should().BeGreaterThan(500);
+        // PDF magic header "%PDF"
+        bytes.Take(4).Should().Equal((byte)'%', (byte)'P', (byte)'D', (byte)'F');
+    }
+
+    [Fact]
+    public async Task ExportComparisonToPdf_SkipsMissingProperties()
+    {
+        // Arrange
+        SetupTwoPropertyComparison();
+        _propertyRepository.GetByIdAsync(99).Returns((Property?)null);
+
+        // Act
+        var filePath = await _service.ExportComparisonToPdfAsync(new[] { 1, 99 });
+        _createdFiles.Add(filePath);
+
+        // Assert
+        File.Exists(filePath).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ExportPropertyDetailToPdf_GeneratesPdfFile()
+    {
+        // Arrange
+        SetupTwoPropertyComparison();
+
+        // Act
+        var filePath = await _service.ExportPropertyDetailToPdfAsync(1);
+        _createdFiles.Add(filePath);
+
+        // Assert
+        File.Exists(filePath).Should().BeTrue();
+        var bytes = await File.ReadAllBytesAsync(filePath);
+        bytes.Take(4).Should().Equal((byte)'%', (byte)'P', (byte)'D', (byte)'F');
+    }
+
+    [Fact]
+    public async Task ExportPropertyDetailToPdf_UnknownProperty_Throws()
+    {
+        // Arrange
+        _propertyRepository.GetByIdAsync(42).Returns((Property?)null);
+
+        // Act
+        var act = () => _service.ExportPropertyDetailToPdfAsync(42);
+
+        // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task ExportBudgetToPdf_GeneratesPdfFile()
+    {
+        // Arrange
+        SetupTwoPropertyComparison();
+        _preferencesRepository.GetAsync().Returns(new UserPreferences());
+
+        // Act
+        var filePath = await _service.ExportBudgetToPdfAsync(1);
+        _createdFiles.Add(filePath);
+
+        // Assert
+        File.Exists(filePath).Should().BeTrue();
+        var bytes = await File.ReadAllBytesAsync(filePath);
+        bytes.Take(4).Should().Equal((byte)'%', (byte)'P', (byte)'D', (byte)'F');
+    }
+
+    [Fact]
+    public async Task ExportAllData_ThenValidate_RoundTrips()
+    {
+        // Arrange
+        SetupTwoPropertyComparison();
+        _propertyRepository.GetAllAsync().Returns(new List<Property>
+        {
+            MakeProperty(1, "Blue House", 450_000m)
+        });
+        _preferencesRepository.GetAsync().Returns(new UserPreferences());
+
+        // Act
+        var filePath = await _service.ExportAllDataAsync();
+        _createdFiles.Add(filePath);
+        var json = await File.ReadAllTextAsync(filePath);
+        var validation = await _service.ValidateImportFileAsync(json);
+
+        // Assert
+        validation.IsValid.Should().BeTrue();
+        validation.PropertyCount.Should().Be(1);
+        validation.CriteriaCount.Should().Be(2);
+        validation.ScoreCount.Should().Be(2);
+        validation.HasSettings.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ValidateImportFile_EmptyContent_IsInvalid()
+    {
+        // Act
+        var result = await _service.ValidateImportFileAsync("");
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.ErrorMessage.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public async Task ValidateImportFile_MalformedJson_IsInvalid()
+    {
+        // Act
+        var result = await _service.ValidateImportFileAsync("{ not valid json");
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ImportFromJson_EmptyContent_ReturnsFalse()
+    {
+        // Act
+        var result = await _service.ImportFromJsonAsync("");
+
+        // Assert
+        result.Should().BeFalse();
+    }
+}

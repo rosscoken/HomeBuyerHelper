@@ -13,8 +13,17 @@ public class DatabaseService : IDatabaseService
     private readonly string _databasePath;
 
     public DatabaseService()
+        : this(null)
     {
-        _databasePath = Path.Combine(
+    }
+
+    /// <summary>
+    /// Creates a database service with an explicit database file path.
+    /// Used by tests to isolate database files; the app uses the default path.
+    /// </summary>
+    public DatabaseService(string? databasePath)
+    {
+        _databasePath = databasePath ?? Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "HomeBuyerHelper",
             "homebuyerhelper.db");

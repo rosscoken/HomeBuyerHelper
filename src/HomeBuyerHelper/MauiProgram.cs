@@ -43,6 +43,9 @@ public static class MauiProgram
         builder.Services.AddSingleton<IScoreRepository, ScoreRepository>();
         builder.Services.AddSingleton<IUserPreferencesRepository, UserPreferencesRepository>();
 
+        // Register platform abstractions
+        builder.Services.AddSingleton<IKeyValueStore, Services.MauiPreferencesStore>();
+
         // Register business services
         builder.Services.AddSingleton<IPropertyService, PropertyService>();
         builder.Services.AddSingleton<ICalculationService, CalculationService>();

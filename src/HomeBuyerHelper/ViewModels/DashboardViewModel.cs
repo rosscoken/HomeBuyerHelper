@@ -56,7 +56,7 @@ public partial class DashboardViewModel : BaseViewModel
     [RelayCommand]
     private async Task NavigateToOnboardingAsync()
     {
-        await Shell.Current.GoToAsync(nameof(Pages.OnboardingPage));
+        await Shell.Current.GoToAsync("Welcome");
     }
 
     [RelayCommand]
