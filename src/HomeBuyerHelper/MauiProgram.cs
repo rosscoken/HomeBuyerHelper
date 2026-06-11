@@ -13,8 +13,8 @@ using HomeBuyerHelper.ViewModels;
 using HomeBuyerHelper.ViewModels.Analysis;
 using HomeBuyerHelper.ViewModels.Budget;
 using HomeBuyerHelper.ViewModels.Funding;
-using HomeBuyerHelper.ViewModels.Settings;
 using HomeBuyerHelper.ViewModels.Onboarding;
+using HomeBuyerHelper.ViewModels.Settings;
 using Microsoft.Extensions.Logging;
 
 namespace HomeBuyerHelper;

@@ -12,7 +12,9 @@ public class CommuteValueService : ICommuteValueService
     public decimal CalculateMonthlyValue(int roundTripMinutes, int workdaysPerMonth, decimal hourlyRate)
     {
         if (roundTripMinutes <= 0 || workdaysPerMonth <= 0 || hourlyRate <= 0)
+        {
             return 0;
+        }
 
         return Math.Round(roundTripMinutes * workdaysPerMonth * hourlyRate / 60m, 2);
     }

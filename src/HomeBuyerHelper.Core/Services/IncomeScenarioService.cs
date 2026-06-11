@@ -20,11 +20,15 @@ public class IncomeScenarioService : IIncomeScenarioService
     public decimal GetAmountForMonth(IncomeSource source, DateTime month, IncomeScenario scenario)
     {
         if (!IsActiveInMonth(source, month))
+        {
             return 0;
+        }
 
         var baseAmount = GetScheduledAmount(source, month);
         if (baseAmount == 0)
+        {
             return 0;
+        }
 
         return baseAmount * GetScenarioFactor(source, scenario);
     }
@@ -44,7 +48,9 @@ public class IncomeScenarioService : IIncomeScenarioService
     public decimal CalculateRsuNetPerVest(decimal sharesPerVest, decimal estimatedSharePrice, decimal taxWithholdingPercent)
     {
         if (sharesPerVest <= 0 || estimatedSharePrice <= 0)
+        {
             return 0;
+        }
 
         var gross = sharesPerVest * estimatedSharePrice;
         var withholding = Math.Clamp(taxWithholdingPercent, 0, 100);
@@ -54,7 +60,9 @@ public class IncomeScenarioService : IIncomeScenarioService
     private static decimal GetScenarioFactor(IncomeSource source, IncomeScenario scenario)
     {
         if (source.IsReliable)
+        {
             return 1m;
+        }
 
         return scenario switch
         {
@@ -99,8 +107,12 @@ public class IncomeScenarioService : IIncomeScenarioService
             {
                 var anchor = source.PaymentMonth ?? DefaultQuarterlyAnchorMonth;
                 var offset = (month.Month - anchor) % 3;
-                if (offset < 0) offset += 3;
-                return offset == 0 ? source.GrossAmount : 0;
+                if (offset < 0)
+                    {
+                        offset += 3;
+                    }
+
+                    return offset == 0 ? source.GrossAmount : 0;
             }
 
             case IncomeFrequency.Annually:

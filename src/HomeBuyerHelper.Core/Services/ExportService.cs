@@ -85,7 +85,9 @@ public class ExportService : IExportService
         {
             var property = await _propertyRepository.GetByIdAsync(id);
             if (property == null)
+            {
                 continue;
+            }
 
             property.Scores = (await _scoreRepository.GetByPropertyIdAsync(id)).ToList();
             properties.Add(property);
@@ -398,12 +400,16 @@ public class ExportService : IExportService
         try
         {
             if (string.IsNullOrWhiteSpace(jsonContent))
+            {
                 return false;
+            }
 
             // Validate JSON structure
             var importData = JsonSerializer.Deserialize<ExportDataModel>(jsonContent, ReadOptions);
             if (importData == null)
+            {
                 return false;
+            }
 
             // Track ID mappings for updating score references
             var criteriaIdMap = new Dictionary<int, int>();
@@ -470,11 +476,19 @@ public class ExportService : IExportService
             if (replaceExisting)
             {
                 foreach (var existing in await _incomeRepository.GetAllAsync())
+                {
                     await _incomeRepository.DeleteAsync(existing.Id);
+                }
+
                 foreach (var existing in await _expenseRepository.GetAllAsync())
+                {
                     await _expenseRepository.DeleteAsync(existing.Id);
+                }
+
                 foreach (var existing in await _oneTimeEventRepository.GetAllAsync())
+                {
                     await _oneTimeEventRepository.DeleteAsync(existing.Id);
+                }
             }
 
             if (importData.IncomeSources != null)
@@ -620,7 +634,11 @@ public class ExportService : IExportService
         foreach (var id in propertyIds)
         {
             var property = await _propertyRepository.GetByIdAsync(id);
-            if (property == null) continue;
+            if (property == null)
+            {
+                continue;
+            }
+
             property.Scores = (await _scoreRepository.GetByPropertyIdAsync(id)).ToList();
             properties.Add(property);
         }
@@ -713,7 +731,11 @@ public class ExportService : IExportService
 
         // Properties overview
         html.AppendLine("<h2>Properties</h2><table><tr><th>Rank</th><th>Property</th>");
-        if (options.IncludePrices) html.AppendLine("<th>Price</th>");
+        if (options.IncludePrices)
+        {
+            html.AppendLine("<th>Price</th>");
+        }
+
         html.AppendLine("<th>Beds/Baths</th><th>Sqft</th><th>Score</th></tr>");
         for (var i = 0; i < properties.Count; i++)
         {
@@ -722,7 +744,10 @@ public class ExportService : IExportService
             var percent = maxScore > 0 ? (decimal)total / maxScore * 100 : 0;
             html.AppendLine(System.Globalization.CultureInfo.CurrentCulture, $"<tr><td>#{i + 1}</td><td>{Encode(property.Nickname)}</td>");
             if (options.IncludePrices)
+            {
                 html.AppendLine(System.Globalization.CultureInfo.CurrentCulture, $"<td>{property.EffectivePrice:C0}</td>");
+            }
+
             html.AppendLine(System.Globalization.CultureInfo.CurrentCulture,
                 $"<td>{property.Bedrooms}/{property.Bathrooms}</td><td>{property.SquareFeet:N0}</td><td>{percent:F0}%</td></tr>");
         }
@@ -733,7 +758,10 @@ public class ExportService : IExportService
         {
             html.AppendLine("<h2>Scores by Criterion</h2><table><tr><th>Criterion (Weight)</th>");
             foreach (var property in properties)
+            {
                 html.AppendLine(System.Globalization.CultureInfo.CurrentCulture, $"<th>{Encode(property.Nickname)}</th>");
+            }
+
             html.AppendLine("</tr>");
 
             foreach (var criterion in criteria)

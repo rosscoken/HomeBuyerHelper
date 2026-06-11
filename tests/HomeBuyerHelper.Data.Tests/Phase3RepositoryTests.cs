@@ -1,7 +1,7 @@
-using Xunit;
 using FluentAssertions;
 using HomeBuyerHelper.Core.Models;
 using HomeBuyerHelper.Data.Repositories;
+using Xunit;
 
 namespace HomeBuyerHelper.Data.Tests;
 

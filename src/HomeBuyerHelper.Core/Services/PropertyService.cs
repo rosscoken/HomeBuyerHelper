@@ -76,7 +76,10 @@ public class PropertyService : IPropertyService
     public async Task<Property?> GetPropertyDetailAsync(int id)
     {
         var property = await _propertyRepository.GetByIdAsync(id);
-        if (property == null) return null;
+        if (property == null)
+        {
+            return null;
+        }
 
         var allCriteria = await _criteriaRepository.GetAllAsync();
         var scores = await _scoreRepository.GetByPropertyIdAsync(id);
@@ -167,7 +170,10 @@ public class PropertyService : IPropertyService
         foreach (var id in propertyIds)
         {
             var property = await _propertyRepository.GetByIdAsync(id);
-            if (property == null) continue;
+            if (property == null)
+            {
+                continue;
+            }
 
             var scores = await _scoreRepository.GetByPropertyIdAsync(id);
             var totalWeightedScore = scores.Sum(s => s.WeightedScore);

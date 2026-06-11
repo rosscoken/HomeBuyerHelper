@@ -102,7 +102,9 @@ public class TaxImpactService : ITaxImpactService
         foreach (var (upTo, rate) in brackets)
         {
             if (income <= upTo)
+            {
                 return rate;
+            }
         }
         return brackets[^1].Rate;
     }
@@ -239,7 +241,9 @@ public class TaxImpactService : ITaxImpactService
             {
                 incomeTax = earnings * ordinaryRate;
                 if (age < PenaltyFreeAge)
+                {
                     penalty = earnings * EarlyWithdrawalPenaltyRate;
+                }
             }
         }
 

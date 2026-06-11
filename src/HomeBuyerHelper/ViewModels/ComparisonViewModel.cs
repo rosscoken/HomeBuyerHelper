@@ -1,8 +1,8 @@
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using HomeBuyerHelper.Core.Interfaces;
 using HomeBuyerHelper.Core.Models;
-using System.Collections.ObjectModel;
 
 namespace HomeBuyerHelper.ViewModels;
 

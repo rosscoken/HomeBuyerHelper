@@ -22,7 +22,9 @@ public class OnboardingStateService : IOnboardingStateService
     public OnboardingState GetState()
     {
         if (_cachedState != null)
+        {
             return _cachedState;
+        }
 
         var json = _store.Get(StateKey, string.Empty);
         if (!string.IsNullOrEmpty(json))

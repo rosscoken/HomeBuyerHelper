@@ -19,7 +19,9 @@ public class AffordabilityService : IAffordabilityService
     public decimal CalculateHousingPercentage(decimal monthlyHousingCost, decimal grossMonthlyIncome)
     {
         if (grossMonthlyIncome <= 0)
+        {
             return 0;
+        }
 
         return Math.Round(monthlyHousingCost / grossMonthlyIncome * 100, 2);
     }

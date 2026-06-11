@@ -1,9 +1,9 @@
-using Xunit;
 using FluentAssertions;
 using HomeBuyerHelper.Core.Interfaces;
 using HomeBuyerHelper.Core.Models;
 using HomeBuyerHelper.Core.Services;
 using NSubstitute;
+using Xunit;
 
 namespace HomeBuyerHelper.Core.Tests;
 

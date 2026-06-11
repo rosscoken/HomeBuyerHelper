@@ -1,6 +1,6 @@
-using Xunit;
 using FluentAssertions;
 using HomeBuyerHelper.Core.Services;
+using Xunit;
 
 namespace HomeBuyerHelper.Core.Tests;
 

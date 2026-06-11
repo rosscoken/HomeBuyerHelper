@@ -290,7 +290,9 @@ public static class CommonCriteria
                 _ => null
             };
             if (template != null)
+            {
                 AddIfNew(template, $"You selected '{LocationPriorities.First(p => p.Key == priority).DisplayName}'");
+            }
         }
 
         // Home priority mappings
@@ -310,7 +312,9 @@ public static class CommonCriteria
                 _ => null
             };
             if (template != null)
+            {
                 AddIfNew(template, $"You selected '{HomePriorities.First(p => p.Key == priority).DisplayName}'");
+            }
         }
 
         // Normalize weights to sum to 100
