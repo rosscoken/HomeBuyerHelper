@@ -38,12 +38,19 @@ A privacy-first, offline-capable .NET MAUI app (iOS, Android, Windows, macOS). N
 - Criteria template export/import + 9 built-in templates
 - Dark mode (system/light/dark) and tablet grid layouts
 
+## Web Preview (GitHub Pages)
+
+A Blazor WebAssembly preview of the app deploys to GitHub Pages on every push to `main` (`.github/workflows/deploy-pages.yml`). It reuses `HomeBuyerHelper.Core` for all calculations, with browser localStorage standing in for SQLite — data stays in the visitor's browser, keeping the privacy promise. One-time setup: in the repo's **Settings → Pages**, set the source to **GitHub Actions**.
+
+Run it locally with `dotnet run --project src/HomeBuyerHelper.Web`.
+
 ## Solution Layout
 
 ```
 src/HomeBuyerHelper/        # MAUI app (UI, ViewModels, platform heads)
 src/HomeBuyerHelper.Core/   # Business logic, models, calculation services
 src/HomeBuyerHelper.Data/   # SQLite repositories (sqlite-net-pcl)
+src/HomeBuyerHelper.Web/    # Blazor WebAssembly preview (GitHub Pages)
 tests/                      # xUnit test projects (163 tests)
 ```
 

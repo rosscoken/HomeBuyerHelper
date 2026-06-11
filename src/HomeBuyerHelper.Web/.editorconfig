@@ -1,0 +1,10 @@
+# Analyzer adjustments for the Blazor web preview project.
+# Razor-generated code and component event handlers trip instance-method
+# and naming rules that don't apply cleanly to components.
+
+[*.cs]
+dotnet_diagnostic.CA1822.severity = suggestion
+dotnet_diagnostic.CA1861.severity = suggestion
+dotnet_diagnostic.CA1305.severity = suggestion
+dotnet_diagnostic.CA1826.severity = suggestion
+dotnet_diagnostic.CA2007.severity = none

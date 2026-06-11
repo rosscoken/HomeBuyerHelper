@@ -1,0 +1,200 @@
+@page "/criteria"
+@inject ICriteriaRepository CriteriaRepository
+@inject IWeightBalancingService WeightBalancingService
+
+<PageTitle>Criteria · HomeBuyerHelper</PageTitle>
+
+<h1>Evaluation Criteria</h1>
+<p class="muted">Define what matters and how much. Weights should total 100%.</p>
+
+<div class="card">
+    <h2>Start from a template</h2>
+    <div class="row">
+        <span>
+            <label>Template</label>
+            <select @bind="_selectedTemplate">
+                @foreach (var name in HomeBuyerHelper.Core.Data.CommonCriteria.Templates.Keys)
+                {
+                    <option value="@name">@name</option>
+                }
+            </select>
+        </span>
+        <button class="secondary" @onclick="ApplyTemplateAsync">Apply Template</button>
+    </div>
+    <p class="muted">Applying replaces your current criteria.</p>
+</div>
+
+@if (_editing != null)
+{
+    <div class="card">
+        <h2>@(_editing.Id == 0 ? "Add Criterion" : $"Edit: {_editing.Name}")</h2>
+        <div class="row">
+            <span><label>Name *</label><input @bind="_editing.Name" /></span>
+            <span><label>Weight %</label><input type="number" min="1" max="50" @bind="_editing.Weight" /></span>
+            <span>
+                <label>Category</label>
+                <select @bind="_editing.Category">
+                    @foreach (var category in Enum.GetValues<CriterionCategory>())
+                    {
+                        <option value="@category">@category</option>
+                    }
+                </select>
+            </span>
+        </div>
+        <div class="row">
+            <span><label>What does a 1 look like?</label><input size="40" @bind="_editing.ScoreAnchorLow" /></span>
+            <span><label>What does a 10 look like?</label><input size="40" @bind="_editing.ScoreAnchorHigh" /></span>
+        </div>
+        @if (_error != null) { <p class="error-text">@_error</p> }
+        <div class="row">
+            <button @onclick="SaveAsync">Save</button>
+            <button class="secondary" @onclick="() => _editing = null">Cancel</button>
+        </div>
+    </div>
+}
+else
+{
+    <button @onclick="StartAdd">+ Add Criterion</button>
+}
+
+<h2>
+    Your Criteria
+    <span class="badge" style="background:@(_totalWeight == 100 ? "var(--success)" : "var(--warning)")">
+        Total: @_totalWeight%
+    </span>
+    @if (_totalWeight != 100 && _criteria.Count > 0)
+    {
+        <button class="secondary" @onclick="RebalanceAsync">Auto-balance to 100%</button>
+    }
+</h2>
+
+@if (_criteria.Count == 0)
+{
+    <p class="muted">No criteria yet — apply a template above or add your own.</p>
+}
+else
+{
+    <table>
+        <thead><tr><th>Criterion</th><th>Weight</th><th>Category</th><th></th></tr></thead>
+        <tbody>
+            @foreach (var criterion in _criteria)
+            {
+                <tr>
+                    <td>@criterion.Name</td>
+                    <td>@criterion.Weight%</td>
+                    <td>@criterion.Category</td>
+                    <td>
+                        <button class="secondary" @onclick="() => StartEdit(criterion)">Edit</button>
+                        <button class="danger" @onclick="() => DeleteAsync(criterion)">✕</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<EvaluationCriterion> _criteria = new();
+    private EvaluationCriterion? _editing;
+    private string? _error;
+    private string _selectedTemplate = "FirstTimeBuyer";
+    private int _totalWeight;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _criteria = (await CriteriaRepository.GetAllAsync()).ToList();
+        _totalWeight = _criteria.Sum(c => c.Weight);
+    }
+
+    private void StartAdd()
+    {
+        _error = null;
+        _editing = new EvaluationCriterion { Name = "", Weight = 10 };
+    }
+
+    private void StartEdit(EvaluationCriterion criterion)
+    {
+        _error = null;
+        _editing = criterion;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_editing == null) return;
+        if (string.IsNullOrWhiteSpace(_editing.Name))
+        {
+            _error = "Please name the criterion.";
+            return;
+        }
+        if (_editing.Weight is < 1 or > 50)
+        {
+            _error = "Weight must be between 1 and 50%.";
+            return;
+        }
+
+        if (_editing.Id == 0)
+        {
+            _editing.DisplayOrder = _criteria.Count;
+            await CriteriaRepository.CreateAsync(_editing);
+        }
+        else
+        {
+            await CriteriaRepository.UpdateAsync(_editing);
+        }
+
+        _editing = null;
+        _error = null;
+        await LoadAsync();
+    }
+
+    private async Task DeleteAsync(EvaluationCriterion criterion)
+    {
+        await CriteriaRepository.DeleteAsync(criterion.Id);
+        await LoadAsync();
+    }
+
+    private async Task RebalanceAsync()
+    {
+        var criteria = _criteria.ToList();
+        var result = WeightBalancingService.Rebalance(criteria);
+        if (result.Success)
+        {
+            foreach (var criterion in criteria)
+            {
+                await CriteriaRepository.UpdateAsync(criterion);
+            }
+        }
+        await LoadAsync();
+    }
+
+    private async Task ApplyTemplateAsync()
+    {
+        foreach (var existing in await CriteriaRepository.GetAllAsync())
+        {
+            await CriteriaRepository.DeleteAsync(existing.Id);
+        }
+
+        var template = HomeBuyerHelper.Core.Data.CommonCriteria.Templates[_selectedTemplate];
+        var order = 0;
+        foreach (var entry in template)
+        {
+            await CriteriaRepository.CreateAsync(new EvaluationCriterion
+            {
+                Name = entry.Name,
+                Description = entry.Description,
+                Weight = (int)entry.SuggestedWeight,
+                ScoreAnchorLow = entry.ScoreAnchorLow,
+                ScoreAnchorHigh = entry.ScoreAnchorHigh,
+                IsSystemSuggested = true,
+                DisplayOrder = order++
+            });
+        }
+
+        await LoadAsync();
+    }
+}

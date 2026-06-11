@@ -1,0 +1,78 @@
+@page "/"
+@inject IPropertyService PropertyService
+@inject ICriteriaRepository CriteriaRepository
+
+<PageTitle>HomeBuyerHelper</PageTitle>
+
+<h1>Dashboard</h1>
+<p class="muted">Compare homes on what matters to you. Everything stays in your browser.</p>
+
+@if (_loaded)
+{
+    @if (_criteriaCount == 0)
+    {
+        <div class="card">
+            <h2>Get started</h2>
+            <p>1. Set up your <a href="criteria">evaluation criteria</a> (or apply a starter template).</p>
+            <p>2. Add the <a href="properties">properties</a> you're considering and score them.</p>
+            <p>3. See the <a href="compare">comparison</a> and your <a href="budget">budget</a>.</p>
+        </div>
+    }
+    else if (_rankings.Count == 0)
+    {
+        <div class="card">
+            <p>Criteria are set up. <a href="properties">Add your first property</a> to start comparing.</p>
+        </div>
+    }
+    else
+    {
+        <h2>Property Rankings</h2>
+        <table>
+            <thead>
+                <tr><th>Rank</th><th>Property</th><th>Price</th><th>Score</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var ranking in _rankings)
+                {
+                    <tr>
+                        <td>#@ranking.Rank</td>
+                        <td>@ranking.Property.Nickname</td>
+                        <td>@ranking.Property.EffectivePrice.ToString("C0")</td>
+                        <td>@ranking.ScorePercentage.ToString("F0")%</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    <div class="grid-2">
+        <div class="card">
+            <h2>Budget</h2>
+            <p class="muted">Income scenarios, expenses, and a 24-month cash flow projection.</p>
+            <a href="budget"><button class="secondary" type="button">Open Budget</button></a>
+        </div>
+        <div class="card">
+            <h2>Down Payment Funding</h2>
+            <p class="muted">Plan funding sources and estimate the taxes for each.</p>
+            <a href="funding"><button class="secondary" type="button">Open Funding</button></a>
+        </div>
+        <div class="card">
+            <h2>Rent vs. Buy</h2>
+            <p class="muted">Year-by-year wealth comparison with a breakeven point.</p>
+            <a href="rent-vs-buy"><button class="secondary" type="button">Open Calculator</button></a>
+        </div>
+    </div>
+}
+
+@code {
+    private bool _loaded;
+    private int _criteriaCount;
+    private IReadOnlyList<PropertyRanking> _rankings = Array.Empty<PropertyRanking>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _criteriaCount = await CriteriaRepository.GetCountAsync();
+        _rankings = await PropertyService.GetPropertyRankingsAsync();
+        _loaded = true;
+    }
+}

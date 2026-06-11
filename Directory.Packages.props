@@ -14,6 +14,10 @@
     <PackageVersion Include="LiveChartsCore.SkiaSharpView.Maui" Version="2.0.0-rc2" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
 
+    <!-- Blazor WebAssembly (web preview) -->
+    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.11" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.11" />
+
     <!-- Test packages -->
     <PackageVersion Include="xunit" Version="2.6.6" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.6" />

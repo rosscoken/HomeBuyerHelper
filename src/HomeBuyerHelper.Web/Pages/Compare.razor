@@ -1,0 +1,109 @@
+@page "/compare"
+@inject IPropertyService PropertyService
+@inject ICriteriaRepository CriteriaRepository
+@inject ITrueTotalCostService TrueTotalCostService
+@inject IUserPreferencesRepository PreferencesRepository
+
+<PageTitle>Compare · HomeBuyerHelper</PageTitle>
+
+<h1>Comparison</h1>
+
+@if (_loaded && _results.Count < 2)
+{
+    <div class="card">
+        <p>Add and score at least two <a href="properties">properties</a> to compare them side by side.</p>
+    </div>
+}
+else if (_loaded)
+{
+    <h2>Scores by Criterion</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Criterion (Weight)</th>
+                @foreach (var result in _results) { <th>@result.Property.Nickname</th> }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var criterion in _criteria)
+            {
+                <tr>
+                    <td>@criterion.Name (@criterion.Weight%)</td>
+                    @foreach (var result in _results)
+                    {
+                        var score = result.Scores.FirstOrDefault(s => s.CriterionId == criterion.Id);
+                        @if (score == null)
+                        {
+                            <td class="muted">-</td>
+                        }
+                        else
+                        {
+                            <td class="@ScoreClass(score.Score)">@score.Score</td>
+                        }
+                    }
+                </tr>
+            }
+            <tr>
+                <td><strong>Total Score</strong></td>
+                @foreach (var result in _results)
+                {
+                    <td><strong>@result.ScorePercentage.ToString("F0")%</strong></td>
+                }
+            </tr>
+        </tbody>
+    </table>
+    <p class="muted">Green = 8-10 · Yellow = 5-7 · Red = 1-4</p>
+
+    <h2>True Total Cost</h2>
+    <p class="muted">Housing + utilities + the monetized value of commute time (set your rate in the native app or use the $100/hr default).</p>
+    <table>
+        <thead>
+            <tr><th>Property</th><th>Housing/mo</th><th>Commute/mo</th><th>Total/mo</th><th>30-Year</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var (result, cost) in _trueCosts)
+            {
+                <tr>
+                    <td>
+                        @result.Property.Nickname
+                        @if (cost == _lowestCost) { <span class="badge" style="background:var(--success)">Lowest</span> }
+                    </td>
+                    <td>@cost.MonthlyHousing.ToString("C0")</td>
+                    <td>@cost.MonthlyCommuteValue.ToString("C0")</td>
+                    <td><strong>@cost.MonthlyTotal.ToString("C0")</strong></td>
+                    <td>@cost.ThirtyYearTotal.ToString("C0")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private bool _loaded;
+    private IReadOnlyList<EvaluationCriterion> _criteria = Array.Empty<EvaluationCriterion>();
+    private List<PropertyComparisonResult> _results = new();
+    private List<(PropertyComparisonResult Result, TrueTotalCost Cost)> _trueCosts = new();
+    private TrueTotalCost? _lowestCost;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _criteria = await CriteriaRepository.GetAllAsync();
+        var properties = await PropertyService.GetPropertiesWithScoresAsync();
+        _results = (await PropertyService.ComparePropertiesAsync(properties.Select(p => p.Id))).ToList();
+
+        var preferences = await PreferencesRepository.GetAsync();
+        _trueCosts = _results
+            .Select(result => (result, TrueTotalCostService.Calculate(result.Property, preferences)))
+            .ToList();
+        _lowestCost = _trueCosts
+            .Where(t => t.Item2.MonthlyTotal > 0)
+            .OrderBy(t => t.Item2.MonthlyTotal)
+            .Select(t => t.Item2)
+            .FirstOrDefault();
+
+        _loaded = true;
+    }
+
+    private static string ScoreClass(int score) =>
+        score >= 8 ? "score-good" : score >= 5 ? "score-mid" : "score-bad";
+}
