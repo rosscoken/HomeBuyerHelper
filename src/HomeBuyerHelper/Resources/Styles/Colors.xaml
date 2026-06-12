@@ -4,64 +4,67 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
+    <!-- Shared palette with the web app (wwwroot/css/app.css):
+         indigo-violet brand, warm amber accent, purple-tinted neutrals. -->
+
     <!-- Primary Colors -->
-    <Color x:Key="Primary">#512BD4</Color>
-    <Color x:Key="PrimaryDark">#3B1F99</Color>
-    <Color x:Key="PrimaryLight">#7B5BE0</Color>
+    <Color x:Key="Primary">#5B40E8</Color>
+    <Color x:Key="PrimaryDark">#4938BE</Color>
+    <Color x:Key="PrimaryLight">#7E66F0</Color>
 
     <!-- Secondary Colors -->
-    <Color x:Key="Secondary">#DFD8F7</Color>
-    <Color x:Key="SecondaryDark">#C5B9F0</Color>
+    <Color x:Key="Secondary">#EEEAFE</Color>
+    <Color x:Key="SecondaryDark">#E3DCFD</Color>
 
     <!-- Accent Colors -->
-    <Color x:Key="Accent">#00C853</Color>
-    <Color x:Key="AccentDark">#00A644</Color>
+    <Color x:Key="Accent">#0E9F6E</Color>
+    <Color x:Key="AccentDark">#066D4D</Color>
 
     <!-- Semantic Colors -->
-    <Color x:Key="Success">#4CAF50</Color>
-    <Color x:Key="Warning">#FF9800</Color>
-    <Color x:Key="Error">#F44336</Color>
-    <Color x:Key="Info">#2196F3</Color>
+    <Color x:Key="Success">#0E9F6E</Color>
+    <Color x:Key="Warning">#D97706</Color>
+    <Color x:Key="Error">#E11D48</Color>
+    <Color x:Key="Info">#3B82F6</Color>
 
-    <!-- Neutral Colors -->
+    <!-- Neutral Colors (purple-tinted grays) -->
     <Color x:Key="White">White</Color>
     <Color x:Key="Black">Black</Color>
-    <Color x:Key="Gray100">#F5F5F5</Color>
-    <Color x:Key="Gray200">#EEEEEE</Color>
-    <Color x:Key="Gray300">#E0E0E0</Color>
-    <Color x:Key="Gray400">#BDBDBD</Color>
-    <Color x:Key="Gray500">#9E9E9E</Color>
-    <Color x:Key="Gray600">#757575</Color>
-    <Color x:Key="Gray900">#212121</Color>
+    <Color x:Key="Gray100">#F3F1FA</Color>
+    <Color x:Key="Gray200">#ECE9F5</Color>
+    <Color x:Key="Gray300">#E6E3F2</Color>
+    <Color x:Key="Gray400">#D5D0E8</Color>
+    <Color x:Key="Gray500">#8E89A8</Color>
+    <Color x:Key="Gray600">#5D5876</Color>
+    <Color x:Key="Gray900">#1B1830</Color>
 
     <!-- Text Colors -->
-    <Color x:Key="TextPrimary">#212121</Color>
-    <Color x:Key="TextSecondary">#757575</Color>
-    <Color x:Key="TextDisabled">#9E9E9E</Color>
+    <Color x:Key="TextPrimary">#1B1830</Color>
+    <Color x:Key="TextSecondary">#5D5876</Color>
+    <Color x:Key="TextDisabled">#8E89A8</Color>
     <Color x:Key="TextOnPrimary">White</Color>
 
     <!-- Background Colors -->
-    <Color x:Key="PageBackground">#FAFAFA</Color>
+    <Color x:Key="PageBackground">#F7F6FC</Color>
     <Color x:Key="CardBackground">White</Color>
-    <Color x:Key="SurfaceBackground">#F5F5F5</Color>
-    <Color x:Key="Background">#FAFAFA</Color>
+    <Color x:Key="SurfaceBackground">#F3F1FA</Color>
+    <Color x:Key="Background">#F7F6FC</Color>
     <Color x:Key="Surface">White</Color>
-    <Color x:Key="SurfaceVariant">#F0EDF6</Color>
-    <Color x:Key="OnSurfaceVariant">#49454F</Color>
+    <Color x:Key="SurfaceVariant">#EEEAFE</Color>
+    <Color x:Key="OnSurfaceVariant">#534E6B</Color>
 
     <!-- Dark Mode Palette (P4-DRK-001) -->
-    <Color x:Key="PageBackgroundDark">#1C1C1E</Color>
-    <Color x:Key="CardBackgroundDark">#2C2C2E</Color>
-    <Color x:Key="SurfaceBackgroundDark">#2C2C2E</Color>
-    <Color x:Key="SurfaceVariantDark">#3A3A3C</Color>
-    <Color x:Key="OnSurfaceVariantDark">#CAC4D0</Color>
-    <Color x:Key="TextPrimaryDark">#FFFFFF</Color>
-    <Color x:Key="TextSecondaryDark">#EBEBF5</Color>
-    <Color x:Key="TextDisabledDark">#8E8E93</Color>
-    <Color x:Key="Gray300Dark">#48484A</Color>
-    <Color x:Key="Gray100Dark">#3A3A3C</Color>
-    <Color x:Key="Gray200Dark">#3A3A3C</Color>
-    <Color x:Key="PrimaryLightDark">#9A7FE8</Color>
-    <Color x:Key="SecondaryDarkMode">#3B3550</Color>
+    <Color x:Key="PageBackgroundDark">#100E1B</Color>
+    <Color x:Key="CardBackgroundDark">#1A1726</Color>
+    <Color x:Key="SurfaceBackgroundDark">#221E33</Color>
+    <Color x:Key="SurfaceVariantDark">#2A2350</Color>
+    <Color x:Key="OnSurfaceVariantDark">#A9A4C2</Color>
+    <Color x:Key="TextPrimaryDark">#EDEBF6</Color>
+    <Color x:Key="TextSecondaryDark">#A9A4C2</Color>
+    <Color x:Key="TextDisabledDark">#777291</Color>
+    <Color x:Key="Gray300Dark">#3A3554</Color>
+    <Color x:Key="Gray100Dark">#221E33</Color>
+    <Color x:Key="Gray200Dark">#2C2840</Color>
+    <Color x:Key="PrimaryLightDark">#8B72FF</Color>
+    <Color x:Key="SecondaryDarkMode">#2A2350</Color>
 
 </ResourceDictionary>

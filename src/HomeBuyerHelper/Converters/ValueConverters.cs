@@ -183,7 +183,7 @@ public class BoolToColorConverter : IValueConverter
     {
         if (value is bool isSelected && isSelected)
         {
-            return Color.FromArgb("#F0EDF6"); // SurfaceVariant / selected
+            return Color.FromArgb("#EEEAFE"); // SurfaceVariant / selected
         }
         return Color.FromArgb("#FFFFFF"); // Surface / unselected
     }
@@ -203,9 +203,9 @@ public class BoolToStrokeConverter : IValueConverter
     {
         if (value is bool isSelected && isSelected)
         {
-            return Color.FromArgb("#512BD4"); // Primary / selected
+            return Color.FromArgb("#5B40E8"); // Primary / selected
         }
-        return Color.FromArgb("#E0E0E0"); // Gray300 / unselected
+        return Color.FromArgb("#E6E3F2"); // Gray300 / unselected
     }
 
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
@@ -247,10 +247,10 @@ public class ScoreToColorConverter : IValueConverter
         };
 
         if (score >= 8)
-            return Color.FromArgb("#4CAF50"); // Success green
+            return Color.FromArgb("#0E9F6E"); // Success green
         if (score >= 5)
-            return Color.FromArgb("#FF9800"); // Warning yellow/orange
-        return Color.FromArgb("#F44336"); // Error red
+            return Color.FromArgb("#D97706"); // Warning yellow/orange
+        return Color.FromArgb("#E11D48"); // Error red
     }
 
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
@@ -306,7 +306,7 @@ public class PositiveNegativeColorConverter : IValueConverter
             double db => db < 0,
             _ => false
         };
-        return isNegative ? Color.FromArgb("#F44336") : Color.FromArgb("#4CAF50");
+        return isNegative ? Color.FromArgb("#E11D48") : Color.FromArgb("#0E9F6E");
     }
 
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
@@ -323,8 +323,8 @@ public class BoolToAlertColorConverter : IValueConverter
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         return value is bool warning && warning
-            ? Color.FromArgb("#F44336")
-            : Color.FromArgb("#9E9E9E");
+            ? Color.FromArgb("#E11D48")
+            : Color.FromArgb("#8E89A8");
     }
 
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
@@ -362,13 +362,13 @@ public class AffordabilityZoneToColorConverter : IValueConverter
         {
             return zone switch
             {
-                Core.Interfaces.AffordabilityZone.Comfortable => Color.FromArgb("#4CAF50"),
-                Core.Interfaces.AffordabilityZone.Stretching => Color.FromArgb("#FFC107"),
-                Core.Interfaces.AffordabilityZone.Aggressive => Color.FromArgb("#FF9800"),
-                _ => Color.FromArgb("#F44336")
+                Core.Interfaces.AffordabilityZone.Comfortable => Color.FromArgb("#0E9F6E"),
+                Core.Interfaces.AffordabilityZone.Stretching => Color.FromArgb("#F59E0B"),
+                Core.Interfaces.AffordabilityZone.Aggressive => Color.FromArgb("#D97706"),
+                _ => Color.FromArgb("#E11D48")
             };
         }
-        return Color.FromArgb("#9E9E9E");
+        return Color.FromArgb("#8E89A8");
     }
 
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
