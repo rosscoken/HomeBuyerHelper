@@ -9,6 +9,7 @@
 <PageTitle>Budget · HomeBuyerHelper</PageTitle>
 
 <h1>Budget Planner</h1>
+<p class="page-sub">Income scenarios, expenses, and a month-by-month cash flow projection.</p>
 
 <div class="grid-2">
     <div class="card">
@@ -29,22 +30,36 @@
                 <label>Guaranteed?</label>
                 <input type="checkbox" @bind="_newIncome.IsReliable" />
             </span>
-            <button @onclick="AddIncomeAsync">Add</button>
+            <button class="sm" @onclick="AddIncomeAsync">Add</button>
         </div>
-        <table>
-            <tbody>
-                @foreach (var source in _income)
-                {
-                    <tr>
-                        <td>@source.Name</td>
-                        <td>@source.MonthlyGrossIncome.ToString("C0")/mo</td>
-                        <td>@(source.IsReliable ? "Guaranteed" : $"Variable ({source.Probability:F0}%)")</td>
-                        <td><button class="danger" @onclick="() => DeleteIncomeAsync(source)">✕</button></td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-        <p class="muted">
+        @if (_income.Count > 0)
+        {
+            <div class="table-wrap">
+                <table>
+                    <tbody>
+                        @foreach (var source in _income)
+                        {
+                            <tr>
+                                <td><strong>@source.Name</strong></td>
+                                <td class="num">@source.MonthlyGrossIncome.ToString("C0")/mo</td>
+                                <td>
+                                    @if (source.IsReliable)
+                                    {
+                                        <span class="badge ok">Guaranteed</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge warn">Variable (@source.Probability.ToString("F0")%)</span>
+                                    }
+                                </td>
+                                <td style="text-align:right"><button type="button" class="danger sm" aria-label="Delete income source @source.Name" @onclick="() => DeleteIncomeAsync(source)">✕</button></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        <p class="muted mb-0">
             Monthly by scenario — Conservative: <strong>@_conservative.ToString("C0")</strong> ·
             Realistic: <strong>@_realistic.ToString("C0")</strong> ·
             Expected: <strong>@_expected.ToString("C0")</strong>
@@ -60,75 +75,91 @@
                 <label>Variable?</label>
                 <input type="checkbox" @bind="_newExpense.IsVariable" />
             </span>
-            <button @onclick="AddExpenseAsync">Add</button>
+            <button class="sm" @onclick="AddExpenseAsync">Add</button>
         </div>
-        <table>
-            <tbody>
-                @foreach (var expense in _expenses)
-                {
-                    <tr>
-                        <td>@expense.Name</td>
-                        <td>@expense.MonthlyAmount.ToString("C0")/mo</td>
-                        <td>@(expense.IsVariable ? "Variable" : "Fixed")</td>
-                        <td><button class="danger" @onclick="() => DeleteExpenseAsync(expense)">✕</button></td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-        <p class="muted">Total: <strong>@_expenses.Sum(e => e.MonthlyAmount).ToString("C0")/mo</strong></p>
+        @if (_expenses.Count > 0)
+        {
+            <div class="table-wrap">
+                <table>
+                    <tbody>
+                        @foreach (var expense in _expenses)
+                        {
+                            <tr>
+                                <td><strong>@expense.Name</strong></td>
+                                <td class="num">@expense.MonthlyAmount.ToString("C0")/mo</td>
+                                <td><span class="chip">@(expense.IsVariable ? "Variable" : "Fixed")</span></td>
+                                <td style="text-align:right"><button type="button" class="danger sm" aria-label="Delete expense @expense.Name" @onclick="() => DeleteExpenseAsync(expense)">✕</button></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        <p class="muted mb-0">Total: <strong>@_expenses.Sum(e => e.MonthlyAmount).ToString("C0")/mo</strong></p>
     </div>
 </div>
 
 <div class="card">
-    <h2>One-Time Events & Emergency Fund</h2>
+    <h2>One-Time Events &amp; Emergency Fund</h2>
     <div class="row">
         <span><label>Event</label><input @bind="_newEvent.Name" /></span>
         <span><label>Amount</label><input type="number" @bind="_newEvent.Amount" /></span>
         <span><label>Month</label><input type="month" @bind="_eventMonth" /></span>
-        <button @onclick="AddEventAsync">Add Event</button>
+        <button class="sm" @onclick="AddEventAsync">Add Event</button>
     </div>
-    @foreach (var budgetEvent in _events)
+    @if (_events.Count > 0)
     {
-        <span class="muted">@budgetEvent.Name (@budgetEvent.Amount.ToString("C0"), @budgetEvent.Date.ToString("MMM yyyy"))
-            <button class="danger" @onclick="() => DeleteEventAsync(budgetEvent)">✕</button> ·
-        </span>
+        <div class="inline-list">
+            @foreach (var budgetEvent in _events)
+            {
+                <span class="chip">
+                    @budgetEvent.Name · @budgetEvent.Amount.ToString("C0") · @budgetEvent.Date.ToString("MMM yyyy")
+                    <button type="button" aria-label="Delete event @budgetEvent.Name" @onclick="() => DeleteEventAsync(budgetEvent)">✕</button>
+                </span>
+            }
+        </div>
     }
-    <div class="row" style="margin-top:10px">
+    <div class="row mt-12">
         <span><label>Emergency fund balance</label><input type="number" @bind="_fundBalance" /></span>
         <span><label>Target (months of expenses)</label><input type="number" @bind="_fundMonths" /></span>
-        <button class="secondary" @onclick="SaveFundAsync">Save Fund</button>
+        <button class="secondary sm" @onclick="SaveFundAsync">Save Fund</button>
     </div>
 </div>
 
 <h2>
     24-Month Cash Flow
-    <select @bind="_scenario" @bind:after="ProjectAsync" style="margin-left:10px">
-        <option value="@IncomeScenario.Conservative">Conservative</option>
-        <option value="@IncomeScenario.Realistic">Realistic</option>
-        <option value="@IncomeScenario.Expected">Expected</option>
-    </select>
+    <span class="seg">
+        <button type="button" class="@(_scenario == IncomeScenario.Conservative ? "on" : "")" @onclick="() => SetScenarioAsync(IncomeScenario.Conservative)">Conservative</button>
+        <button type="button" class="@(_scenario == IncomeScenario.Realistic ? "on" : "")" @onclick="() => SetScenarioAsync(IncomeScenario.Realistic)">Realistic</button>
+        <button type="button" class="@(_scenario == IncomeScenario.Expected ? "on" : "")" @onclick="() => SetScenarioAsync(IncomeScenario.Expected)">Expected</button>
+    </span>
 </h2>
 
 @if (_projection.Count > 0)
 {
-    <table>
-        <thead>
-            <tr><th>Month</th><th>Income</th><th>Expenses</th><th>Surplus</th><th>Cumulative</th><th>Emergency Fund</th></tr>
-        </thead>
-        <tbody>
-            @foreach (var month in _projection)
-            {
-                <tr>
-                    <td>@month.Month.ToString("MMM yyyy") @(month.IsCrunchMonth ? "⚠" : "")</td>
-                    <td>@month.TotalIncome.ToString("C0")</td>
-                    <td>@month.TotalExpenses.ToString("C0")</td>
-                    <td class="@(month.Surplus < 0 ? "neg" : "pos")">@month.Surplus.ToString("C0")</td>
-                    <td>@month.CumulativeSurplus.ToString("C0")</td>
-                    <td class="@(month.EmergencyFundWarning ? "neg" : "")">@month.EmergencyFundBalance.ToString("C0")</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Month</th><th class="num">Income</th><th class="num">Expenses</th><th class="num">Surplus</th><th class="num">Cumulative</th><th class="num">Emergency Fund</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var month in _projection)
+                {
+                    <tr>
+                        <td>
+                            <strong>@month.Month.ToString("MMM yyyy")</strong>
+                            @if (month.IsCrunchMonth) { <span class="badge warn ml-8">Crunch</span> }
+                        </td>
+                        <td class="num">@month.TotalIncome.ToString("C0")</td>
+                        <td class="num">@month.TotalExpenses.ToString("C0")</td>
+                        <td class="num @(month.Surplus < 0 ? "neg" : "pos")">@month.Surplus.ToString("C0")</td>
+                        <td class="num">@month.CumulativeSurplus.ToString("C0")</td>
+                        <td class="num @(month.EmergencyFundWarning ? "neg" : "")">@month.EmergencyFundBalance.ToString("C0")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 }
 
 @code {
@@ -171,6 +202,12 @@
         _realistic = Math.Round(IncomeScenarioService.GetAverageMonthlyIncome(_income, IncomeScenario.Realistic), 0);
         _expected = Math.Round(IncomeScenarioService.GetAverageMonthlyIncome(_income, IncomeScenario.Expected), 0);
 
+        await ProjectAsync();
+    }
+
+    private async Task SetScenarioAsync(IncomeScenario scenario)
+    {
+        _scenario = scenario;
         await ProjectAsync();
     }
 

@@ -6,106 +6,113 @@
 <PageTitle>Funding · HomeBuyerHelper</PageTitle>
 
 <h1>Down Payment Funding</h1>
-<p class="muted">Where is your down payment coming from, and what will the taxes cost? Estimates only — not tax advice.</p>
+<p class="page-sub">Where is your down payment coming from, and what will the taxes cost? Estimates only — not tax advice.</p>
 
-<div class="card">
-    <h2>Your Tax Situation</h2>
-    <div class="row">
-        <span>
-            <label>Filing Status</label>
-            <select @bind="_filingStatus">
-                <option value="@TaxFilingStatus.Single">Single</option>
-                <option value="@TaxFilingStatus.MarriedFilingJointly">Married Filing Jointly</option>
-                <option value="@TaxFilingStatus.MarriedFilingSeparately">Married Filing Separately</option>
-                <option value="@TaxFilingStatus.HeadOfHousehold">Head of Household</option>
-            </select>
-        </span>
-        <span><label>Taxable Income</label><input type="number" @bind="_taxableIncome" /></span>
-        <span><label>State Rate %</label><input type="number" step="0.1" @bind="_stateRate" /></span>
-        <button class="secondary" @onclick="SaveTaxSettingsAsync">Save</button>
+<div class="grid-2">
+    <div class="card">
+        <h2>Your Tax Situation</h2>
+        <div class="row">
+            <span>
+                <label>Filing Status</label>
+                <select @bind="_filingStatus">
+                    <option value="@TaxFilingStatus.Single">Single</option>
+                    <option value="@TaxFilingStatus.MarriedFilingJointly">Married Filing Jointly</option>
+                    <option value="@TaxFilingStatus.MarriedFilingSeparately">Married Filing Separately</option>
+                    <option value="@TaxFilingStatus.HeadOfHousehold">Head of Household</option>
+                </select>
+            </span>
+            <span><label>Taxable Income</label><input type="number" @bind="_taxableIncome" /></span>
+            <span><label>State Rate %</label><input type="number" step="0.1" @bind="_stateRate" /></span>
+            <button class="secondary sm" @onclick="SaveTaxSettingsAsync">Save</button>
+        </div>
+        <p class="muted mb-0">
+            Federal marginal: <span class="badge brand">@_federalRate%</span>
+            Long-term capital gains: <span class="badge brand">@_ltcgRate%</span>
+        </p>
     </div>
-    <p class="muted">
-        Federal marginal: <strong>@_federalRate%</strong> ·
-        Long-term capital gains: <strong>@_ltcgRate%</strong>
-    </p>
-</div>
 
-<div class="card">
-    <h2>Add a Source</h2>
-    <div class="row">
-        <span>
-            <label>Type</label>
-            <select @bind="_newType">
-                <option value="@FundingType.Savings">Savings Account</option>
-                <option value="@FundingType.Investment">Brokerage Account</option>
-                <option value="@FundingType.RetirementIRA">Traditional IRA</option>
-                <option value="@FundingType.RothIRA">Roth IRA</option>
-                <option value="@FundingType.InheritedIRA">Inherited IRA</option>
-                <option value="@FundingType.Retirement401k">401(k)</option>
-                <option value="@FundingType.Gift">Family Gift</option>
-            </select>
-        </span>
-        <span><label>Nickname</label><input @bind="_newName" /></span>
-        <span><label>Amount</label><input type="number" @bind="_newAmount" /></span>
-    </div>
-    <div class="row">
-        @if (_newType == FundingType.Investment)
-        {
-            <span><label>Cost Basis</label><input type="number" @bind="_newCostBasis" /></span>
-            <span><label>Held 1+ year?</label><input type="checkbox" @bind="_newLongTerm" /></span>
-        }
-        @if (_newType is FundingType.RetirementIRA or FundingType.RothIRA or FundingType.Retirement401k)
-        {
-            <span><label>Your Age</label><input type="number" @bind="_newAge" /></span>
-            <span><label>First-time buyer?</label><input type="checkbox" @bind="_newFirstTime" /></span>
-        }
-        @if (_newType == FundingType.RothIRA)
-        {
-            <span><label>From contributions</label><input type="number" @bind="_newRothContrib" /></span>
-            <span><label>Account 5+ yrs?</label><input type="checkbox" @bind="_newRoth5Year" /></span>
-        }
-        @if (_newType == FundingType.Retirement401k)
-        {
-            <span><label>Loan (vs withdrawal)?</label><input type="checkbox" @bind="_newIs401kLoan" /></span>
-        }
-        <button @onclick="AddSourceAsync">Add Source</button>
+    <div class="card">
+        <h2>Add a Source</h2>
+        <div class="row">
+            <span>
+                <label>Type</label>
+                <select @bind="_newType">
+                    <option value="@FundingType.Savings">Savings Account</option>
+                    <option value="@FundingType.Investment">Brokerage Account</option>
+                    <option value="@FundingType.RetirementIRA">Traditional IRA</option>
+                    <option value="@FundingType.RothIRA">Roth IRA</option>
+                    <option value="@FundingType.InheritedIRA">Inherited IRA</option>
+                    <option value="@FundingType.Retirement401k">401(k)</option>
+                    <option value="@FundingType.Gift">Family Gift</option>
+                </select>
+            </span>
+            <span><label>Nickname</label><input @bind="_newName" /></span>
+            <span><label>Amount</label><input type="number" @bind="_newAmount" /></span>
+        </div>
+        <div class="row mt-12">
+            @if (_newType == FundingType.Investment)
+            {
+                <span><label>Cost Basis</label><input type="number" @bind="_newCostBasis" /></span>
+                <span><label>Held 1+ year?</label><input type="checkbox" @bind="_newLongTerm" /></span>
+            }
+            @if (_newType is FundingType.RetirementIRA or FundingType.RothIRA or FundingType.Retirement401k)
+            {
+                <span><label>Your Age</label><input type="number" @bind="_newAge" /></span>
+                <span><label>First-time buyer?</label><input type="checkbox" @bind="_newFirstTime" /></span>
+            }
+            @if (_newType == FundingType.RothIRA)
+            {
+                <span><label>From contributions</label><input type="number" @bind="_newRothContrib" /></span>
+                <span><label>Account 5+ yrs?</label><input type="checkbox" @bind="_newRoth5Year" /></span>
+            }
+            @if (_newType == FundingType.Retirement401k)
+            {
+                <span><label>Loan (vs withdrawal)?</label><input type="checkbox" @bind="_newIs401kLoan" /></span>
+            }
+            <button class="sm" @onclick="AddSourceAsync">Add Source</button>
+        </div>
     </div>
 </div>
 
 @if (_plan != null && _plan.Sources.Count > 0)
 {
     <h2>Your Funding Plan</h2>
-    <table>
-        <thead>
-            <tr><th>Source</th><th>Gross</th><th>Est. Tax</th><th>Net</th><th></th></tr>
-        </thead>
-        <tbody>
-            @foreach (var result in _plan.Sources)
-            {
-                <tr>
-                    <td>@result.Source.Name <span class="muted">(@result.Explanation)</span></td>
-                    <td>@result.GrossAmount.ToString("C0")</td>
-                    <td>@result.TotalTax.ToString("C0")</td>
-                    <td><strong>@result.NetAmount.ToString("C0")</strong></td>
-                    <td><button class="danger" @onclick="() => DeleteSourceAsync(result)">✕</button></td>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Source</th><th class="num">Gross</th><th class="num">Est. Tax</th><th class="num">Net</th><th style="width:50px"></th></tr>
+            </thead>
+            <tbody>
+                @foreach (var result in _plan.Sources)
+                {
+                    <tr>
+                        <td><strong>@result.Source.Name</strong> <span class="muted">(@result.Explanation)</span></td>
+                        <td class="num">@result.GrossAmount.ToString("C0")</td>
+                        <td class="num @(result.TotalTax > 0 ? "neg" : "")">@result.TotalTax.ToString("C0")</td>
+                        <td class="num"><strong>@result.NetAmount.ToString("C0")</strong></td>
+                        <td style="text-align:right"><button type="button" class="danger sm" aria-label="Delete funding source @result.Source.Name" @onclick="() => DeleteSourceAsync(result)">✕</button></td>
+                    </tr>
+                }
+                <tr class="total-row">
+                    <td><strong>TOTAL</strong></td>
+                    <td class="num"><strong>@_plan.TotalGross.ToString("C0")</strong></td>
+                    <td class="num"><strong>@_plan.TotalTax.ToString("C0")</strong></td>
+                    <td class="num"><strong>@_plan.TotalNet.ToString("C0")</strong></td>
+                    <td></td>
                 </tr>
-            }
-            <tr>
-                <td><strong>TOTAL</strong></td>
-                <td><strong>@_plan.TotalGross.ToString("C0")</strong></td>
-                <td><strong>@_plan.TotalTax.ToString("C0")</strong></td>
-                <td><strong>@_plan.TotalNet.ToString("C0")</strong></td>
-                <td></td>
-            </tr>
-        </tbody>
-    </table>
+            </tbody>
+        </table>
+    </div>
     @if (_plan.TotalTax > 0)
     {
-        <p class="muted">
-            💡 Set aside <strong>@_plan.TotalTax.ToString("C0")</strong> for taxes — capital gains and IRA
-            distributions are due with your tax return next April. Use cheapest money first:
-            @string.Join(" → ", _plan.OptimalOrder.Select(o => o.Source.Name)).
-        </p>
+        <div class="callout">
+            <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
+            <span>
+                Set aside <strong>@_plan.TotalTax.ToString("C0")</strong> for taxes — capital gains and IRA
+                distributions are due with your tax return next April. Use cheapest money first:
+                <strong>@string.Join(" → ", _plan.OptimalOrder.Select(o => o.Source.Name))</strong>.
+            </span>
+        </div>
     }
 }
 

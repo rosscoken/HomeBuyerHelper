@@ -5,62 +5,109 @@
 <PageTitle>HomeBuyerHelper</PageTitle>
 
 <h1>Dashboard</h1>
-<p class="muted">Compare homes on what matters to you. Everything stays in your browser.</p>
+<p class="page-sub">Compare homes on what matters to you. Everything stays in your browser.</p>
 
 @if (_loaded)
 {
     @if (_criteriaCount == 0)
     {
-        <div class="card">
-            <h2>Get started</h2>
-            <p>1. Set up your <a href="criteria">evaluation criteria</a> (or apply a starter template).</p>
-            <p>2. Add the <a href="properties">properties</a> you're considering and score them.</p>
-            <p>3. See the <a href="compare">comparison</a> and your <a href="budget">budget</a>.</p>
+        <h2>Get started in three steps</h2>
+        <div class="steps">
+            <a class="step" href="criteria">
+                <span class="step-num">1</span>
+                <span>
+                    <strong>Set up your evaluation criteria</strong>
+                    <span>Define what matters — or apply a starter template.</span>
+                </span>
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            </a>
+            <a class="step" href="properties">
+                <span class="step-num">2</span>
+                <span>
+                    <strong>Add the properties you're considering</strong>
+                    <span>Capture price, size, commute — then score each one.</span>
+                </span>
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            </a>
+            <a class="step" href="compare">
+                <span class="step-num">3</span>
+                <span>
+                    <strong>See the comparison and your budget</strong>
+                    <span>Side-by-side scores, true total cost, and cash flow.</span>
+                </span>
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            </a>
         </div>
     }
     else if (_rankings.Count == 0)
     {
-        <div class="card">
+        <div class="empty-state">
+            <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
             <p>Criteria are set up. <a href="properties">Add your first property</a> to start comparing.</p>
         </div>
     }
     else
     {
         <h2>Property Rankings</h2>
-        <table>
-            <thead>
-                <tr><th>Rank</th><th>Property</th><th>Price</th><th>Score</th></tr>
-            </thead>
-            <tbody>
-                @foreach (var ranking in _rankings)
-                {
-                    <tr>
-                        <td>#@ranking.Rank</td>
-                        <td>@ranking.Property.Nickname</td>
-                        <td>@ranking.Property.EffectivePrice.ToString("C0")</td>
-                        <td>@ranking.ScorePercentage.ToString("F0")%</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr><th style="width:60px">Rank</th><th>Property</th><th class="num">Price</th><th style="width:38%">Score</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var ranking in _rankings)
+                    {
+                        <tr>
+                            <td><span class="rank-chip r@(ranking.Rank)">@ranking.Rank</span></td>
+                            <td><strong>@ranking.Property.Nickname</strong></td>
+                            <td class="num">@ranking.Property.EffectivePrice.ToString("C0")</td>
+                            <td>
+                                <span class="score-cell">
+                                    <span class="progress @(ranking.ScorePercentage >= 80 ? "green" : ranking.ScorePercentage >= 50 ? "" : "amber")">
+                                        <i style="width:@(ranking.ScorePercentage.ToString("F0"))%"></i>
+                                    </span>
+                                    <strong>@ranking.ScorePercentage.ToString("F0")%</strong>
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     }
 
-    <div class="grid-2">
-        <div class="card">
-            <h2>Budget</h2>
-            <p class="muted">Income scenarios, expenses, and a 24-month cash flow projection.</p>
-            <a href="budget"><button class="secondary" type="button">Open Budget</button></a>
-        </div>
-        <div class="card">
-            <h2>Down Payment Funding</h2>
-            <p class="muted">Plan funding sources and estimate the taxes for each.</p>
-            <a href="funding"><button class="secondary" type="button">Open Funding</button></a>
-        </div>
-        <div class="card">
-            <h2>Rent vs. Buy</h2>
-            <p class="muted">Year-by-year wealth comparison with a breakeven point.</p>
-            <a href="rent-vs-buy"><button class="secondary" type="button">Open Calculator</button></a>
-        </div>
+    <h2>Plan your purchase</h2>
+    <div class="grid-3">
+        <a class="module-card" href="budget">
+            <span class="module-icon violet">
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            </span>
+            <h3>Budget Planner</h3>
+            <p>Income scenarios, expenses, and a 24-month cash flow projection.</p>
+            <span class="module-link">Open Budget
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </span>
+        </a>
+        <a class="module-card" href="funding">
+            <span class="module-icon green">
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><line x1="12" y1="6" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="18"/></svg>
+            </span>
+            <h3>Down Payment Funding</h3>
+            <p>Plan funding sources and estimate the taxes for each.</p>
+            <span class="module-link">Open Funding
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </span>
+        </a>
+        <a class="module-card" href="rent-vs-buy">
+            <span class="module-icon amber">
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M21 3 3 21"/></svg>
+            </span>
+            <h3>Rent vs. Buy</h3>
+            <p>Year-by-year wealth comparison with a breakeven point.</p>
+            <span class="module-link">Open Calculator
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </span>
+        </a>
     </div>
 }
 
