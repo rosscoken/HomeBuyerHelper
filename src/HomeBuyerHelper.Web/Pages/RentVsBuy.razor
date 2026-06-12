@@ -5,7 +5,7 @@
 <PageTitle>Rent vs Buy · HomeBuyerHelper</PageTitle>
 
 <h1>Rent vs. Buy</h1>
-<p class="muted">Year-by-year wealth comparison: home equity vs. renting and investing the difference.</p>
+<p class="page-sub">Year-by-year wealth comparison: home equity vs. renting and investing the difference.</p>
 
 <div class="card">
     <div class="row">
@@ -13,39 +13,48 @@
         <span><label>Current Rent/mo</label><input type="number" @bind="_rent" /></span>
         <span><label>Other Ownership Costs/mo</label><input type="number" @bind="_ownershipCosts" /></span>
     </div>
-    <div class="row">
+    <div class="row" style="margin-top:12px">
         <span><label>Rent Increase %/yr</label><input type="number" step="0.1" @bind="_rentIncrease" /></span>
         <span><label>Investment Return %/yr</label><input type="number" step="0.1" @bind="_investReturn" /></span>
         <span><label>Appreciation %/yr</label><input type="number" step="0.1" @bind="_appreciation" /></span>
         <span><label>Horizon (years)</label><input type="number" min="1" max="30" @bind="_horizon" /></span>
     </div>
-    <button @onclick="CompareAsync">Compare</button>
+    <div class="row" style="margin-top:14px">
+        <button @onclick="CompareAsync">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            Compare
+        </button>
+    </div>
     @if (_error != null) { <p class="error-text">@_error</p> }
 </div>
 
 @if (_result != null && _result.Years.Count > 0)
 {
-    <div class="card">
+    <div class="verdict-card">
         <h2>@_verdict</h2>
-        <p class="muted">Monthly cost of owning in year one: @_result.InitialMonthlyOwnershipCost.ToString("C0")</p>
+        <p>Monthly cost of owning in year one: @_result.InitialMonthlyOwnershipCost.ToString("C0")</p>
     </div>
 
-    <table>
-        <thead>
-            <tr><th>Year</th><th>Buy Net Wealth</th><th>Rent Net Wealth</th><th>Ahead</th></tr>
-        </thead>
-        <tbody>
-            @foreach (var year in _result.Years)
-            {
-                <tr>
-                    <td>@year.Year</td>
-                    <td>@year.BuyNetWealth.ToString("C0")</td>
-                    <td>@year.RentNetWealth.ToString("C0")</td>
-                    <td class="@(year.BuyingIsAhead ? "pos" : "neg")">@(year.BuyingIsAhead ? "Buy" : "Rent")</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Year</th><th class="num">Buy Net Wealth</th><th class="num">Rent Net Wealth</th><th style="text-align:center">Ahead</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var year in _result.Years)
+                {
+                    <tr>
+                        <td><strong>@year.Year</strong></td>
+                        <td class="num">@year.BuyNetWealth.ToString("C0")</td>
+                        <td class="num">@year.RentNetWealth.ToString("C0")</td>
+                        <td style="text-align:center">
+                            <span class="badge @(year.BuyingIsAhead ? "ok" : "warn")">@(year.BuyingIsAhead ? "Buy" : "Rent")</span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 }
 
 @code {

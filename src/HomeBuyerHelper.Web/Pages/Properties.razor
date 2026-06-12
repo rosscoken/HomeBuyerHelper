@@ -6,41 +6,45 @@
 <PageTitle>Properties · HomeBuyerHelper</PageTitle>
 
 <h1>Properties</h1>
+<p class="page-sub">The homes you're considering, scored against your criteria.</p>
 
 @if (_editing != null)
 {
     <div class="card">
         <h2>@(_editing.Id == 0 ? "Add Property" : $"Edit: {_editing.Nickname}")</h2>
         <div class="row">
-            <span><label>Nickname *</label><input @bind="_editing.Nickname" /></span>
+            <span><label>Nickname *</label><input @bind="_editing.Nickname" placeholder="e.g. The blue craftsman" /></span>
             <span><label>Asking Price</label><input type="number" @bind="_editing.AskingPrice" /></span>
             <span><label>Offer Price (opt)</label><input type="number" @bind="_editing.OfferPrice" /></span>
         </div>
-        <div class="row">
+        <div class="row" style="margin-top:12px">
             <span><label>Bedrooms</label><input type="number" @bind="_editing.Bedrooms" /></span>
             <span><label>Bathrooms</label><input type="number" step="0.5" @bind="_editing.Bathrooms" /></span>
             <span><label>Square Feet</label><input type="number" @bind="_editing.SquareFeet" /></span>
             <span><label>Year Built</label><input type="number" @bind="_editing.YearBuilt" /></span>
         </div>
-        <div class="row">
+        <div class="row" style="margin-top:12px">
             <span><label>Monthly HOA</label><input type="number" @bind="_editing.MonthlyHOA" /></span>
             <span><label>Utilities/mo</label><input type="number" @bind="_editing.MonthlyUtilities" /></span>
             <span><label>Commute RT min</label><input type="number" @bind="_editing.CommuteMinutesPrimary" /></span>
             <span><label>Partner RT min</label><input type="number" @bind="_editing.CommuteMinutesSecondary" /></span>
         </div>
-        <div class="row">
+        <div class="row" style="margin-top:12px">
             <span><label>Notes</label><textarea rows="2" cols="50" @bind="_editing.Notes"></textarea></span>
         </div>
         @if (_error != null) { <p class="error-text">@_error</p> }
-        <div class="row">
-            <button @onclick="SaveAsync">Save</button>
+        <div class="row" style="margin-top:14px">
+            <button @onclick="SaveAsync">Save Property</button>
             <button class="secondary" @onclick="() => _editing = null">Cancel</button>
         </div>
     </div>
 }
 else
 {
-    <button @onclick="StartAdd">+ Add Property</button>
+    <button @onclick="StartAdd">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+        Add Property
+    </button>
 }
 
 @if (_scoring != null)
@@ -48,26 +52,28 @@ else
     <div class="card">
         <h2>Score: @_scoring.Nickname</h2>
         <p class="muted">1 = poor · 10 = perfect. Anchors show what the extremes mean.</p>
-        <table>
-            <thead><tr><th>Criterion</th><th>Weight</th><th>Score (1-10)</th><th>Anchors</th></tr></thead>
-            <tbody>
-                @foreach (var criterion in _criteria)
-                {
-                    <tr>
-                        <td>@criterion.Name</td>
-                        <td>@criterion.Weight%</td>
-                        <td>
-                            <input type="number" min="0" max="10" style="width:70px"
-                                   @bind="_scoreDraft[criterion.Id]" />
-                        </td>
-                        <td class="muted">
-                            @if (!string.IsNullOrEmpty(criterion.ScoreAnchorLow)) { <span>1: @criterion.ScoreAnchorLow · </span> }
-                            @if (!string.IsNullOrEmpty(criterion.ScoreAnchorHigh)) { <span>10: @criterion.ScoreAnchorHigh</span> }
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Criterion</th><th>Weight</th><th>Score (1-10)</th><th>Anchors</th></tr></thead>
+                <tbody>
+                    @foreach (var criterion in _criteria)
+                    {
+                        <tr>
+                            <td><strong>@criterion.Name</strong></td>
+                            <td><span class="badge brand">@criterion.Weight%</span></td>
+                            <td>
+                                <input type="number" min="0" max="10" style="width:70px"
+                                       @bind="_scoreDraft[criterion.Id]" />
+                            </td>
+                            <td class="muted">
+                                @if (!string.IsNullOrEmpty(criterion.ScoreAnchorLow)) { <span>1: @criterion.ScoreAnchorLow · </span> }
+                                @if (!string.IsNullOrEmpty(criterion.ScoreAnchorHigh)) { <span>10: @criterion.ScoreAnchorHigh</span> }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
         <div class="row">
             <button @onclick="SaveScoresAsync">Save Scores</button>
             <button class="secondary" @onclick="() => _scoring = null">Cancel</button>
@@ -78,32 +84,49 @@ else
 <h2>Your Properties</h2>
 @if (_properties.Count == 0)
 {
-    <p class="muted">Nothing yet — add the homes you're considering.</p>
+    <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <p>Nothing yet — add the homes you're considering.</p>
+    </div>
 }
 else
 {
-    <table>
-        <thead>
-            <tr><th>Property</th><th>Price</th><th>Beds/Baths</th><th>Sqft</th><th>Scored</th><th></th></tr>
-        </thead>
-        <tbody>
-            @foreach (var property in _properties)
-            {
-                <tr>
-                    <td>@property.Nickname</td>
-                    <td>@property.EffectivePrice.ToString("C0")</td>
-                    <td>@property.Bedrooms / @property.Bathrooms</td>
-                    <td>@property.SquareFeet.ToString("N0")</td>
-                    <td>@property.ScoredCriteriaCount/@property.TotalCriteriaCount</td>
-                    <td>
-                        <button class="secondary" @onclick="() => StartScore(property)">Score</button>
-                        <button class="secondary" @onclick="() => StartEdit(property)">Edit</button>
-                        <button class="danger" @onclick="() => DeleteAsync(property)">✕</button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div class="property-grid">
+        @foreach (var property in _properties)
+        {
+            <div class="property-card">
+                <div class="p-head">
+                    <span class="p-name">@property.Nickname</span>
+                    <span class="p-price">@property.EffectivePrice.ToString("C0")</span>
+                </div>
+                <div class="p-meta">
+                    <span class="chip">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/></svg>
+                        @property.Bedrooms bd
+                    </span>
+                    <span class="chip">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4 8 6"/><path d="M17 19v2"/><path d="M2 12h20"/><path d="M7 19v2"/><path d="M9 5 7.6 3.6a1.9 1.9 0 0 0-2.8 0L3.6 4.8a1.9 1.9 0 0 0 0 2.8L5 9"/><path d="M21 12v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5"/></svg>
+                        @property.Bathrooms ba
+                    </span>
+                    <span class="chip">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 9 15"/><path d="M21 3v6"/><path d="M21 3h-6"/><path d="M3 21l6-6"/><path d="M3 21v-6"/><path d="M3 21h6"/></svg>
+                        @property.SquareFeet.ToString("N0") sqft
+                    </span>
+                </div>
+                <div class="p-score">
+                    <span class="progress @(property.TotalCriteriaCount > 0 && property.ScoredCriteriaCount == property.TotalCriteriaCount ? "green" : "")">
+                        <i style="width:@(property.TotalCriteriaCount == 0 ? 0 : property.ScoredCriteriaCount * 100 / property.TotalCriteriaCount)%"></i>
+                    </span>
+                    <span>@property.ScoredCriteriaCount/@property.TotalCriteriaCount scored</span>
+                </div>
+                <div class="p-actions">
+                    <button class="sm" @onclick="() => StartScore(property)">Score</button>
+                    <button class="secondary sm" @onclick="() => StartEdit(property)">Edit</button>
+                    <button class="danger sm" @onclick="() => DeleteAsync(property)">✕</button>
+                </div>
+            </div>
+        }
+    </div>
 }
 
 @code {

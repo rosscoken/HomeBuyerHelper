@@ -5,7 +5,7 @@
 <PageTitle>Criteria · HomeBuyerHelper</PageTitle>
 
 <h1>Evaluation Criteria</h1>
-<p class="muted">Define what matters and how much. Weights should total 100%.</p>
+<p class="page-sub">Define what matters and how much. Weights should total 100%.</p>
 
 <div class="card">
     <h2>Start from a template</h2>
@@ -21,7 +21,7 @@
         </span>
         <button class="secondary" @onclick="ApplyTemplateAsync">Apply Template</button>
     </div>
-    <p class="muted">Applying replaces your current criteria.</p>
+    <p class="muted" style="margin-bottom:0">Applying replaces your current criteria.</p>
 </div>
 
 @if (_editing != null)
@@ -29,7 +29,7 @@
     <div class="card">
         <h2>@(_editing.Id == 0 ? "Add Criterion" : $"Edit: {_editing.Name}")</h2>
         <div class="row">
-            <span><label>Name *</label><input @bind="_editing.Name" /></span>
+            <span><label>Name *</label><input @bind="_editing.Name" placeholder="e.g. Kitchen quality" /></span>
             <span><label>Weight %</label><input type="number" min="1" max="50" @bind="_editing.Weight" /></span>
             <span>
                 <label>Category</label>
@@ -41,56 +41,73 @@
                 </select>
             </span>
         </div>
-        <div class="row">
+        <div class="row" style="margin-top:12px">
             <span><label>What does a 1 look like?</label><input size="40" @bind="_editing.ScoreAnchorLow" /></span>
             <span><label>What does a 10 look like?</label><input size="40" @bind="_editing.ScoreAnchorHigh" /></span>
         </div>
         @if (_error != null) { <p class="error-text">@_error</p> }
-        <div class="row">
-            <button @onclick="SaveAsync">Save</button>
+        <div class="row" style="margin-top:14px">
+            <button @onclick="SaveAsync">Save Criterion</button>
             <button class="secondary" @onclick="() => _editing = null">Cancel</button>
         </div>
     </div>
 }
 else
 {
-    <button @onclick="StartAdd">+ Add Criterion</button>
+    <button @onclick="StartAdd">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+        Add Criterion
+    </button>
 }
 
 <h2>
     Your Criteria
-    <span class="badge" style="background:@(_totalWeight == 100 ? "var(--success)" : "var(--warning)")">
+    <span class="badge @(_totalWeight == 100 ? "ok" : "warn")">
+        @if (_totalWeight == 100)
+        {
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        }
         Total: @_totalWeight%
     </span>
     @if (_totalWeight != 100 && _criteria.Count > 0)
     {
-        <button class="secondary" @onclick="RebalanceAsync">Auto-balance to 100%</button>
+        <button class="secondary sm" @onclick="RebalanceAsync">Auto-balance to 100%</button>
     }
 </h2>
 
 @if (_criteria.Count == 0)
 {
-    <p class="muted">No criteria yet — apply a template above or add your own.</p>
+    <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+        <p>No criteria yet — apply a template above or add your own.</p>
+    </div>
 }
 else
 {
-    <table>
-        <thead><tr><th>Criterion</th><th>Weight</th><th>Category</th><th></th></tr></thead>
-        <tbody>
-            @foreach (var criterion in _criteria)
-            {
-                <tr>
-                    <td>@criterion.Name</td>
-                    <td>@criterion.Weight%</td>
-                    <td>@criterion.Category</td>
-                    <td>
-                        <button class="secondary" @onclick="() => StartEdit(criterion)">Edit</button>
-                        <button class="danger" @onclick="() => DeleteAsync(criterion)">✕</button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Criterion</th><th style="width:35%">Weight</th><th>Category</th><th style="width:140px"></th></tr></thead>
+            <tbody>
+                @foreach (var criterion in _criteria)
+                {
+                    <tr>
+                        <td><strong>@criterion.Name</strong></td>
+                        <td>
+                            <span class="score-cell">
+                                <span class="progress"><i style="width:@(Math.Min(criterion.Weight * 2, 100))%"></i></span>
+                                <strong>@criterion.Weight%</strong>
+                            </span>
+                        </td>
+                        <td><span class="chip">@criterion.Category</span></td>
+                        <td style="text-align:right; white-space:nowrap">
+                            <button class="secondary sm" @onclick="() => StartEdit(criterion)">Edit</button>
+                            <button class="danger sm" @onclick="() => DeleteAsync(criterion)">✕</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 }
 
 @code {
