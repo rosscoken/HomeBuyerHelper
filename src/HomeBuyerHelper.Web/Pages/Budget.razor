@@ -52,7 +52,7 @@
                                         <span class="badge warn">Variable (@source.Probability.ToString("F0")%)</span>
                                     }
                                 </td>
-                                <td style="text-align:right"><button class="danger sm" @onclick="() => DeleteIncomeAsync(source)">✕</button></td>
+                                <td style="text-align:right"><button type="button" class="danger sm" aria-label="Delete income source @source.Name" @onclick="() => DeleteIncomeAsync(source)">✕</button></td>
                             </tr>
                         }
                     </tbody>
@@ -88,7 +88,7 @@
                                 <td><strong>@expense.Name</strong></td>
                                 <td class="num">@expense.MonthlyAmount.ToString("C0")/mo</td>
                                 <td><span class="chip">@(expense.IsVariable ? "Variable" : "Fixed")</span></td>
-                                <td style="text-align:right"><button class="danger sm" @onclick="() => DeleteExpenseAsync(expense)">✕</button></td>
+                                <td style="text-align:right"><button type="button" class="danger sm" aria-label="Delete expense @expense.Name" @onclick="() => DeleteExpenseAsync(expense)">✕</button></td>
                             </tr>
                         }
                     </tbody>
@@ -114,7 +114,7 @@
             {
                 <span class="chip">
                     @budgetEvent.Name · @budgetEvent.Amount.ToString("C0") · @budgetEvent.Date.ToString("MMM yyyy")
-                    <button @onclick="() => DeleteEventAsync(budgetEvent)">✕</button>
+                    <button type="button" aria-label="Delete event @budgetEvent.Name" @onclick="() => DeleteEventAsync(budgetEvent)">✕</button>
                 </span>
             }
         </div>
@@ -129,9 +129,9 @@
 <h2>
     24-Month Cash Flow
     <span class="seg">
-        <button class="@(_scenario == IncomeScenario.Conservative ? "on" : "")" @onclick="() => SetScenarioAsync(IncomeScenario.Conservative)">Conservative</button>
-        <button class="@(_scenario == IncomeScenario.Realistic ? "on" : "")" @onclick="() => SetScenarioAsync(IncomeScenario.Realistic)">Realistic</button>
-        <button class="@(_scenario == IncomeScenario.Expected ? "on" : "")" @onclick="() => SetScenarioAsync(IncomeScenario.Expected)">Expected</button>
+        <button type="button" class="@(_scenario == IncomeScenario.Conservative ? "on" : "")" @onclick="() => SetScenarioAsync(IncomeScenario.Conservative)">Conservative</button>
+        <button type="button" class="@(_scenario == IncomeScenario.Realistic ? "on" : "")" @onclick="() => SetScenarioAsync(IncomeScenario.Realistic)">Realistic</button>
+        <button type="button" class="@(_scenario == IncomeScenario.Expected ? "on" : "")" @onclick="() => SetScenarioAsync(IncomeScenario.Expected)">Expected</button>
     </span>
 </h2>
 

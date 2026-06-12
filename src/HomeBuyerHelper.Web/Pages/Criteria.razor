@@ -101,7 +101,7 @@ else
                         <td><span class="chip">@criterion.Category</span></td>
                         <td style="text-align:right; white-space:nowrap">
                             <button class="secondary sm" @onclick="() => StartEdit(criterion)">Edit</button>
-                            <button class="danger sm" @onclick="() => DeleteAsync(criterion)">✕</button>
+                            <button type="button" class="danger sm" aria-label="Delete criterion @criterion.Name" @onclick="() => DeleteAsync(criterion)">✕</button>
                         </td>
                     </tr>
                 }

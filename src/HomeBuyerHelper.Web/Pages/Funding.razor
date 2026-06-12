@@ -90,7 +90,7 @@
                         <td class="num">@result.GrossAmount.ToString("C0")</td>
                         <td class="num @(result.TotalTax > 0 ? "neg" : "")">@result.TotalTax.ToString("C0")</td>
                         <td class="num"><strong>@result.NetAmount.ToString("C0")</strong></td>
-                        <td style="text-align:right"><button class="danger sm" @onclick="() => DeleteSourceAsync(result)">✕</button></td>
+                        <td style="text-align:right"><button type="button" class="danger sm" aria-label="Delete funding source @result.Source.Name" @onclick="() => DeleteSourceAsync(result)">✕</button></td>
                     </tr>
                 }
                 <tr class="total-row">

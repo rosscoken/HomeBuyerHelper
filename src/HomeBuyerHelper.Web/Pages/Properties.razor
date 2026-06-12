@@ -122,7 +122,7 @@ else
                 <div class="p-actions">
                     <button class="sm" @onclick="() => StartScore(property)">Score</button>
                     <button class="secondary sm" @onclick="() => StartEdit(property)">Edit</button>
-                    <button class="danger sm" @onclick="() => DeleteAsync(property)">✕</button>
+                    <button type="button" class="danger sm" aria-label="Delete property @property.Nickname" @onclick="() => DeleteAsync(property)">✕</button>
                 </div>
             </div>
         }
