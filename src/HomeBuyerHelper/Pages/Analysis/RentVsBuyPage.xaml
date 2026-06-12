@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:HomeBuyerHelper.ViewModels.Analysis"
+             xmlns:interfaces="clr-namespace:HomeBuyerHelper.Core.Interfaces;assembly=HomeBuyerHelper.Core"
+             x:Class="HomeBuyerHelper.Pages.Analysis.RentVsBuyPage"
+             x:DataType="vm:RentVsBuyViewModel"
+             Title="{Binding Title}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="12">
+
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="4">
+                <Label Grid.Row="0" Grid.Column="0" Text="Purchase Price" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                <Label Grid.Row="0" Grid.Column="1" Text="Current Monthly Rent" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                <Entry Grid.Row="1" Grid.Column="0" Text="{Binding PurchasePrice}" Keyboard="Numeric"
+                       AutomationProperties.Name="Purchase price"/>
+                <Entry Grid.Row="1" Grid.Column="1" Text="{Binding MonthlyRent}" Keyboard="Numeric"
+                       AutomationProperties.Name="Current monthly rent"/>
+
+                <Label Grid.Row="2" Grid.Column="0" Text="Other Ownership Costs/mo" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                <Label Grid.Row="2" Grid.Column="1" Text="Rent Increase %/yr" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                <Entry Grid.Row="3" Grid.Column="0" Text="{Binding MonthlyOwnershipCosts}" Keyboard="Numeric"
+                       AutomationProperties.Name="Monthly ownership costs"/>
+                <Entry Grid.Row="3" Grid.Column="1" Text="{Binding RentIncreasePercent}" Keyboard="Numeric"
+                       AutomationProperties.Name="Annual rent increase percent"/>
+
+                <Label Grid.Row="4" Grid.Column="0" Text="Investment Return %/yr" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                <Label Grid.Row="4" Grid.Column="1" Text="Home Appreciation %/yr" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                <Entry Grid.Row="5" Grid.Column="0" Text="{Binding InvestmentReturnPercent}" Keyboard="Numeric"
+                       AutomationProperties.Name="Investment return percent"/>
+                <Entry Grid.Row="5" Grid.Column="1" Text="{Binding AppreciationPercent}" Keyboard="Numeric"
+                       AutomationProperties.Name="Home appreciation percent"/>
+            </Grid>
+
+            <VerticalStackLayout Spacing="4">
+                <Label Text="{Binding HorizonYears, StringFormat='Planning horizon: {0} years'}"
+                       Style="{StaticResource Body}"/>
+                <Slider Value="{Binding HorizonYears}" Minimum="1" Maximum="30"
+                        AutomationProperties.Name="Planning horizon years"/>
+            </VerticalStackLayout>
+
+            <Button Text="Compare"
+                    Command="{Binding CalculateCommand}"
+                    Style="{StaticResource PrimaryButton}"
+                    AutomationProperties.Name="Run rent versus buy comparison"/>
+
+            <Label Text="{Binding ErrorMessage}"
+                   IsVisible="{Binding HasError}"
+                   TextColor="{StaticResource Error}"
+                   Style="{StaticResource Body}"/>
+
+            <Frame Style="{StaticResource CardFrame}" IsVisible="{Binding HasResult}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="{Binding Verdict}" Style="{StaticResource Subtitle}"/>
+                    <Label Text="{Binding InitialOwnershipCost, StringFormat='Monthly cost of owning (year 1): {0:C0}'}"
+                           Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <CollectionView ItemsSource="{Binding Years}" SelectionMode="None" IsVisible="{Binding HasResult}">
+                <CollectionView.Header>
+                    <Grid ColumnDefinitions="40,*,*,*" Padding="12,4" ColumnSpacing="8">
+                        <Label Grid.Column="0" Text="Yr" Style="{StaticResource Caption}" FontAttributes="Bold"/>
+                        <Label Grid.Column="1" Text="Buy Wealth" Style="{StaticResource Caption}" FontAttributes="Bold"/>
+                        <Label Grid.Column="2" Text="Rent Wealth" Style="{StaticResource Caption}" FontAttributes="Bold"/>
+                        <Label Grid.Column="3" Text="Ahead" Style="{StaticResource Caption}" FontAttributes="Bold"/>
+                    </Grid>
+                </CollectionView.Header>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="interfaces:RentVsBuyYear">
+                        <Grid ColumnDefinitions="40,*,*,*" Padding="12,4" ColumnSpacing="8">
+                            <Label Grid.Column="0" Text="{Binding Year}" Style="{StaticResource Caption}"/>
+                            <Label Grid.Column="1" Text="{Binding BuyNetWealth, StringFormat='{0:C0}'}" Style="{StaticResource Caption}"/>
+                            <Label Grid.Column="2" Text="{Binding RentNetWealth, StringFormat='{0:C0}'}" Style="{StaticResource Caption}"/>
+                            <Label Grid.Column="3"
+                                   Text="{Binding BuyingIsAhead, Converter={StaticResource BoolToBuyRentConverter}}"
+                                   Style="{StaticResource Caption}"
+                                   FontAttributes="Bold"/>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

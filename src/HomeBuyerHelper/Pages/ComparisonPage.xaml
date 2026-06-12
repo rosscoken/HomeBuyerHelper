@@ -166,6 +166,71 @@
                         </HorizontalStackLayout>
                     </Grid>
                 </Frame>
+
+                <!-- True Total Cost comparison (P3-TTC-003) -->
+                <Label Text="True Total Cost"
+                       Style="{StaticResource Title}"
+                       Margin="0,8,0,0"/>
+                <Label Text="Housing + utilities + the monetized value of commute time"
+                       Style="{StaticResource Caption}"
+                       TextColor="{StaticResource Gray500}"/>
+                <CollectionView ItemsSource="{Binding TrueCostSummaries}" SelectionMode="None">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:TrueCostSummary">
+                            <Frame Style="{StaticResource CardFrame}" Margin="0,4">
+                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="2">
+                                    <Label Grid.Row="0" Grid.Column="0"
+                                           Text="{Binding PropertyName}"
+                                           Style="{StaticResource Subtitle}"/>
+                                    <Label Grid.Row="0" Grid.Column="1"
+                                           Text="{Binding MonthlyTotal, StringFormat='{0:C0}/mo'}"
+                                           Style="{StaticResource Subtitle}"
+                                           TextColor="{StaticResource Primary}"/>
+                                    <Label Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                                           Style="{StaticResource Caption}"
+                                           TextColor="{StaticResource Gray500}">
+                                        <Label.FormattedText>
+                                            <FormattedString>
+                                                <Span Text="{Binding MonthlyHousing, StringFormat='Housing {0:C0}'}"/>
+                                                <Span Text="{Binding MonthlyCommuteValue, StringFormat=' · Commute {0:C0}'}"/>
+                                                <Span Text="{Binding ThirtyYearTotal, StringFormat=' · 30yr {0:C0}'}"/>
+                                            </FormattedString>
+                                        </Label.FormattedText>
+                                    </Label>
+                                    <Label Grid.Row="2" Grid.Column="0"
+                                           Text="★ Lowest true cost"
+                                           Style="{StaticResource Caption}"
+                                           TextColor="{StaticResource Success}"
+                                           IsVisible="{Binding IsLowest}"/>
+                                </Grid>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <!-- Pros/Cons comparison (P3-NOT-003) -->
+                <VerticalStackLayout IsVisible="{Binding ShowProsCons}" Spacing="8">
+                    <Label Text="Pros &amp; Cons"
+                           Style="{StaticResource Title}"
+                           Margin="0,8,0,0"/>
+                    <CollectionView ItemsSource="{Binding ProConSummaries}" SelectionMode="None">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="vm:ProConSummary">
+                                <Frame Style="{StaticResource CardFrame}" Margin="0,4">
+                                    <VerticalStackLayout Spacing="4">
+                                        <Label Text="{Binding PropertyName}" Style="{StaticResource Subtitle}"/>
+                                        <Label Text="{Binding ProsText}"
+                                               Style="{StaticResource Caption}"
+                                               TextColor="{StaticResource Success}"/>
+                                        <Label Text="{Binding ConsText}"
+                                               Style="{StaticResource Caption}"
+                                               TextColor="{StaticResource Error}"/>
+                                    </VerticalStackLayout>
+                                </Frame>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
             </VerticalStackLayout>
         </ScrollView>
 

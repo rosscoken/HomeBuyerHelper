@@ -1,0 +1,9 @@
+# Relaxed analyzer rules for test projects.
+
+[*.cs]
+# Underscore-separated test method names are the xUnit convention.
+dotnet_diagnostic.CA1707.severity = none
+# Readability-first LINQ usage is fine in test assertions.
+dotnet_diagnostic.CA1826.severity = suggestion
+# Inline array arguments are clearer than static fields in test bodies.
+dotnet_diagnostic.CA1861.severity = suggestion

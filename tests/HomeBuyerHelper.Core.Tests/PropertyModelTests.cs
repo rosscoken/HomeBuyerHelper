@@ -1,5 +1,6 @@
 using FluentAssertions;
 using HomeBuyerHelper.Core.Models;
+using Xunit;
 
 namespace HomeBuyerHelper.Core.Tests;
 

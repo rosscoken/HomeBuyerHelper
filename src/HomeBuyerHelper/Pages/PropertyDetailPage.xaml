@@ -2,6 +2,8 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:HomeBuyerHelper.ViewModels"
+             xmlns:interfaces="clr-namespace:HomeBuyerHelper.Core.Interfaces;assembly=HomeBuyerHelper.Core"
+             xmlns:models="clr-namespace:HomeBuyerHelper.Core.Models;assembly=HomeBuyerHelper.Core"
              x:Class="HomeBuyerHelper.Pages.PropertyDetailPage"
              x:DataType="vm:PropertyDetailViewModel"
              Title="{Binding Title}">
@@ -117,6 +119,30 @@
                 </VerticalStackLayout>
             </Grid>
 
+            <!-- Commute & Utilities (P3-COM-002) -->
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                <VerticalStackLayout Grid.Column="0">
+                    <Label Text="Commute (RT min)" Style="{StaticResource Caption}" />
+                    <Entry Text="{Binding CommuteMinutesPrimary}"
+                           Keyboard="Numeric"
+                           Placeholder="e.g. 60"
+                           AutomationProperties.Name="Primary round-trip commute minutes" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Grid.Column="1">
+                    <Label Text="Partner Commute" Style="{StaticResource Caption}" />
+                    <Entry Text="{Binding CommuteMinutesSecondary}"
+                           Keyboard="Numeric"
+                           Placeholder="Optional"
+                           AutomationProperties.Name="Partner round-trip commute minutes" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Grid.Column="2">
+                    <Label Text="Utilities/mo" Style="{StaticResource Caption}" />
+                    <Entry Text="{Binding MonthlyUtilities}"
+                           Keyboard="Numeric"
+                           AutomationProperties.Name="Monthly utilities estimate" />
+                </VerticalStackLayout>
+            </Grid>
+
             <!-- Cost Breakdown -->
             <Frame Style="{StaticResource CardFrame}"
                    IsVisible="{Binding CostBreakdown, Converter={StaticResource IsNotNullConverter}}">
@@ -161,6 +187,195 @@
                                 </FormattedString>
                             </Label.FormattedText>
                         </Label>
+                    </Grid>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Affordability by Scenario (P2-AFF-002) -->
+            <Frame Style="{StaticResource CardFrame}"
+                   IsVisible="{Binding HasAffordabilityData}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Affordability" Style="{StaticResource Title}"/>
+                    <Label Text="⚠ This home stretches your budget in at least one scenario. Review your income and expenses on the Budget tab."
+                           Style="{StaticResource Caption}"
+                           TextColor="{StaticResource Error}"
+                           IsVisible="{Binding ShowAffordabilityWarning}"/>
+                    <CollectionView ItemsSource="{Binding Affordability}" SelectionMode="None">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="interfaces:AffordabilityAssessment">
+                                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12" Padding="0,4">
+                                    <Label Grid.Column="0"
+                                           Text="{Binding Scenario}"
+                                           Style="{StaticResource Body}"/>
+                                    <Label Grid.Column="1"
+                                           Text="{Binding HousingPercentage, StringFormat='{0:F1}%'}"
+                                           Style="{StaticResource Body}"
+                                           FontAttributes="Bold"/>
+                                    <Frame Grid.Column="2"
+                                           BackgroundColor="{Binding Zone, Converter={StaticResource AffordabilityZoneToColorConverter}}"
+                                           Padding="8,2"
+                                           CornerRadius="4"
+                                           BorderColor="Transparent">
+                                        <Label Text="{Binding ZoneLabel}"
+                                               Style="{StaticResource Caption}"
+                                               TextColor="White"/>
+                                    </Frame>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- True Total Cost (P3-TTC-002) -->
+            <Frame Style="{StaticResource CardFrame}"
+                   IsVisible="{Binding TrueCost, Converter={StaticResource IsNotNullConverter}}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="True Total Cost" Style="{StaticResource Title}"/>
+                    <Label Text="Housing + utilities + the value of time spent commuting"
+                           Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="4">
+                        <Label Grid.Row="0" Grid.Column="0" Text="Housing" Style="{StaticResource Body}"/>
+                        <Label Grid.Row="0" Grid.Column="1" Text="{Binding TrueCost.MonthlyHousing, StringFormat='{0:C0}'}" Style="{StaticResource Body}"/>
+                        <Label Grid.Row="1" Grid.Column="0" Text="Utilities" Style="{StaticResource Body}"/>
+                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding TrueCost.MonthlyUtilities, StringFormat='{0:C0}'}" Style="{StaticResource Body}"/>
+                        <Label Grid.Row="2" Grid.Column="0" Text="Commute time value" Style="{StaticResource Body}"/>
+                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding TrueCost.MonthlyCommuteValue, StringFormat='{0:C0}'}" Style="{StaticResource Body}"/>
+                        <Label Grid.Row="3" Grid.Column="0" Text="Total / month" Style="{StaticResource Subtitle}"/>
+                        <Label Grid.Row="3" Grid.Column="1" Text="{Binding TrueCost.MonthlyTotal, StringFormat='{0:C0}'}" Style="{StaticResource Subtitle}" TextColor="{StaticResource Primary}"/>
+                        <Label Grid.Row="4" Grid.Column="0" Text="30-year total" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                        <Label Grid.Row="4" Grid.Column="1" Text="{Binding TrueCost.ThirtyYearTotal, StringFormat='{0:C0}'}" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                    </Grid>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Commute Analysis (P3-COM-004) -->
+            <Frame Style="{StaticResource CardFrame}"
+                   IsVisible="{Binding HasCommuteAnalysis}">
+                <VerticalStackLayout Spacing="8">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="Commute Analysis" Style="{StaticResource Title}"/>
+                        <Frame Grid.Column="1"
+                               BackgroundColor="{Binding CommuteAnalysis.ZoneColor}"
+                               Padding="8,2" CornerRadius="4" BorderColor="Transparent">
+                            <Label Text="{Binding CommuteAnalysis.ZoneLabel}"
+                                   Style="{StaticResource Caption}" TextColor="White"/>
+                        </Frame>
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="4">
+                        <Label Grid.Row="0" Grid.Column="0" Text="Monthly time cost" Style="{StaticResource Body}"/>
+                        <Label Grid.Row="0" Grid.Column="1" Text="{Binding CommuteAnalysis.MonthlyValue, StringFormat='{0:C0}'}" Style="{StaticResource Body}"/>
+                        <Label Grid.Row="1" Grid.Column="0" Text="Annual time cost" Style="{StaticResource Body}"/>
+                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding CommuteAnalysis.AnnualValue, StringFormat='{0:C0}'}" Style="{StaticResource Body}"/>
+                        <Label Grid.Row="2" Grid.Column="0" Text="30-year time cost" Style="{StaticResource Body}"/>
+                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding CommuteAnalysis.ThirtyYearValue, StringFormat='{0:C0}'}" Style="{StaticResource Body}"/>
+                        <Label Grid.Row="3" Grid.Column="0" Text="Time lost per year" Style="{StaticResource Body}"/>
+                        <Label Grid.Row="3" Grid.Column="1" Style="{StaticResource Body}">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{Binding CommuteAnalysis.HoursPerYear, StringFormat='{0:F0} hrs'}"/>
+                                    <Span Text="{Binding CommuteAnalysis.DaysPerYear, StringFormat=' ({0:F0} days)'}"/>
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                    </Grid>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Photos (P3-PHO-002) -->
+            <Frame Style="{StaticResource CardFrame}"
+                   IsVisible="{Binding IsNewProperty, Converter={StaticResource InvertedBoolConverter}}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Photos" Style="{StaticResource Title}"/>
+                    <CollectionView ItemsSource="{Binding Photos}"
+                                    SelectionMode="None"
+                                    HeightRequest="100">
+                        <CollectionView.ItemsLayout>
+                            <LinearItemsLayout Orientation="Horizontal" ItemSpacing="8"/>
+                        </CollectionView.ItemsLayout>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:PropertyPhoto">
+                                <Grid>
+                                    <Image Source="{Binding FilePath}"
+                                           Aspect="AspectFill"
+                                           WidthRequest="120"
+                                           HeightRequest="90"
+                                           AutomationProperties.Name="Property photo">
+                                        <Image.GestureRecognizers>
+                                            <TapGestureRecognizer
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:PropertyDetailViewModel}}, Path=DeletePhotoCommand}"
+                                                CommandParameter="{Binding}"/>
+                                        </Image.GestureRecognizers>
+                                    </Image>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                        <Button Grid.Column="0" Text="📷 Camera"
+                                Command="{Binding AddPhotoFromCameraCommand}"
+                                Style="{StaticResource SecondaryButton}"
+                                AutomationProperties.Name="Take photo with camera"/>
+                        <Button Grid.Column="1" Text="🖼 Gallery"
+                                Command="{Binding AddPhotoFromGalleryCommand}"
+                                Style="{StaticResource SecondaryButton}"
+                                AutomationProperties.Name="Pick photo from gallery"/>
+                    </Grid>
+                    <Label Text="Tap a photo to delete it"
+                           Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Pros & Cons (P3-NOT-002) -->
+            <Frame Style="{StaticResource CardFrame}"
+                   IsVisible="{Binding IsNewProperty, Converter={StaticResource InvertedBoolConverter}}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Pros &amp; Cons" Style="{StaticResource Title}"/>
+
+                    <Label Text="Pros" Style="{StaticResource Subtitle}" TextColor="{StaticResource Success}"/>
+                    <CollectionView ItemsSource="{Binding Pros}" SelectionMode="None">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:PropertyProCon">
+                                <Grid ColumnDefinitions="*,Auto" Padding="0,2">
+                                    <Label Text="{Binding Description, StringFormat='+ {0}'}" Style="{StaticResource Body}"/>
+                                    <Button Grid.Column="1" Text="✕"
+                                            Style="{StaticResource TextButton}"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:PropertyDetailViewModel}}, Path=DeleteProConCommand}"
+                                            CommandParameter="{Binding}"
+                                            AutomationProperties.Name="Delete pro"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <Entry Text="{Binding NewProText}" Placeholder="Add a pro..."
+                               AutomationProperties.Name="New pro text"/>
+                        <Button Grid.Column="1" Text="Add" Command="{Binding AddProCommand}"
+                                Style="{StaticResource TextButton}"
+                                AutomationProperties.Name="Add pro"/>
+                    </Grid>
+
+                    <Label Text="Cons" Style="{StaticResource Subtitle}" TextColor="{StaticResource Error}"/>
+                    <CollectionView ItemsSource="{Binding Cons}" SelectionMode="None">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:PropertyProCon">
+                                <Grid ColumnDefinitions="*,Auto" Padding="0,2">
+                                    <Label Text="{Binding Description, StringFormat='- {0}'}" Style="{StaticResource Body}"/>
+                                    <Button Grid.Column="1" Text="✕"
+                                            Style="{StaticResource TextButton}"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:PropertyDetailViewModel}}, Path=DeleteProConCommand}"
+                                            CommandParameter="{Binding}"
+                                            AutomationProperties.Name="Delete con"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <Entry Text="{Binding NewConText}" Placeholder="Add a con..."
+                               AutomationProperties.Name="New con text"/>
+                        <Button Grid.Column="1" Text="Add" Command="{Binding AddConCommand}"
+                                Style="{StaticResource TextButton}"
+                                AutomationProperties.Name="Add con"/>
                     </Grid>
                 </VerticalStackLayout>
             </Frame>

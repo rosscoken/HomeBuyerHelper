@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Test Core
+        run: dotnet test tests/HomeBuyerHelper.Core.Tests/HomeBuyerHelper.Core.Tests.csproj
+
+      - name: Test Data
+        run: dotnet test tests/HomeBuyerHelper.Data.Tests/HomeBuyerHelper.Data.Tests.csproj
+
+      - name: Test UI placeholder
+        run: dotnet test tests/HomeBuyerHelper.UI.Tests/HomeBuyerHelper.UI.Tests.csproj
+
+      - name: Build web app
+        run: dotnet build src/HomeBuyerHelper.Web/HomeBuyerHelper.Web.csproj -c Release
+
+      # Compile the MAUI head so DI/XAML/ViewModel breakage can't merge green.
+      # Hosted ubuntu runners ship the Android SDK and JDK.
+      - name: Install MAUI Android workload
+        run: dotnet workload install maui-android
+
+      - name: Build MAUI app (Android)
+        # Debug config: validates C#/XAML/DI without Release AOT, which is
+        # slow and belongs to the release pipeline, not PR checks.
+        run: dotnet build src/HomeBuyerHelper/HomeBuyerHelper.csproj -f net8.0-android -c Debug

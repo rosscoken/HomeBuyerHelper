@@ -56,7 +56,7 @@ public partial class DashboardViewModel : BaseViewModel
     [RelayCommand]
     private async Task NavigateToOnboardingAsync()
     {
-        await Shell.Current.GoToAsync(nameof(Pages.OnboardingPage));
+        await Shell.Current.GoToAsync("Welcome");
     }
 
     [RelayCommand]
@@ -81,6 +81,36 @@ public partial class DashboardViewModel : BaseViewModel
     private async Task NavigateToDataManagementAsync()
     {
         await Shell.Current.GoToAsync("DataManagement");
+    }
+
+    [RelayCommand]
+    private async Task NavigateToRentVsBuyAsync()
+    {
+        await Shell.Current.GoToAsync("RentVsBuy");
+    }
+
+    [RelayCommand]
+    private async Task NavigateToScenariosAsync()
+    {
+        await Shell.Current.GoToAsync("Scenarios");
+    }
+
+    [RelayCommand]
+    private async Task NavigateToCommuteSettingsAsync()
+    {
+        await Shell.Current.GoToAsync("CommuteSettings");
+    }
+
+    [RelayCommand]
+    private async Task NavigateToTaxSettingsAsync()
+    {
+        await Shell.Current.GoToAsync("TaxSettings");
+    }
+
+    [RelayCommand]
+    private async Task NavigateToSyncSettingsAsync()
+    {
+        await Shell.Current.GoToAsync("SyncSettings");
     }
 
     [RelayCommand]

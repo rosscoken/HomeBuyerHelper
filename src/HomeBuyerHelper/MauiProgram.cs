@@ -4,10 +4,17 @@ using HomeBuyerHelper.Core.Services;
 using HomeBuyerHelper.Data;
 using HomeBuyerHelper.Data.Repositories;
 using HomeBuyerHelper.Pages;
+using HomeBuyerHelper.Pages.Analysis;
+using HomeBuyerHelper.Pages.Budget;
+using HomeBuyerHelper.Pages.Funding;
 using HomeBuyerHelper.Pages.Onboarding;
 using HomeBuyerHelper.Pages.Settings;
 using HomeBuyerHelper.ViewModels;
+using HomeBuyerHelper.ViewModels.Analysis;
+using HomeBuyerHelper.ViewModels.Budget;
+using HomeBuyerHelper.ViewModels.Funding;
 using HomeBuyerHelper.ViewModels.Onboarding;
+using HomeBuyerHelper.ViewModels.Settings;
 using Microsoft.Extensions.Logging;
 
 namespace HomeBuyerHelper;
@@ -42,6 +49,17 @@ public static class MauiProgram
         builder.Services.AddSingleton<ICriteriaRepository, CriteriaRepository>();
         builder.Services.AddSingleton<IScoreRepository, ScoreRepository>();
         builder.Services.AddSingleton<IUserPreferencesRepository, UserPreferencesRepository>();
+        builder.Services.AddSingleton<IIncomeRepository, IncomeRepository>();
+        builder.Services.AddSingleton<IExpenseRepository, ExpenseRepository>();
+        builder.Services.AddSingleton<IOneTimeEventRepository, OneTimeEventRepository>();
+        builder.Services.AddSingleton<IFundingRepository, FundingRepository>();
+        builder.Services.AddSingleton<IPhotoRepository, PhotoRepository>();
+        builder.Services.AddSingleton<IProConRepository, ProConRepository>();
+
+        // Register platform abstractions
+        builder.Services.AddSingleton<IKeyValueStore, Services.MauiPreferencesStore>();
+        builder.Services.AddSingleton<IPhotoService, Services.PhotoService>();
+        builder.Services.AddSingleton<ICloudSyncService, Services.ShareBackupSyncService>();
 
         // Register business services
         builder.Services.AddSingleton<IPropertyService, PropertyService>();
@@ -49,6 +67,15 @@ public static class MauiProgram
         builder.Services.AddSingleton<IExportService, ExportService>();
         builder.Services.AddSingleton<IOnboardingStateService, OnboardingStateService>();
         builder.Services.AddSingleton<IWeightBalancingService, WeightBalancingService>();
+        builder.Services.AddSingleton<IIncomeScenarioService, IncomeScenarioService>();
+        builder.Services.AddSingleton<ICashFlowProjectionService, CashFlowProjectionService>();
+        builder.Services.AddSingleton<IAffordabilityService, AffordabilityService>();
+        builder.Services.AddSingleton<ICommuteValueService, CommuteValueService>();
+        builder.Services.AddSingleton<ITrueTotalCostService, TrueTotalCostService>();
+        builder.Services.AddSingleton<ITaxImpactService, TaxImpactService>();
+        builder.Services.AddSingleton<IRentVsBuyService, RentVsBuyService>();
+        builder.Services.AddSingleton<IScenarioService, ScenarioService>();
+        builder.Services.AddSingleton<ICriteriaTemplateService, CriteriaTemplateService>();
 
         // Register main view models (transient - new instance per page)
         builder.Services.AddTransient<DashboardViewModel>();
@@ -60,6 +87,27 @@ public static class MauiProgram
         builder.Services.AddTransient<ScoringWalkthroughViewModel>();
         builder.Services.AddTransient<LoanSettingsViewModel>();
         builder.Services.AddTransient<DataManagementViewModel>();
+
+        // Register budget view models
+        builder.Services.AddTransient<BudgetOverviewViewModel>();
+        builder.Services.AddTransient<IncomeSetupViewModel>();
+        builder.Services.AddTransient<IncomeEditViewModel>();
+        builder.Services.AddTransient<ExpenseSetupViewModel>();
+        builder.Services.AddTransient<ExpenseEditViewModel>();
+        builder.Services.AddTransient<OneTimeEventsViewModel>();
+        builder.Services.AddTransient<OneTimeEventEditViewModel>();
+        builder.Services.AddTransient<CashFlowTimelineViewModel>();
+
+        // Register analysis view models
+        builder.Services.AddTransient<RentVsBuyViewModel>();
+        builder.Services.AddTransient<ScenariosViewModel>();
+
+        // Register funding and settings view models
+        builder.Services.AddTransient<FundingSetupViewModel>();
+        builder.Services.AddTransient<FundingEditViewModel>();
+        builder.Services.AddTransient<TaxSettingsViewModel>();
+        builder.Services.AddTransient<CommuteSettingsViewModel>();
+        builder.Services.AddTransient<SyncSettingsViewModel>();
 
         // Register onboarding view models
         builder.Services.AddTransient<WelcomeViewModel>();
@@ -81,6 +129,27 @@ public static class MauiProgram
         builder.Services.AddTransient<ScoringWalkthroughPage>();
         builder.Services.AddTransient<LoanSettingsPage>();
         builder.Services.AddTransient<DataManagementPage>();
+
+        // Register budget pages
+        builder.Services.AddTransient<BudgetPage>();
+        builder.Services.AddTransient<IncomeSetupPage>();
+        builder.Services.AddTransient<IncomeEditPage>();
+        builder.Services.AddTransient<ExpenseSetupPage>();
+        builder.Services.AddTransient<ExpenseEditPage>();
+        builder.Services.AddTransient<OneTimeEventsPage>();
+        builder.Services.AddTransient<OneTimeEventEditPage>();
+        builder.Services.AddTransient<CashFlowTimelinePage>();
+
+        // Register analysis pages
+        builder.Services.AddTransient<RentVsBuyPage>();
+        builder.Services.AddTransient<ScenariosPage>();
+
+        // Register funding and settings pages
+        builder.Services.AddTransient<FundingSetupPage>();
+        builder.Services.AddTransient<FundingEditPage>();
+        builder.Services.AddTransient<TaxSettingsPage>();
+        builder.Services.AddTransient<CommuteSettingsPage>();
+        builder.Services.AddTransient<SyncSettingsPage>();
 
         // Register onboarding pages
         builder.Services.AddTransient<WelcomePage>();

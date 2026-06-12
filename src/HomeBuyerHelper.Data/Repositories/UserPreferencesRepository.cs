@@ -92,7 +92,14 @@ public class UserPreferencesRepository : IUserPreferencesRepository
         DefaultInterestRate = 7.0m,
         DefaultMortgageTerm = 30,
         DefaultPropertyTaxRate = 0.96m,
-        DefaultMonthlyInsurance = 125m
+        DefaultMonthlyInsurance = 125m,
+        EmergencyFundBalance = 0m,
+        EmergencyFundTargetMonths = 6,
+        TimeValueHourlyRate = 100m,
+        WorkdaysPerMonth = 22,
+        FilingStatus = TaxFilingStatus.Single,
+        EstimatedTaxableIncome = 0m,
+        StateMarginalTaxRate = 0m
     };
 
     private static UserPreferences MapToModel(UserPreferencesEntity entity) => new()
@@ -111,12 +118,21 @@ public class UserPreferencesRepository : IUserPreferencesRepository
         PrioritizesPrice = entity.PrioritizesPrice,
         Currency = entity.Currency,
         UseDarkMode = entity.UseDarkMode,
+        ThemePreference = entity.ThemePreference,
         EnableNotifications = entity.EnableNotifications,
         DefaultDownPaymentPercent = entity.DefaultDownPaymentPercent,
         DefaultInterestRate = entity.DefaultInterestRate,
         DefaultMortgageTerm = entity.DefaultMortgageTerm,
         DefaultPropertyTaxRate = entity.DefaultPropertyTaxRate,
         DefaultMonthlyInsurance = entity.DefaultMonthlyInsurance,
+        EmergencyFundBalance = entity.EmergencyFundBalance,
+        EmergencyFundTargetMonths = entity.EmergencyFundTargetMonths,
+        WorkAddress = entity.WorkAddress,
+        TimeValueHourlyRate = entity.TimeValueHourlyRate,
+        WorkdaysPerMonth = entity.WorkdaysPerMonth,
+        FilingStatus = (TaxFilingStatus)entity.FilingStatus,
+        EstimatedTaxableIncome = entity.EstimatedTaxableIncome,
+        StateMarginalTaxRate = entity.StateMarginalTaxRate,
         CreatedAt = entity.CreatedAt,
         UpdatedAt = entity.UpdatedAt
     };
@@ -137,12 +153,21 @@ public class UserPreferencesRepository : IUserPreferencesRepository
         PrioritizesPrice = model.PrioritizesPrice,
         Currency = model.Currency,
         UseDarkMode = model.UseDarkMode,
+        ThemePreference = model.ThemePreference,
         EnableNotifications = model.EnableNotifications,
         DefaultDownPaymentPercent = model.DefaultDownPaymentPercent,
         DefaultInterestRate = model.DefaultInterestRate,
         DefaultMortgageTerm = model.DefaultMortgageTerm,
         DefaultPropertyTaxRate = model.DefaultPropertyTaxRate,
         DefaultMonthlyInsurance = model.DefaultMonthlyInsurance,
+        EmergencyFundBalance = model.EmergencyFundBalance,
+        EmergencyFundTargetMonths = model.EmergencyFundTargetMonths,
+        WorkAddress = model.WorkAddress,
+        TimeValueHourlyRate = model.TimeValueHourlyRate,
+        WorkdaysPerMonth = model.WorkdaysPerMonth,
+        FilingStatus = (int)model.FilingStatus,
+        EstimatedTaxableIncome = model.EstimatedTaxableIncome,
+        StateMarginalTaxRate = model.StateMarginalTaxRate,
         CreatedAt = model.CreatedAt,
         UpdatedAt = model.UpdatedAt
     };

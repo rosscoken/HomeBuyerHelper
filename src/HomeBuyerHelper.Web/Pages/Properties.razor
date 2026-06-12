@@ -1,0 +1,232 @@
+@page "/properties"
+@inject IPropertyService PropertyService
+@inject ICriteriaRepository CriteriaRepository
+@inject IScoreRepository ScoreRepository
+
+<PageTitle>Properties · HomeBuyerHelper</PageTitle>
+
+<h1>Properties</h1>
+
+@if (_editing != null)
+{
+    <div class="card">
+        <h2>@(_editing.Id == 0 ? "Add Property" : $"Edit: {_editing.Nickname}")</h2>
+        <div class="row">
+            <span><label>Nickname *</label><input @bind="_editing.Nickname" /></span>
+            <span><label>Asking Price</label><input type="number" @bind="_editing.AskingPrice" /></span>
+            <span><label>Offer Price (opt)</label><input type="number" @bind="_editing.OfferPrice" /></span>
+        </div>
+        <div class="row">
+            <span><label>Bedrooms</label><input type="number" @bind="_editing.Bedrooms" /></span>
+            <span><label>Bathrooms</label><input type="number" step="0.5" @bind="_editing.Bathrooms" /></span>
+            <span><label>Square Feet</label><input type="number" @bind="_editing.SquareFeet" /></span>
+            <span><label>Year Built</label><input type="number" @bind="_editing.YearBuilt" /></span>
+        </div>
+        <div class="row">
+            <span><label>Monthly HOA</label><input type="number" @bind="_editing.MonthlyHOA" /></span>
+            <span><label>Utilities/mo</label><input type="number" @bind="_editing.MonthlyUtilities" /></span>
+            <span><label>Commute RT min</label><input type="number" @bind="_editing.CommuteMinutesPrimary" /></span>
+            <span><label>Partner RT min</label><input type="number" @bind="_editing.CommuteMinutesSecondary" /></span>
+        </div>
+        <div class="row">
+            <span><label>Notes</label><textarea rows="2" cols="50" @bind="_editing.Notes"></textarea></span>
+        </div>
+        @if (_error != null) { <p class="error-text">@_error</p> }
+        <div class="row">
+            <button @onclick="SaveAsync">Save</button>
+            <button class="secondary" @onclick="() => _editing = null">Cancel</button>
+        </div>
+    </div>
+}
+else
+{
+    <button @onclick="StartAdd">+ Add Property</button>
+}
+
+@if (_scoring != null)
+{
+    <div class="card">
+        <h2>Score: @_scoring.Nickname</h2>
+        <p class="muted">1 = poor · 10 = perfect. Anchors show what the extremes mean.</p>
+        <table>
+            <thead><tr><th>Criterion</th><th>Weight</th><th>Score (1-10)</th><th>Anchors</th></tr></thead>
+            <tbody>
+                @foreach (var criterion in _criteria)
+                {
+                    <tr>
+                        <td>@criterion.Name</td>
+                        <td>@criterion.Weight%</td>
+                        <td>
+                            <input type="number" min="0" max="10" style="width:70px"
+                                   @bind="_scoreDraft[criterion.Id]" />
+                        </td>
+                        <td class="muted">
+                            @if (!string.IsNullOrEmpty(criterion.ScoreAnchorLow)) { <span>1: @criterion.ScoreAnchorLow · </span> }
+                            @if (!string.IsNullOrEmpty(criterion.ScoreAnchorHigh)) { <span>10: @criterion.ScoreAnchorHigh</span> }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div class="row">
+            <button @onclick="SaveScoresAsync">Save Scores</button>
+            <button class="secondary" @onclick="() => _scoring = null">Cancel</button>
+        </div>
+    </div>
+}
+
+<h2>Your Properties</h2>
+@if (_properties.Count == 0)
+{
+    <p class="muted">Nothing yet — add the homes you're considering.</p>
+}
+else
+{
+    <table>
+        <thead>
+            <tr><th>Property</th><th>Price</th><th>Beds/Baths</th><th>Sqft</th><th>Scored</th><th></th></tr>
+        </thead>
+        <tbody>
+            @foreach (var property in _properties)
+            {
+                <tr>
+                    <td>@property.Nickname</td>
+                    <td>@property.EffectivePrice.ToString("C0")</td>
+                    <td>@property.Bedrooms / @property.Bathrooms</td>
+                    <td>@property.SquareFeet.ToString("N0")</td>
+                    <td>@property.ScoredCriteriaCount/@property.TotalCriteriaCount</td>
+                    <td>
+                        <button class="secondary" @onclick="() => StartScore(property)">Score</button>
+                        <button class="secondary" @onclick="() => StartEdit(property)">Edit</button>
+                        <button class="danger" @onclick="() => DeleteAsync(property)">✕</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Property> _properties = new();
+    private IReadOnlyList<EvaluationCriterion> _criteria = Array.Empty<EvaluationCriterion>();
+    private Property? _editing;
+    private Property? _scoring;
+    private Dictionary<int, int> _scoreDraft = new();
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _criteria = await CriteriaRepository.GetAllAsync();
+        _properties = (await PropertyService.GetPropertiesWithScoresAsync()).ToList();
+    }
+
+    private void StartAdd()
+    {
+        _error = null;
+        _scoring = null;
+        _editing = new Property { Nickname = "" };
+    }
+
+    private void StartEdit(Property property)
+    {
+        _error = null;
+        _scoring = null;
+        // Edit a copy so typing (and Cancel) never mutates the stored object.
+        _editing = Clone(property);
+    }
+
+    private static Property Clone(Property source) => new()
+    {
+        Id = source.Id,
+        Nickname = source.Nickname,
+        Address = source.Address,
+        City = source.City,
+        State = source.State,
+        ZipCode = source.ZipCode,
+        AskingPrice = source.AskingPrice,
+        OfferPrice = source.OfferPrice,
+        Bedrooms = source.Bedrooms,
+        Bathrooms = source.Bathrooms,
+        SquareFeet = source.SquareFeet,
+        LotSquareFeet = source.LotSquareFeet,
+        YearBuilt = source.YearBuilt,
+        PropertyType = source.PropertyType,
+        MonthlyHOA = source.MonthlyHOA,
+        AnnualPropertyTax = source.AnnualPropertyTax,
+        AnnualInsurance = source.AnnualInsurance,
+        CommuteMinutesPrimary = source.CommuteMinutesPrimary,
+        CommuteMinutesSecondary = source.CommuteMinutesSecondary,
+        MonthlyUtilities = source.MonthlyUtilities,
+        ListingUrl = source.ListingUrl,
+        Notes = source.Notes,
+        IsFavorite = source.IsFavorite,
+        IsArchived = source.IsArchived,
+        CreatedAt = source.CreatedAt,
+        UpdatedAt = source.UpdatedAt
+    };
+
+    private async Task SaveAsync()
+    {
+        if (_editing == null) return;
+        if (string.IsNullOrWhiteSpace(_editing.Nickname))
+        {
+            _error = "Please give the property a nickname.";
+            return;
+        }
+
+        if (_editing.Id == 0)
+        {
+            await PropertyService.CreatePropertyAsync(_editing);
+        }
+        else
+        {
+            await PropertyService.UpdatePropertyAsync(_editing);
+        }
+
+        _editing = null;
+        _error = null;
+        await LoadAsync();
+    }
+
+    private async Task StartScore(Property property)
+    {
+        _editing = null;
+        _scoring = property;
+        var existing = await ScoreRepository.GetByPropertyIdAsync(property.Id);
+        _scoreDraft = _criteria.ToDictionary(
+            c => c.Id,
+            c => existing.FirstOrDefault(s => s.CriterionId == c.Id)?.Score ?? 0);
+    }
+
+    private async Task SaveScoresAsync()
+    {
+        if (_scoring == null) return;
+
+        foreach (var (criterionId, score) in _scoreDraft)
+        {
+            if (score is >= 1 and <= 10)
+            {
+                await ScoreRepository.UpsertAsync(new PropertyScore
+                {
+                    PropertyId = _scoring.Id,
+                    CriterionId = criterionId,
+                    Score = score
+                });
+            }
+        }
+
+        _scoring = null;
+        await LoadAsync();
+    }
+
+    private async Task DeleteAsync(Property property)
+    {
+        await PropertyService.DeletePropertyAsync(property.Id);
+        await LoadAsync();
+    }
+}

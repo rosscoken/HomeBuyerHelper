@@ -13,6 +13,7 @@ public partial class CriteriaViewModel : BaseViewModel
 {
     private readonly ICriteriaRepository _criteriaRepository;
     private readonly IWeightBalancingService _weightBalancingService;
+    private readonly ICriteriaTemplateService _templateService;
 
     [ObservableProperty]
     private IReadOnlyList<EvaluationCriterion> _criteria = [];
@@ -33,11 +34,99 @@ public partial class CriteriaViewModel : BaseViewModel
 
     public CriteriaViewModel(
         ICriteriaRepository criteriaRepository,
-        IWeightBalancingService weightBalancingService)
+        IWeightBalancingService weightBalancingService,
+        ICriteriaTemplateService templateService)
     {
         _criteriaRepository = criteriaRepository;
         _weightBalancingService = weightBalancingService;
+        _templateService = templateService;
         Title = "Evaluation Criteria";
+    }
+
+    /// <summary>
+    /// Exports the current criteria as an anonymized shareable template
+    /// (P4-TMP-001). No properties or scores are included.
+    /// </summary>
+    [RelayCommand]
+    private async Task ExportTemplateAsync()
+    {
+        if (Criteria.Count == 0)
+        {
+            SetError("Add criteria before exporting a template.");
+            return;
+        }
+
+        await ExecuteBusyAsync(async () =>
+        {
+            var json = _templateService.ExportTemplate(
+                "My Criteria Template",
+                $"Exported {DateTime.Today:MMMM d, yyyy}",
+                Criteria);
+
+            var exportDir = Path.Combine(FileSystem.AppDataDirectory, "Exports");
+            Directory.CreateDirectory(exportDir);
+            var filePath = Path.Combine(exportDir, $"criteria_template_{DateTime.Now:yyyyMMdd_HHmmss}.json");
+            await File.WriteAllTextAsync(filePath, json);
+
+            await Share.Default.RequestAsync(new ShareFileRequest
+            {
+                Title = "Share Criteria Template",
+                File = new ShareFile(filePath, "application/json")
+            });
+        });
+    }
+
+    /// <summary>
+    /// Imports a criteria template from a file (P4-TMP-002), replacing or
+    /// merging with the current criteria.
+    /// </summary>
+    [RelayCommand]
+    private async Task ImportTemplateAsync()
+    {
+        try
+        {
+            var fileResult = await FilePicker.Default.PickAsync(new PickOptions
+            {
+                PickerTitle = "Select Criteria Template"
+            });
+            if (fileResult == null) return;
+
+            var json = await Services.FileResultExtensions.ReadAllTextAsync(fileResult);
+            var template = _templateService.ParseTemplate(json);
+
+            // Preview before import (P4-TMP-002)
+            var action = await Shell.Current.DisplayActionSheet(
+                $"Import '{template.Name}' ({template.Criteria.Count} criteria)?",
+                "Cancel",
+                null,
+                "Replace my criteria",
+                "Merge with my criteria");
+
+            if (action is not ("Replace my criteria" or "Merge with my criteria")) return;
+
+            await ExecuteBusyAsync(async () =>
+            {
+                if (action == "Replace my criteria")
+                {
+                    foreach (var existing in await _criteriaRepository.GetAllAsync())
+                    {
+                        await _criteriaRepository.DeleteAsync(existing.Id);
+                    }
+                }
+
+                await _criteriaRepository.CreateManyAsync(_templateService.ToCriteria(template));
+            });
+
+            await LoadCriteriaAsync();
+        }
+        catch (InvalidDataException ex)
+        {
+            SetError(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            SetError($"Import failed: {ex.Message}");
+        }
     }
 
     public override async Task OnAppearingAsync()

@@ -18,8 +18,8 @@ public class EvaluationCriterion
     public string? Description { get; set; }
 
     /// <summary>
-    /// Weight/importance of this criterion (1-10 scale).
-    /// Higher values mean more important.
+    /// Weight/importance of this criterion as a percentage (1-50).
+    /// Weights across all criteria should total 100.
     /// </summary>
     public int Weight { get; set; } = 5;
 

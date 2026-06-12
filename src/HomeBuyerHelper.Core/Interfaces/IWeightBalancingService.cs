@@ -1,7 +1,7 @@
-namespace HomeBuyerHelper.Core.Services;
 
 using HomeBuyerHelper.Core.Models;
 
+namespace HomeBuyerHelper.Core.Services;
 /// <summary>
 /// Service for balancing criterion weights.
 /// </summary>

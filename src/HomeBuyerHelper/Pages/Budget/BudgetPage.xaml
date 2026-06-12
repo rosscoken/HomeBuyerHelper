@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:HomeBuyerHelper.ViewModels.Budget"
+             x:Class="HomeBuyerHelper.Pages.Budget.BudgetPage"
+             x:DataType="vm:BudgetOverviewViewModel"
+             Title="{Binding Title}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="16">
+
+            <!-- Monthly Income by Scenario -->
+            <Frame Style="{StaticResource CardFrame}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Monthly Income by Scenario" Style="{StaticResource Subtitle}"/>
+                    <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto" ColumnSpacing="8">
+                        <Label Grid.Row="0" Grid.Column="0" Text="{Binding ConservativeIncome, StringFormat='{0:C0}'}"
+                               Style="{StaticResource Title}" HorizontalTextAlignment="Center"/>
+                        <Label Grid.Row="0" Grid.Column="1" Text="{Binding RealisticIncome, StringFormat='{0:C0}'}"
+                               Style="{StaticResource Title}" TextColor="{StaticResource Primary}" HorizontalTextAlignment="Center"/>
+                        <Label Grid.Row="0" Grid.Column="2" Text="{Binding ExpectedIncome, StringFormat='{0:C0}'}"
+                               Style="{StaticResource Title}" HorizontalTextAlignment="Center"/>
+                        <Label Grid.Row="1" Grid.Column="0" Text="Conservative" Style="{StaticResource Caption}"
+                               TextColor="{StaticResource Gray500}" HorizontalTextAlignment="Center"/>
+                        <Label Grid.Row="1" Grid.Column="1" Text="Realistic" Style="{StaticResource Caption}"
+                               TextColor="{StaticResource Gray500}" HorizontalTextAlignment="Center"/>
+                        <Label Grid.Row="1" Grid.Column="2" Text="Expected" Style="{StaticResource Caption}"
+                               TextColor="{StaticResource Gray500}" HorizontalTextAlignment="Center"/>
+                    </Grid>
+                    <Label Text="{Binding MonthlyExpenses, StringFormat='Monthly expenses: {0:C0}'}"
+                           Style="{StaticResource Body}" TextColor="{StaticResource Gray500}"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Setup Links -->
+            <Frame Style="{StaticResource CardFrame}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Budget Setup" Style="{StaticResource Subtitle}"/>
+                    <Button Text="{Binding IncomeSourceCount, StringFormat='Income Sources ({0})'}"
+                            Command="{Binding NavigateToIncomeCommand}"
+                            Style="{StaticResource SecondaryButton}"
+                            AutomationProperties.Name="Manage income sources"/>
+                    <Button Text="{Binding ExpenseCount, StringFormat='Expenses ({0})'}"
+                            Command="{Binding NavigateToExpensesCommand}"
+                            Style="{StaticResource SecondaryButton}"
+                            AutomationProperties.Name="Manage expenses"/>
+                    <Button Text="{Binding EventCount, StringFormat='One-Time Events ({0})'}"
+                            Command="{Binding NavigateToEventsCommand}"
+                            Style="{StaticResource SecondaryButton}"
+                            AutomationProperties.Name="Manage one-time events"/>
+                    <Button Text="Down Payment Funding Plan"
+                            Command="{Binding NavigateToFundingCommand}"
+                            Style="{StaticResource SecondaryButton}"
+                            AutomationProperties.Name="Manage down payment funding plan"/>
+                    <Button Text="View Cash Flow Timeline"
+                            Command="{Binding NavigateToCashFlowCommand}"
+                            Style="{StaticResource PrimaryButton}"
+                            AutomationProperties.Name="View cash flow timeline"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Emergency Fund -->
+            <Frame Style="{StaticResource CardFrame}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Emergency Fund" Style="{StaticResource Subtitle}"/>
+                    <Label Text="{Binding EmergencyFundStatus}"
+                           Style="{StaticResource Body}"
+                           TextColor="{Binding EmergencyFundColor}"/>
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12" RowDefinitions="Auto,Auto" RowSpacing="4">
+                        <Label Grid.Row="0" Grid.Column="0" Text="Current Balance" Style="{StaticResource Caption}"
+                               TextColor="{StaticResource Gray500}"/>
+                        <Label Grid.Row="0" Grid.Column="1" Text="Target (months of expenses)" Style="{StaticResource Caption}"
+                               TextColor="{StaticResource Gray500}"/>
+                        <Entry Grid.Row="1" Grid.Column="0"
+                               Text="{Binding EmergencyFundBalance}"
+                               Keyboard="Numeric"
+                               AutomationProperties.Name="Emergency fund balance"/>
+                        <Entry Grid.Row="1" Grid.Column="1"
+                               Text="{Binding EmergencyFundTargetMonths}"
+                               Keyboard="Numeric"
+                               AutomationProperties.Name="Emergency fund target months"/>
+                    </Grid>
+                    <Label Text="{Binding EmergencyFundTarget, StringFormat='Target amount: {0:C0}'}"
+                           Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                    <Button Text="Save"
+                            Command="{Binding SaveEmergencyFundCommand}"
+                            Style="{StaticResource PrimaryButton}"
+                            AutomationProperties.Name="Save emergency fund settings"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <Label Text="{Binding ErrorMessage}"
+                   IsVisible="{Binding HasError}"
+                   TextColor="{StaticResource Error}"
+                   Style="{StaticResource Body}"/>
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

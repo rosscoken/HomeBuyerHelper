@@ -146,6 +146,61 @@ public static class CommonCriteria
             new("Outdoor Space", "Break time outdoor access", "No outdoor space", "Nice outdoor area") { SuggestedWeight = 10 },
             new("Walkability", "Access to coffee shops, etc.", "Nothing nearby", "Great walkability") { SuggestedWeight = 10 },
             new("Overall Condition", "Move-in readiness", "Needs work", "Ready to go") { SuggestedWeight = 10 }
+        },
+        ["UrbanCondo"] = new List<CriterionTemplate>
+        {
+            new("Walkability", "Daily errands without a car", "Car required for everything", "Walk score 90+") { SuggestedWeight = 20 },
+            new("Transit Access", "Subway, bus, light rail nearby", "No transit options", "Steps from a major line") { SuggestedWeight = 15 },
+            new("Building Amenities", "Gym, roof deck, doorman, package room", "No amenities", "Full-service building") { SuggestedWeight = 10 },
+            new("HOA Fees", "Monthly condo fees vs. value", "High fees, little value", "Reasonable fees, great services") { SuggestedWeight = 15 },
+            new("Noise Level", "Street and neighbor noise", "Constant noise", "Surprisingly quiet") { SuggestedWeight = 10 },
+            new("Natural Light", "Windows and exposure", "Dark unit", "Corner unit, light all day") { SuggestedWeight = 10 },
+            new("Entertainment Access", "Restaurants and nightlife", "Nothing nearby", "Best blocks in town") { SuggestedWeight = 10 },
+            new("Price vs. Budget", "Value for the neighborhood", "Overpriced", "Under market") { SuggestedWeight = 10 }
+        },
+        ["SuburbanFamily"] = new List<CriterionTemplate>
+        {
+            new("School Quality", "District ratings and proximity", "Low-rated schools", "Top-rated schools") { SuggestedWeight = 25 },
+            new("Yard Size", "Outdoor play and entertaining space", "No yard", "Large flat yard") { SuggestedWeight = 15 },
+            new("Neighborhood Safety", "Traffic and crime", "Busy road, high crime", "Quiet cul-de-sac") { SuggestedWeight = 15 },
+            new("Community Feel", "Neighbors, events, kid density", "No community", "Block parties and sidewalks") { SuggestedWeight = 10 },
+            new("Commute Time", "Drive to work and school", "Over an hour", "Under 20 minutes") { SuggestedWeight = 10 },
+            new("Living Space", "Room for the whole family", "Cramped", "Room to grow") { SuggestedWeight = 10 },
+            new("Storage Space", "Garage, basement, closets", "No storage", "Abundant storage") { SuggestedWeight = 5 },
+            new("Price vs. Budget", "Affordability", "Stretching too far", "Comfortable") { SuggestedWeight = 10 }
+        },
+        ["RuralRetreat"] = new List<CriterionTemplate>
+        {
+            new("Land & Acreage", "Usable land for your plans", "Tiny lot", "Acres of usable land") { SuggestedWeight = 20 },
+            new("Privacy", "Distance from neighbors", "Neighbors on top of you", "Can't see another house") { SuggestedWeight = 15 },
+            new("Internet Quality", "Connectivity options out here", "No broadband at all", "Fiber or strong fixed wireless") { SuggestedWeight = 15 },
+            new("Well & Septic Condition", "Private utility systems", "Failing systems", "New, well-maintained") { SuggestedWeight = 15 },
+            new("Self-Sufficiency Potential", "Garden, livestock, solar potential", "Not feasible", "Ready homestead") { SuggestedWeight = 10 },
+            new("Access & Roads", "Year-round road access", "Impassable in winter", "Paved, maintained road") { SuggestedWeight = 10 },
+            new("Distance to Services", "Groceries, hospital, schools", "Over an hour", "Under 20 minutes") { SuggestedWeight = 10 },
+            new("Price vs. Budget", "Value for land and home", "Overpriced", "Great value") { SuggestedWeight = 5 }
+        },
+        ["Downsizer"] = new List<CriterionTemplate>
+        {
+            new("Single-Level Living", "Bedroom and bath on main floor", "Stairs everywhere", "True one-level living") { SuggestedWeight = 20 },
+            new("Low Maintenance", "Yard and exterior upkeep", "High-maintenance property", "Lock-and-leave easy") { SuggestedWeight = 20 },
+            new("Accessibility", "Aging-in-place readiness", "Many barriers", "Wide doors, walk-in shower") { SuggestedWeight = 15 },
+            new("Healthcare Access", "Doctors and hospital proximity", "Far from healthcare", "Minutes from providers") { SuggestedWeight = 10 },
+            new("Right-Sized Space", "Enough room without excess", "Still too big/small", "Just right") { SuggestedWeight = 10 },
+            new("Community Feel", "Social opportunities nearby", "Isolated", "Active, welcoming community") { SuggestedWeight = 10 },
+            new("Proximity to Family", "Distance to kids/grandkids", "A flight away", "Short drive") { SuggestedWeight = 10 },
+            new("Price vs. Budget", "Frees up retirement equity", "Costs more than current home", "Significant equity freed") { SuggestedWeight = 5 }
+        },
+        ["MultiGenerational"] = new List<CriterionTemplate>
+        {
+            new("Separate Living Spaces", "In-law suite or separate level", "One shared space", "True separate suite") { SuggestedWeight = 20 },
+            new("Separate Entrances", "Independent comings and goings", "Single shared entrance", "Private entrances") { SuggestedWeight = 15 },
+            new("Bathroom Count", "Enough baths for everyone", "One bathroom", "Bath per household unit") { SuggestedWeight = 15 },
+            new("Kitchen Flexibility", "Second kitchen or kitchenette potential", "No option", "Second kitchen exists") { SuggestedWeight = 10 },
+            new("Privacy", "Sound separation between living areas", "Hear everything", "Well-isolated spaces") { SuggestedWeight = 15 },
+            new("Accessibility", "Suitability for older family members", "Stairs only", "Accessible throughout") { SuggestedWeight = 10 },
+            new("Living Space", "Total room for everyone", "Too tight", "Comfortable for all") { SuggestedWeight = 10 },
+            new("Price vs. Budget", "Shared affordability", "Stretching everyone", "Comfortable when shared") { SuggestedWeight = 5 }
         }
     };
 
@@ -235,7 +290,9 @@ public static class CommonCriteria
                 _ => null
             };
             if (template != null)
+            {
                 AddIfNew(template, $"You selected '{LocationPriorities.First(p => p.Key == priority).DisplayName}'");
+            }
         }
 
         // Home priority mappings
@@ -255,7 +312,9 @@ public static class CommonCriteria
                 _ => null
             };
             if (template != null)
+            {
                 AddIfNew(template, $"You selected '{HomePriorities.First(p => p.Key == priority).DisplayName}'");
+            }
         }
 
         // Normalize weights to sum to 100

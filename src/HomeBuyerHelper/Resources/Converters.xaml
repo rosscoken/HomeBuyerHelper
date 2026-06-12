@@ -21,4 +21,9 @@
     <converters:BoolToNextFinishConverter x:Key="BoolToNextFinishConverter" />
     <converters:BoolToEditSelectConverter x:Key="BoolToEditSelectConverter" />
 
+    <converters:PositiveNegativeColorConverter x:Key="PositiveNegativeColorConverter" />
+    <converters:BoolToAlertColorConverter x:Key="BoolToAlertColorConverter" />
+    <converters:ListToStringConverter x:Key="ListToStringConverter" />
+    <converters:AffordabilityZoneToColorConverter x:Key="AffordabilityZoneToColorConverter" />
+    <converters:BoolToBuyRentConverter x:Key="BoolToBuyRentConverter" />
 </ResourceDictionary>

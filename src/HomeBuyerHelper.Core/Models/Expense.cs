@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace HomeBuyerHelper.Core.Models;
 
 /// <summary>
@@ -33,6 +35,12 @@ public class Expense
     public bool IsEssential { get; set; } = true;
 
     /// <summary>
+    /// Whether this is a variable expense (groceries, gas, entertainment)
+    /// as opposed to a fixed recurring expense (rent, car payment).
+    /// </summary>
+    public bool IsVariable { get; set; }
+
+    /// <summary>
     /// Whether this expense will continue after home purchase.
     /// </summary>
     public bool ContinuesAfterPurchase { get; set; } = true;
@@ -55,6 +63,7 @@ public class Expense
     /// <summary>
     /// Calculates the monthly expense amount.
     /// </summary>
+    [JsonIgnore]
     public decimal MonthlyAmount => Frequency switch
     {
         ExpenseFrequency.Weekly => Amount * 52 / 12,
@@ -69,6 +78,7 @@ public class Expense
     /// <summary>
     /// Calculates the annual expense amount.
     /// </summary>
+    [JsonIgnore]
     public decimal AnnualAmount => MonthlyAmount * 12;
 }
 

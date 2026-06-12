@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:HomeBuyerHelper.ViewModels.Budget"
+             xmlns:models="clr-namespace:HomeBuyerHelper.Core.Models;assembly=HomeBuyerHelper.Core"
+             x:Class="HomeBuyerHelper.Pages.Budget.ExpenseSetupPage"
+             x:DataType="vm:ExpenseSetupViewModel"
+             Title="{Binding Title}">
+
+    <Grid RowDefinitions="Auto,*,Auto" Padding="16">
+
+        <!-- Totals Header -->
+        <Frame Grid.Row="0" Style="{StaticResource CardFrame}" Margin="0,0,0,16" Padding="16,12">
+            <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto" ColumnSpacing="8">
+                <Label Grid.Row="0" Grid.Column="0" Text="{Binding FixedTotal, StringFormat='{0:C0}'}"
+                       Style="{StaticResource Subtitle}" HorizontalTextAlignment="Center"/>
+                <Label Grid.Row="0" Grid.Column="1" Text="{Binding VariableTotal, StringFormat='{0:C0}'}"
+                       Style="{StaticResource Subtitle}" HorizontalTextAlignment="Center"/>
+                <Label Grid.Row="0" Grid.Column="2" Text="{Binding MonthlyTotal, StringFormat='{0:C0}'}"
+                       Style="{StaticResource Subtitle}" TextColor="{StaticResource Primary}" HorizontalTextAlignment="Center"/>
+                <Label Grid.Row="1" Grid.Column="0" Text="Fixed" Style="{StaticResource Caption}"
+                       TextColor="{StaticResource Gray500}" HorizontalTextAlignment="Center"/>
+                <Label Grid.Row="1" Grid.Column="1" Text="Variable" Style="{StaticResource Caption}"
+                       TextColor="{StaticResource Gray500}" HorizontalTextAlignment="Center"/>
+                <Label Grid.Row="1" Grid.Column="2" Text="Total/Month" Style="{StaticResource Caption}"
+                       TextColor="{StaticResource Gray500}" HorizontalTextAlignment="Center"/>
+            </Grid>
+        </Frame>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Spacing="8">
+
+                <Label Text="Fixed Expenses" Style="{StaticResource Subtitle}"/>
+                <CollectionView ItemsSource="{Binding FixedExpenses}" SelectionMode="None">
+                    <CollectionView.EmptyView>
+                        <Label Text="No fixed expenses yet (rent, car payment, insurance...)"
+                               Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}" Padding="8"/>
+                    </CollectionView.EmptyView>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:Expense">
+                            <SwipeView>
+                                <SwipeView.RightItems>
+                                    <SwipeItems>
+                                        <SwipeItem Text="Delete"
+                                                   BackgroundColor="{StaticResource Error}"
+                                                   Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ExpenseSetupViewModel}}, Path=DeleteExpenseCommand}"
+                                                   CommandParameter="{Binding}" />
+                                    </SwipeItems>
+                                </SwipeView.RightItems>
+                                <Frame Style="{StaticResource CardFrame}" Margin="0,4">
+                                    <Frame.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ExpenseSetupViewModel}}, Path=EditExpenseCommand}"
+                                            CommandParameter="{Binding}"/>
+                                    </Frame.GestureRecognizers>
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <VerticalStackLayout>
+                                            <Label Text="{Binding Name}" Style="{StaticResource Body}"/>
+                                            <Label Text="{Binding Category}" Style="{StaticResource Caption}"
+                                                   TextColor="{StaticResource Gray500}"/>
+                                        </VerticalStackLayout>
+                                        <Label Grid.Column="1"
+                                               Text="{Binding MonthlyAmount, StringFormat='{0:C0}/mo'}"
+                                               Style="{StaticResource Body}" FontAttributes="Bold"
+                                               VerticalOptions="Center"/>
+                                    </Grid>
+                                </Frame>
+                            </SwipeView>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <Label Text="Variable Expenses" Style="{StaticResource Subtitle}" Margin="0,8,0,0"/>
+                <CollectionView ItemsSource="{Binding VariableExpenses}" SelectionMode="None">
+                    <CollectionView.EmptyView>
+                        <Label Text="No variable expenses yet (groceries, gas, dining...)"
+                               Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}" Padding="8"/>
+                    </CollectionView.EmptyView>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:Expense">
+                            <SwipeView>
+                                <SwipeView.RightItems>
+                                    <SwipeItems>
+                                        <SwipeItem Text="Delete"
+                                                   BackgroundColor="{StaticResource Error}"
+                                                   Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ExpenseSetupViewModel}}, Path=DeleteExpenseCommand}"
+                                                   CommandParameter="{Binding}" />
+                                    </SwipeItems>
+                                </SwipeView.RightItems>
+                                <Frame Style="{StaticResource CardFrame}" Margin="0,4">
+                                    <Frame.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ExpenseSetupViewModel}}, Path=EditExpenseCommand}"
+                                            CommandParameter="{Binding}"/>
+                                    </Frame.GestureRecognizers>
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <VerticalStackLayout>
+                                            <Label Text="{Binding Name}" Style="{StaticResource Body}"/>
+                                            <Label Text="{Binding Category}" Style="{StaticResource Caption}"
+                                                   TextColor="{StaticResource Gray500}"/>
+                                        </VerticalStackLayout>
+                                        <Label Grid.Column="1"
+                                               Text="{Binding MonthlyAmount, StringFormat='{0:C0}/mo'}"
+                                               Style="{StaticResource Body}" FontAttributes="Bold"
+                                               VerticalOptions="Center"/>
+                                    </Grid>
+                                </Frame>
+                            </SwipeView>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <Button Grid.Row="2"
+                Text="+ Add Expense"
+                Command="{Binding AddNewCommand}"
+                Style="{StaticResource PrimaryButton}"
+                Margin="0,16,0,0"
+                AutomationProperties.Name="Add new expense"/>
+
+        <ActivityIndicator Grid.Row="1"
+                           IsRunning="{Binding IsBusy}"
+                           IsVisible="{Binding IsBusy}"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center" />
+
+    </Grid>
+
+</ContentPage>

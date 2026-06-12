@@ -118,6 +118,55 @@
                 </VerticalStackLayout>
             </Frame>
 
+            <!-- Share Read-Only Report (P4-SHR-001/003) -->
+            <Frame Style="{StaticResource CardFrame}" Padding="16">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Share Read-Only Report" Style="{StaticResource Subtitle}"/>
+                    <Label Text="A self-contained HTML report your partner or agent can open anywhere. Your income and budget are never included."
+                           Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="2">
+                        <Label Grid.Row="0" Text="Include prices" Style="{StaticResource Body}" VerticalOptions="Center"/>
+                        <Switch Grid.Row="0" Grid.Column="1" IsToggled="{Binding ShareIncludePrices}"
+                                AutomationProperties.Name="Include prices in share"/>
+                        <Label Grid.Row="1" Text="Include scores" Style="{StaticResource Body}" VerticalOptions="Center"/>
+                        <Switch Grid.Row="1" Grid.Column="1" IsToggled="{Binding ShareIncludeScores}"
+                                AutomationProperties.Name="Include scores in share"/>
+                        <Label Grid.Row="2" Text="Include notes" Style="{StaticResource Body}" VerticalOptions="Center"/>
+                        <Switch Grid.Row="2" Grid.Column="1" IsToggled="{Binding ShareIncludeNotes}"
+                                AutomationProperties.Name="Include notes in share"/>
+                    </Grid>
+                    <Button Text="Share Report"
+                            Command="{Binding ShareReadOnlyReportCommand}"
+                            Style="{StaticResource PrimaryButton}"
+                            AutomationProperties.Name="Share read-only report"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Spreadsheet Exports (P4-EXP-001) -->
+            <Frame Style="{StaticResource CardFrame}" Padding="16">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Spreadsheet Exports" Style="{StaticResource Subtitle}"/>
+                    <Button Text="Export Comparison (CSV)"
+                            Command="{Binding ExportComparisonCsvCommand}"
+                            Style="{StaticResource SecondaryButton}"
+                            AutomationProperties.Name="Export comparison matrix as CSV"/>
+                    <Button Text="Export Cash Flow (CSV)"
+                            Command="{Binding ExportCashFlowCsvCommand}"
+                            Style="{StaticResource SecondaryButton}"
+                            AutomationProperties.Name="Export cash flow projection as CSV"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Appearance (P4-DRK-002) -->
+            <Frame Style="{StaticResource CardFrame}" Padding="16">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Appearance" Style="{StaticResource Subtitle}"/>
+                    <Picker ItemsSource="{Binding ThemeNames}"
+                            SelectedIndex="{Binding ThemeIndex}"
+                            AutomationProperties.Name="App theme"/>
+                </VerticalStackLayout>
+            </Frame>
+
             <!-- Info Section -->
             <Frame Style="{StaticResource CardFrame}" Padding="16">
                 <VerticalStackLayout Spacing="8">

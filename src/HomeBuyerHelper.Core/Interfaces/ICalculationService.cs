@@ -58,13 +58,6 @@ public interface ICalculationService
         decimal maxDTI = 43m);
 
     /// <summary>
-    /// Generates monthly budget projections.
-    /// </summary>
-    Task<IReadOnlyList<BudgetMonth>> GenerateBudgetProjectionsAsync(
-        int propertyId,
-        int monthsToProject = 12);
-
-    /// <summary>
     /// Calculates the amortization schedule.
     /// </summary>
     IReadOnlyList<AmortizationEntry> CalculateAmortizationSchedule(

@@ -62,9 +62,41 @@ public interface IExportService
     Task<string> GenerateShareTextAsync(int propertyId);
 
     /// <summary>
+    /// Exports the comparison matrix to CSV (P4-EXP-001).
+    /// </summary>
+    Task<string> ExportComparisonToCsvAsync(IEnumerable<int> propertyIds);
+
+    /// <summary>
+    /// Exports the 24-month cash flow projection to CSV (P4-EXP-001).
+    /// </summary>
+    Task<string> ExportCashFlowToCsvAsync();
+
+    /// <summary>
+    /// Generates a self-contained read-only HTML report for sharing
+    /// (P4-SHR-001/003). Honors the privacy options.
+    /// </summary>
+    Task<string> ExportShareableHtmlAsync(ShareReportOptions options);
+
+    /// <summary>
     /// Gets available export formats.
     /// </summary>
     IReadOnlyList<ExportFormat> GetAvailableFormats();
+}
+
+/// <summary>
+/// Privacy options for shared reports (P4-SHR-003).
+/// Personal income data is never included in shares.
+/// </summary>
+public class ShareReportOptions
+{
+    /// <summary>Include asking/offer prices. Default true.</summary>
+    public bool IncludePrices { get; set; } = true;
+
+    /// <summary>Include individual criterion scores. Default true.</summary>
+    public bool IncludeScores { get; set; } = true;
+
+    /// <summary>Include notes and pros/cons. Default true.</summary>
+    public bool IncludeNotes { get; set; } = true;
 }
 
 /// <summary>

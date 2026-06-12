@@ -49,4 +49,19 @@
     <Color x:Key="SurfaceVariant">#F0EDF6</Color>
     <Color x:Key="OnSurfaceVariant">#49454F</Color>
 
+    <!-- Dark Mode Palette (P4-DRK-001) -->
+    <Color x:Key="PageBackgroundDark">#1C1C1E</Color>
+    <Color x:Key="CardBackgroundDark">#2C2C2E</Color>
+    <Color x:Key="SurfaceBackgroundDark">#2C2C2E</Color>
+    <Color x:Key="SurfaceVariantDark">#3A3A3C</Color>
+    <Color x:Key="OnSurfaceVariantDark">#CAC4D0</Color>
+    <Color x:Key="TextPrimaryDark">#FFFFFF</Color>
+    <Color x:Key="TextSecondaryDark">#EBEBF5</Color>
+    <Color x:Key="TextDisabledDark">#8E8E93</Color>
+    <Color x:Key="Gray300Dark">#48484A</Color>
+    <Color x:Key="Gray100Dark">#3A3A3C</Color>
+    <Color x:Key="Gray200Dark">#3A3A3C</Color>
+    <Color x:Key="PrimaryLightDark">#9A7FE8</Color>
+    <Color x:Key="SecondaryDarkMode">#3B3550</Color>
+
 </ResourceDictionary>

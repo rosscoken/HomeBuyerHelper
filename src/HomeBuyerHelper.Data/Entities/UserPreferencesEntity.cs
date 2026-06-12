@@ -38,6 +38,8 @@ public class UserPreferencesEntity
 
     public bool UseDarkMode { get; set; }
 
+    public int ThemePreference { get; set; }
+
     public bool EnableNotifications { get; set; }
 
     public decimal DefaultDownPaymentPercent { get; set; }
@@ -49,6 +51,22 @@ public class UserPreferencesEntity
     public decimal DefaultPropertyTaxRate { get; set; }
 
     public decimal DefaultMonthlyInsurance { get; set; }
+
+    public decimal EmergencyFundBalance { get; set; }
+
+    public int EmergencyFundTargetMonths { get; set; } = 6;
+
+    public string? WorkAddress { get; set; }
+
+    public decimal TimeValueHourlyRate { get; set; } = 100m;
+
+    public int WorkdaysPerMonth { get; set; } = 22;
+
+    public int FilingStatus { get; set; }
+
+    public decimal EstimatedTaxableIncome { get; set; }
+
+    public decimal StateMarginalTaxRate { get; set; }
 
     public DateTime CreatedAt { get; set; }
 

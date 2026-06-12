@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace HomeBuyerHelper.Core.Models;
 
 /// <summary>
@@ -41,16 +43,19 @@ public class PropertyScore
     /// <summary>
     /// Navigation property for the property.
     /// </summary>
+    [JsonIgnore]
     public Property? Property { get; set; }
 
     /// <summary>
     /// Navigation property for the criterion.
     /// </summary>
+    [JsonIgnore]
     public EvaluationCriterion? Criterion { get; set; }
 
     /// <summary>
     /// Gets the weighted score (score * criterion weight).
     /// Returns 0 if criterion was deleted.
     /// </summary>
+    [JsonIgnore]
     public int WeightedScore => Criterion?.Weight is int weight ? Score * weight : 0;
 }

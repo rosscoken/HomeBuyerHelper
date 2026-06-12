@@ -1,0 +1,59 @@
+name: Deploy Web App to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time; don't cancel an in-flight production deploy.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Publish Blazor WebAssembly app
+        run: dotnet publish src/HomeBuyerHelper.Web/HomeBuyerHelper.Web.csproj -c Release -o publish
+
+      - name: Rewrite base href for project pages
+        # Site is served at https://<owner>.github.io/<repo>/
+        run: |
+          sed -i 's|<base href="/" />|<base href="/${{ github.event.repository.name }}/" />|' publish/wwwroot/index.html
+          # Fail loudly if the rewrite no-opped (e.g., index.html formatting changed);
+          # a silent miss would deploy a site whose asset paths all 404.
+          grep -q '<base href="/${{ github.event.repository.name }}/" />' publish/wwwroot/index.html
+
+      - name: Add SPA fallback and disable Jekyll
+        run: |
+          cp publish/wwwroot/index.html publish/wwwroot/404.html
+          touch publish/wwwroot/.nojekyll
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: publish/wwwroot
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

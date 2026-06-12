@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:HomeBuyerHelper.ViewModels.Budget"
+             xmlns:models="clr-namespace:HomeBuyerHelper.Core.Models;assembly=HomeBuyerHelper.Core"
+             x:Class="HomeBuyerHelper.Pages.Budget.CashFlowTimelinePage"
+             x:DataType="vm:CashFlowTimelineViewModel"
+             Title="{Binding Title}">
+
+    <Grid RowDefinitions="Auto,Auto,*" Padding="16">
+
+        <!-- Scenario Switcher -->
+        <Frame Grid.Row="0" Style="{StaticResource CardFrame}" Margin="0,0,0,8" Padding="16,12">
+            <VerticalStackLayout Spacing="8">
+                <Label Text="Income Scenario" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                <Picker ItemsSource="{Binding ScenarioNames}"
+                        SelectedIndex="{Binding ScenarioIndex}"
+                        AutomationProperties.Name="Income scenario selector"/>
+            </VerticalStackLayout>
+        </Frame>
+
+        <!-- Summary -->
+        <Frame Grid.Row="1" Style="{StaticResource CardFrame}" Margin="0,0,0,8" Padding="16,12">
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8" RowDefinitions="Auto,Auto">
+                <Label Grid.Row="0" Grid.Column="0"
+                       Text="{Binding EndingCumulative, StringFormat='{0:C0}'}"
+                       Style="{StaticResource Subtitle}" HorizontalTextAlignment="Center"/>
+                <Label Grid.Row="0" Grid.Column="1"
+                       Text="{Binding CrunchMonthCount}"
+                       Style="{StaticResource Subtitle}"
+                       TextColor="{StaticResource Error}"
+                       HorizontalTextAlignment="Center"/>
+                <Label Grid.Row="1" Grid.Column="0" Text="24-month savings" Style="{StaticResource Caption}"
+                       TextColor="{StaticResource Gray500}" HorizontalTextAlignment="Center"/>
+                <Label Grid.Row="1" Grid.Column="1" Text="Crunch months" Style="{StaticResource Caption}"
+                       TextColor="{StaticResource Gray500}" HorizontalTextAlignment="Center"/>
+            </Grid>
+        </Frame>
+
+        <!-- Monthly Table -->
+        <CollectionView Grid.Row="2"
+                        ItemsSource="{Binding Projections}"
+                        SelectionMode="None">
+            <CollectionView.EmptyView>
+                <VerticalStackLayout VerticalOptions="Center" Spacing="16" Padding="32">
+                    <Label Text="No Budget Data"
+                           Style="{StaticResource Title}"
+                           HorizontalTextAlignment="Center"/>
+                    <Label Text="Add income sources and expenses on the Budget tab to see your cash flow projection."
+                           Style="{StaticResource Body}"
+                           HorizontalTextAlignment="Center"
+                           TextColor="{StaticResource Gray500}"/>
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:MonthlyProjection">
+                    <Frame Style="{StaticResource CardFrame}" Margin="0,4">
+                        <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="4">
+                            <Label Grid.Row="0" Grid.Column="0"
+                                   Text="{Binding Month, StringFormat='{0:MMM yyyy}'}"
+                                   Style="{StaticResource Subtitle}"/>
+                            <Label Grid.Row="0" Grid.Column="1"
+                                   Text="⚠ Crunch month"
+                                   Style="{StaticResource Caption}"
+                                   TextColor="{StaticResource Error}"
+                                   VerticalOptions="Center"
+                                   IsVisible="{Binding IsCrunchMonth}"/>
+                            <Label Grid.Row="0" Grid.Column="2"
+                                   Text="{Binding Surplus, StringFormat='{0:+#,##0;-#,##0;0}'}"
+                                   Style="{StaticResource Subtitle}"
+                                   TextColor="{Binding Surplus, Converter={StaticResource PositiveNegativeColorConverter}}"
+                                   HorizontalTextAlignment="End"/>
+
+                            <HorizontalStackLayout Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Spacing="12">
+                                <Label Text="{Binding TotalIncome, StringFormat='In: {0:C0}'}"
+                                       Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                                <Label Text="{Binding TotalExpenses, StringFormat='Out: {0:C0}'}"
+                                       Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                                <Label Text="{Binding CumulativeSurplus, StringFormat='Cumulative: {0:C0}'}"
+                                       Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                                <Label Text="{Binding EmergencyFundBalance, StringFormat='Fund: {0:C0}'}"
+                                       Style="{StaticResource Caption}"
+                                       TextColor="{Binding EmergencyFundWarning, Converter={StaticResource BoolToAlertColorConverter}}"/>
+                            </HorizontalStackLayout>
+
+                            <Label Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3"
+                                   Text="{Binding EventNames, Converter={StaticResource ListToStringConverter}, StringFormat='Events: {0}'}"
+                                   Style="{StaticResource Caption}"
+                                   TextColor="{StaticResource Warning}"
+                                   IsVisible="{Binding OneTimeExpenses, Converter={StaticResource GreaterThanConverter}, ConverterParameter=0}"/>
+                        </Grid>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <ActivityIndicator Grid.Row="2"
+                           IsRunning="{Binding IsBusy}"
+                           IsVisible="{Binding IsBusy}"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center" />
+
+    </Grid>
+
+</ContentPage>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:HomeBuyerHelper.ViewModels.Settings"
+             x:Class="HomeBuyerHelper.Pages.Settings.SyncSettingsPage"
+             x:DataType="vm:SyncSettingsViewModel"
+             Title="{Binding Title}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="16">
+
+            <Frame Style="{StaticResource CardFrame}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Your data stays yours" Style="{StaticResource Title}"/>
+                    <Label Style="{StaticResource Body}"
+                           Text="HomeBuyerHelper has no servers and collects nothing. Backups go to cloud storage YOU choose — iCloud Drive, Google Drive, OneDrive, Dropbox — using your own account. We never see your data."/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <Frame Style="{StaticResource CardFrame}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Back Up Now" Style="{StaticResource Subtitle}"/>
+                    <Label Text="Creates a backup file and opens the share sheet so you can save it to your preferred cloud or send it to another device."
+                           Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                    <Button Text="Back Up Now"
+                            Command="{Binding BackupNowCommand}"
+                            Style="{StaticResource PrimaryButton}"
+                            AutomationProperties.Name="Back up now"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <Frame Style="{StaticResource CardFrame}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Restore from Backup" Style="{StaticResource Subtitle}"/>
+                    <Label Text="Replaces all current data with a backup file's contents. Use this to move to a new device."
+                           Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                    <Button Text="Restore from Backup"
+                            Command="{Binding RestoreCommand}"
+                            Style="{StaticResource SecondaryButton}"
+                            AutomationProperties.Name="Restore from backup"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <Label Text="{Binding LastResultMessage}"
+                   IsVisible="{Binding LastResultMessage, Converter={StaticResource IsNotNullConverter}}"
+                   Style="{StaticResource Body}"/>
+
+            <Label Text="Automatic per-provider sync (iCloud, Google Drive, OneDrive) is planned for device builds."
+                   Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

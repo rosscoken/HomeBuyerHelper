@@ -1,0 +1,186 @@
+@page "/funding"
+@inject IFundingRepository FundingRepository
+@inject ITaxImpactService TaxImpactService
+@inject IUserPreferencesRepository PreferencesRepository
+
+<PageTitle>Funding · HomeBuyerHelper</PageTitle>
+
+<h1>Down Payment Funding</h1>
+<p class="muted">Where is your down payment coming from, and what will the taxes cost? Estimates only — not tax advice.</p>
+
+<div class="card">
+    <h2>Your Tax Situation</h2>
+    <div class="row">
+        <span>
+            <label>Filing Status</label>
+            <select @bind="_filingStatus">
+                <option value="@TaxFilingStatus.Single">Single</option>
+                <option value="@TaxFilingStatus.MarriedFilingJointly">Married Filing Jointly</option>
+                <option value="@TaxFilingStatus.MarriedFilingSeparately">Married Filing Separately</option>
+                <option value="@TaxFilingStatus.HeadOfHousehold">Head of Household</option>
+            </select>
+        </span>
+        <span><label>Taxable Income</label><input type="number" @bind="_taxableIncome" /></span>
+        <span><label>State Rate %</label><input type="number" step="0.1" @bind="_stateRate" /></span>
+        <button class="secondary" @onclick="SaveTaxSettingsAsync">Save</button>
+    </div>
+    <p class="muted">
+        Federal marginal: <strong>@_federalRate%</strong> ·
+        Long-term capital gains: <strong>@_ltcgRate%</strong>
+    </p>
+</div>
+
+<div class="card">
+    <h2>Add a Source</h2>
+    <div class="row">
+        <span>
+            <label>Type</label>
+            <select @bind="_newType">
+                <option value="@FundingType.Savings">Savings Account</option>
+                <option value="@FundingType.Investment">Brokerage Account</option>
+                <option value="@FundingType.RetirementIRA">Traditional IRA</option>
+                <option value="@FundingType.RothIRA">Roth IRA</option>
+                <option value="@FundingType.InheritedIRA">Inherited IRA</option>
+                <option value="@FundingType.Retirement401k">401(k)</option>
+                <option value="@FundingType.Gift">Family Gift</option>
+            </select>
+        </span>
+        <span><label>Nickname</label><input @bind="_newName" /></span>
+        <span><label>Amount</label><input type="number" @bind="_newAmount" /></span>
+    </div>
+    <div class="row">
+        @if (_newType == FundingType.Investment)
+        {
+            <span><label>Cost Basis</label><input type="number" @bind="_newCostBasis" /></span>
+            <span><label>Held 1+ year?</label><input type="checkbox" @bind="_newLongTerm" /></span>
+        }
+        @if (_newType is FundingType.RetirementIRA or FundingType.RothIRA or FundingType.Retirement401k)
+        {
+            <span><label>Your Age</label><input type="number" @bind="_newAge" /></span>
+            <span><label>First-time buyer?</label><input type="checkbox" @bind="_newFirstTime" /></span>
+        }
+        @if (_newType == FundingType.RothIRA)
+        {
+            <span><label>From contributions</label><input type="number" @bind="_newRothContrib" /></span>
+            <span><label>Account 5+ yrs?</label><input type="checkbox" @bind="_newRoth5Year" /></span>
+        }
+        @if (_newType == FundingType.Retirement401k)
+        {
+            <span><label>Loan (vs withdrawal)?</label><input type="checkbox" @bind="_newIs401kLoan" /></span>
+        }
+        <button @onclick="AddSourceAsync">Add Source</button>
+    </div>
+</div>
+
+@if (_plan != null && _plan.Sources.Count > 0)
+{
+    <h2>Your Funding Plan</h2>
+    <table>
+        <thead>
+            <tr><th>Source</th><th>Gross</th><th>Est. Tax</th><th>Net</th><th></th></tr>
+        </thead>
+        <tbody>
+            @foreach (var result in _plan.Sources)
+            {
+                <tr>
+                    <td>@result.Source.Name <span class="muted">(@result.Explanation)</span></td>
+                    <td>@result.GrossAmount.ToString("C0")</td>
+                    <td>@result.TotalTax.ToString("C0")</td>
+                    <td><strong>@result.NetAmount.ToString("C0")</strong></td>
+                    <td><button class="danger" @onclick="() => DeleteSourceAsync(result)">✕</button></td>
+                </tr>
+            }
+            <tr>
+                <td><strong>TOTAL</strong></td>
+                <td><strong>@_plan.TotalGross.ToString("C0")</strong></td>
+                <td><strong>@_plan.TotalTax.ToString("C0")</strong></td>
+                <td><strong>@_plan.TotalNet.ToString("C0")</strong></td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+    @if (_plan.TotalTax > 0)
+    {
+        <p class="muted">
+            💡 Set aside <strong>@_plan.TotalTax.ToString("C0")</strong> for taxes — capital gains and IRA
+            distributions are due with your tax return next April. Use cheapest money first:
+            @string.Join(" → ", _plan.OptimalOrder.Select(o => o.Source.Name)).
+        </p>
+    }
+}
+
+@code {
+    private FundingPlanSummary? _plan;
+    private TaxFilingStatus _filingStatus = TaxFilingStatus.Single;
+    private decimal _taxableIncome;
+    private decimal _stateRate;
+    private decimal _federalRate;
+    private decimal _ltcgRate;
+
+    private FundingType _newType = FundingType.Savings;
+    private string _newName = "";
+    private decimal _newAmount;
+    private decimal _newCostBasis;
+    private bool _newLongTerm = true;
+    private int _newAge = 35;
+    private bool _newFirstTime = true;
+    private decimal _newRothContrib;
+    private bool _newRoth5Year;
+    private bool _newIs401kLoan = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var preferences = await PreferencesRepository.GetAsync();
+        _filingStatus = preferences.FilingStatus;
+        _taxableIncome = preferences.EstimatedTaxableIncome;
+        _stateRate = preferences.StateMarginalTaxRate;
+        await RefreshAsync();
+    }
+
+    private async Task RefreshAsync()
+    {
+        var preferences = await PreferencesRepository.GetAsync();
+        _federalRate = TaxImpactService.GetMarginalFederalRate(preferences.FilingStatus, preferences.EstimatedTaxableIncome);
+        _ltcgRate = TaxImpactService.GetLongTermCapitalGainsRate(preferences.FilingStatus, preferences.EstimatedTaxableIncome);
+        _plan = TaxImpactService.BuildPlan(await FundingRepository.GetAllAsync(), preferences);
+    }
+
+    private async Task SaveTaxSettingsAsync()
+    {
+        var preferences = await PreferencesRepository.GetAsync();
+        preferences.FilingStatus = _filingStatus;
+        preferences.EstimatedTaxableIncome = _taxableIncome;
+        preferences.StateMarginalTaxRate = _stateRate;
+        await PreferencesRepository.SaveAsync(preferences);
+        await RefreshAsync();
+    }
+
+    private async Task AddSourceAsync()
+    {
+        if (_newAmount <= 0) return;
+
+        await FundingRepository.CreateAsync(new FundingSource
+        {
+            Name = string.IsNullOrWhiteSpace(_newName) ? _newType.ToString() : _newName.Trim(),
+            CurrentAmount = _newAmount,
+            FundingType = _newType,
+            CostBasis = _newType == FundingType.Investment ? _newCostBasis : null,
+            IsLongTermHolding = _newLongTerm,
+            OwnerAge = _newAge,
+            IsFirstTimeBuyer = _newFirstTime,
+            RothContributionPortion = _newType == FundingType.RothIRA ? _newRothContrib : null,
+            IsRothAccount5Years = _newRoth5Year,
+            Is401kLoan = _newIs401kLoan
+        });
+
+        _newName = "";
+        _newAmount = 0;
+        await RefreshAsync();
+    }
+
+    private async Task DeleteSourceAsync(FundingSourceTaxResult result)
+    {
+        await FundingRepository.DeleteAsync(result.Source.Id);
+        await RefreshAsync();
+    }
+}

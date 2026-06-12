@@ -11,15 +11,21 @@ public class PropertyService : IPropertyService
     private readonly IPropertyRepository _propertyRepository;
     private readonly IScoreRepository _scoreRepository;
     private readonly ICriteriaRepository _criteriaRepository;
+    private readonly IPhotoRepository _photoRepository;
+    private readonly IProConRepository _proConRepository;
 
     public PropertyService(
         IPropertyRepository propertyRepository,
         IScoreRepository scoreRepository,
-        ICriteriaRepository criteriaRepository)
+        ICriteriaRepository criteriaRepository,
+        IPhotoRepository photoRepository,
+        IProConRepository proConRepository)
     {
         _propertyRepository = propertyRepository;
         _scoreRepository = scoreRepository;
         _criteriaRepository = criteriaRepository;
+        _photoRepository = photoRepository;
+        _proConRepository = proConRepository;
     }
 
     public async Task<IReadOnlyList<Property>> GetPropertiesWithScoresAsync()
@@ -76,7 +82,10 @@ public class PropertyService : IPropertyService
     public async Task<Property?> GetPropertyDetailAsync(int id)
     {
         var property = await _propertyRepository.GetByIdAsync(id);
-        if (property == null) return null;
+        if (property == null)
+        {
+            return null;
+        }
 
         var allCriteria = await _criteriaRepository.GetAllAsync();
         var scores = await _scoreRepository.GetByPropertyIdAsync(id);
@@ -143,8 +152,20 @@ public class PropertyService : IPropertyService
 
     public async Task DeletePropertyAsync(int id)
     {
-        // Delete scores first (cascade)
+        // Cascade: scores, photos (records + files), and pros/cons go with
+        // the property so nothing orphans or leaks.
         await _scoreRepository.DeleteByPropertyIdAsync(id);
+
+        foreach (var photo in await _photoRepository.GetByPropertyIdAsync(id))
+        {
+            if (File.Exists(photo.FilePath))
+            {
+                File.Delete(photo.FilePath);
+            }
+        }
+        await _photoRepository.DeleteByPropertyIdAsync(id);
+        await _proConRepository.DeleteByPropertyIdAsync(id);
+
         await _propertyRepository.DeleteAsync(id);
     }
 
@@ -167,7 +188,10 @@ public class PropertyService : IPropertyService
         foreach (var id in propertyIds)
         {
             var property = await _propertyRepository.GetByIdAsync(id);
-            if (property == null) continue;
+            if (property == null)
+            {
+                continue;
+            }
 
             var scores = await _scoreRepository.GetByPropertyIdAsync(id);
             var totalWeightedScore = scores.Sum(s => s.WeightedScore);

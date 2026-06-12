@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace HomeBuyerHelper.Core.Models;
 
 /// <summary>
@@ -43,6 +45,50 @@ public class FundingSource
     public decimal MonthlyContribution { get; set; }
 
     /// <summary>
+    /// Cost basis for investment/brokerage sources (what was originally paid).
+    /// </summary>
+    public decimal? CostBasis { get; set; }
+
+    /// <summary>
+    /// Whether investments were held more than one year (long-term capital
+    /// gains treatment).
+    /// </summary>
+    public bool IsLongTermHolding { get; set; } = true;
+
+    /// <summary>
+    /// Account owner's age, used for early-withdrawal penalty rules.
+    /// </summary>
+    public int? OwnerAge { get; set; }
+
+    /// <summary>
+    /// Whether the buyer qualifies as a first-time home buyer
+    /// (IRS definition: no home owned in the past 2 years).
+    /// </summary>
+    public bool IsFirstTimeBuyer { get; set; } = true;
+
+    /// <summary>
+    /// For Roth IRA: the portion of the withdrawal coming from contributions
+    /// (always tax/penalty free). The remainder is treated as earnings.
+    /// </summary>
+    public decimal? RothContributionPortion { get; set; }
+
+    /// <summary>
+    /// For Roth IRA: whether the account has been open 5+ years.
+    /// </summary>
+    public bool IsRothAccount5Years { get; set; }
+
+    /// <summary>
+    /// For 401(k): true when taking a loan (repaid, no tax) rather than a
+    /// hardship withdrawal (taxed + penalty).
+    /// </summary>
+    public bool Is401kLoan { get; set; } = true;
+
+    /// <summary>
+    /// For gifts: who the gift is from (used for the gift letter).
+    /// </summary>
+    public string? DonorName { get; set; }
+
+    /// <summary>
     /// Optional notes about this funding source.
     /// </summary>
     public string? Notes { get; set; }
@@ -60,6 +106,7 @@ public class FundingSource
     /// <summary>
     /// Gets the effective amount (expected if set, otherwise current).
     /// </summary>
+    [JsonIgnore]
     public decimal EffectiveAmount => ExpectedAmount ?? CurrentAmount;
 }
 
@@ -78,5 +125,7 @@ public enum FundingType
     HomeSaleProceeds,
     DownPaymentAssistance,
     EmployerAssistance,
-    Other
+    Other,
+    RothIRA,
+    InheritedIRA
 }

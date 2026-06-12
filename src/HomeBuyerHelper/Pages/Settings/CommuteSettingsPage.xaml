@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:HomeBuyerHelper.ViewModels.Settings"
+             x:Class="HomeBuyerHelper.Pages.Settings.CommuteSettingsPage"
+             x:DataType="vm:CommuteSettingsViewModel"
+             Title="{Binding Title}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="12">
+
+            <Label Text="What is your time worth?"
+                   Style="{StaticResource Title}"/>
+            <Label Text="Used to monetize commute differences between properties. A longer commute is a real cost paid in hours of your life."
+                   Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+
+            <Label Text="Work Address" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+            <Entry Text="{Binding WorkAddress}"
+                   Placeholder="Where do you commute to?"
+                   AutomationProperties.Name="Work address"/>
+
+            <Label Text="Time Value ($/hour)" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+            <Entry Text="{Binding TimeValueHourlyRate}"
+                   Keyboard="Numeric"
+                   AutomationProperties.Name="Hourly time value rate"/>
+
+            <Label Text="Workdays per Month" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+            <Entry Text="{Binding WorkdaysPerMonth}"
+                   Keyboard="Numeric"
+                   AutomationProperties.Name="Workdays per month"/>
+
+            <Label Text="Then enter round-trip commute minutes on each property to see the analysis."
+                   Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+
+            <Label Text="{Binding ErrorMessage}"
+                   IsVisible="{Binding HasError}"
+                   TextColor="{StaticResource Error}"
+                   Style="{StaticResource Body}"/>
+
+            <Button Text="Save"
+                    Command="{Binding SaveCommand}"
+                    Style="{StaticResource PrimaryButton}"
+                    AutomationProperties.Name="Save commute settings"/>
+            <Button Text="Cancel"
+                    Command="{Binding CancelCommand}"
+                    Style="{StaticResource TextButton}"
+                    AutomationProperties.Name="Cancel"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

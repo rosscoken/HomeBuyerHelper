@@ -10,6 +10,7 @@ namespace HomeBuyerHelper.ViewModels;
 public partial class DataManagementViewModel : BaseViewModel
 {
     private readonly IExportService _exportService;
+    private readonly IPropertyService _propertyService;
 
     [ObservableProperty]
     private string? _lastExportPath;
@@ -20,16 +21,129 @@ public partial class DataManagementViewModel : BaseViewModel
     [ObservableProperty]
     private string? _selectedFilePath;
 
+    private string? _selectedFileContent;
+
     [ObservableProperty]
     private bool _replaceExisting;
 
     [ObservableProperty]
     private bool _isFileSelected;
 
-    public DataManagementViewModel(IExportService exportService)
+    [ObservableProperty]
+    private bool _shareIncludePrices = true;
+
+    [ObservableProperty]
+    private bool _shareIncludeScores = true;
+
+    [ObservableProperty]
+    private bool _shareIncludeNotes = true;
+
+    [ObservableProperty]
+    private int _themeIndex;
+
+    private bool _themeLoaded;
+
+    public IReadOnlyList<string> ThemeNames { get; } = new[] { "System Default", "Light", "Dark" };
+
+    public DataManagementViewModel(
+        IExportService exportService,
+        IPropertyService propertyService,
+        IUserPreferencesRepository preferencesRepository)
     {
         _exportService = exportService;
+        _propertyService = propertyService;
+        _preferencesRepository = preferencesRepository;
         Title = "Data Management";
+    }
+
+    private readonly IUserPreferencesRepository _preferencesRepository;
+
+    public override async Task OnAppearingAsync()
+    {
+        var preferences = await _preferencesRepository.GetAsync();
+        ThemeIndex = Math.Clamp(preferences.ThemePreference, 0, 2);
+        _themeLoaded = true;
+    }
+
+    partial void OnThemeIndexChanged(int value)
+    {
+        if (!_themeLoaded) return;
+        _ = SaveThemeAsync(value);
+    }
+
+    private async Task SaveThemeAsync(int value)
+    {
+        App.ApplyTheme(value);
+        var preferences = await _preferencesRepository.GetAsync();
+        preferences.ThemePreference = value;
+        await _preferencesRepository.SaveAsync(preferences);
+    }
+
+    /// <summary>
+    /// Shareable read-only HTML report with privacy options (P4-SHR-001/002/003).
+    /// Financial projections and income are never included.
+    /// </summary>
+    [RelayCommand]
+    private async Task ShareReadOnlyReportAsync()
+    {
+        await ExecuteBusyAsync(async () =>
+        {
+            var filePath = await _exportService.ExportShareableHtmlAsync(new ShareReportOptions
+            {
+                IncludePrices = ShareIncludePrices,
+                IncludeScores = ShareIncludeScores,
+                IncludeNotes = ShareIncludeNotes
+            });
+
+            await Share.Default.RequestAsync(new ShareFileRequest
+            {
+                Title = "Share Property Report",
+                File = new ShareFile(filePath, "text/html")
+            });
+        });
+    }
+
+    /// <summary>
+    /// Comparison matrix CSV export (P4-EXP-001).
+    /// </summary>
+    [RelayCommand]
+    private async Task ExportComparisonCsvAsync()
+    {
+        await ExecuteBusyAsync(async () =>
+        {
+            var rankings = await _propertyService.GetPropertyRankingsAsync();
+            if (rankings.Count == 0)
+            {
+                SetError("Add properties before exporting the comparison.");
+                return;
+            }
+
+            var filePath = await _exportService.ExportComparisonToCsvAsync(
+                rankings.Select(r => r.Property.Id));
+            await ShareCsvAsync(filePath, "Share Comparison CSV");
+        });
+    }
+
+    /// <summary>
+    /// Cash flow projection CSV export (P4-EXP-001).
+    /// </summary>
+    [RelayCommand]
+    private async Task ExportCashFlowCsvAsync()
+    {
+        await ExecuteBusyAsync(async () =>
+        {
+            var filePath = await _exportService.ExportCashFlowToCsvAsync();
+            await ShareCsvAsync(filePath, "Share Cash Flow CSV");
+        });
+    }
+
+    private static async Task ShareCsvAsync(string filePath, string title)
+    {
+        await Share.Default.RequestAsync(new ShareFileRequest
+        {
+            Title = title,
+            File = new ShareFile(filePath, "text/csv")
+        });
     }
 
     [RelayCommand]
@@ -81,9 +195,12 @@ public partial class DataManagementViewModel : BaseViewModel
 
             if (fileResult != null)
             {
-                SelectedFilePath = fileResult.FullPath;
-                var content = await File.ReadAllTextAsync(fileResult.FullPath);
-                ImportValidation = await _exportService.ValidateImportFileAsync(content);
+                // Read through the stream once and cache: FullPath is not
+                // reliably readable on Android/iOS, and the picked file may
+                // not be re-readable later.
+                SelectedFilePath = fileResult.FileName;
+                _selectedFileContent = await Services.FileResultExtensions.ReadAllTextAsync(fileResult);
+                ImportValidation = await _exportService.ValidateImportFileAsync(_selectedFileContent);
                 IsFileSelected = true;
             }
         }
@@ -96,7 +213,7 @@ public partial class DataManagementViewModel : BaseViewModel
     [RelayCommand]
     private async Task ImportDataAsync()
     {
-        if (string.IsNullOrEmpty(SelectedFilePath) || ImportValidation == null || !ImportValidation.IsValid)
+        if (string.IsNullOrEmpty(_selectedFileContent) || ImportValidation == null || !ImportValidation.IsValid)
         {
             SetError("Please select a valid backup file first.");
             return;
@@ -118,8 +235,7 @@ public partial class DataManagementViewModel : BaseViewModel
 
         await ExecuteBusyAsync(async () =>
         {
-            var content = await File.ReadAllTextAsync(SelectedFilePath);
-            var success = await _exportService.ImportFromJsonAsync(content, ReplaceExisting);
+            var success = await _exportService.ImportFromJsonAsync(_selectedFileContent!, ReplaceExisting);
 
             if (success)
             {
@@ -130,6 +246,7 @@ public partial class DataManagementViewModel : BaseViewModel
 
                 // Clear import state
                 SelectedFilePath = null;
+                _selectedFileContent = null;
                 ImportValidation = null;
                 IsFileSelected = false;
                 ReplaceExisting = false;
@@ -145,6 +262,7 @@ public partial class DataManagementViewModel : BaseViewModel
     private void ClearSelection()
     {
         SelectedFilePath = null;
+        _selectedFileContent = null;
         ImportValidation = null;
         IsFileSelected = false;
         ReplaceExisting = false;

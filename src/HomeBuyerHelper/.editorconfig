@@ -1,0 +1,11 @@
+# Analyzer adjustments for the MAUI UI project.
+
+[*.cs]
+# [RelayCommand] source generation requires instance methods, so CA1822
+# false-positives on command handlers that only touch Shell navigation.
+dotnet_diagnostic.CA1822.severity = suggestion
+# UI prompts pass small inline arrays to one-shot DisplayActionSheet/picker calls.
+dotnet_diagnostic.CA1861.severity = suggestion
+# UI display strings intentionally format with the device's current culture.
+dotnet_diagnostic.CA1305.severity = suggestion
+dotnet_diagnostic.CA1826.severity = suggestion

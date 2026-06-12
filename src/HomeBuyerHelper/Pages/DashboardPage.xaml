@@ -6,6 +6,36 @@
              x:DataType="vm:DashboardViewModel"
              Title="{Binding Title}">
 
+    <!-- Desktop menu bar with keyboard shortcuts (P2-DSK-004). Ignored on mobile. -->
+    <ContentPage.MenuBarItems>
+        <MenuBarItem Text="File">
+            <MenuFlyoutItem Text="New Property" Command="{Binding NavigateToAddPropertyCommand}">
+                <MenuFlyoutItem.KeyboardAccelerators>
+                    <KeyboardAccelerator Modifiers="Ctrl" Key="N"/>
+                </MenuFlyoutItem.KeyboardAccelerators>
+            </MenuFlyoutItem>
+            <MenuFlyoutItem Text="Import / Export Data" Command="{Binding NavigateToDataManagementCommand}">
+                <MenuFlyoutItem.KeyboardAccelerators>
+                    <KeyboardAccelerator Modifiers="Ctrl" Key="E"/>
+                </MenuFlyoutItem.KeyboardAccelerators>
+            </MenuFlyoutItem>
+        </MenuBarItem>
+        <MenuBarItem Text="Analysis">
+            <MenuFlyoutItem Text="Rent vs. Buy" Command="{Binding NavigateToRentVsBuyCommand}"/>
+            <MenuFlyoutItem Text="Scenarios" Command="{Binding NavigateToScenariosCommand}"/>
+        </MenuBarItem>
+        <MenuBarItem Text="Settings">
+            <MenuFlyoutItem Text="Loan Settings" Command="{Binding NavigateToLoanSettingsCommand}">
+                <MenuFlyoutItem.KeyboardAccelerators>
+                    <KeyboardAccelerator Modifiers="Ctrl" Key="OemComma"/>
+                </MenuFlyoutItem.KeyboardAccelerators>
+            </MenuFlyoutItem>
+            <MenuFlyoutItem Text="Commute Settings" Command="{Binding NavigateToCommuteSettingsCommand}"/>
+            <MenuFlyoutItem Text="Tax Settings" Command="{Binding NavigateToTaxSettingsCommand}"/>
+            <MenuFlyoutItem Text="Cloud Backup" Command="{Binding NavigateToSyncSettingsCommand}"/>
+        </MenuBarItem>
+    </ContentPage.MenuBarItems>
+
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="16">
 
@@ -82,17 +112,41 @@
                         Command="{Binding NavigateToComparisonCommand}" />
             </Grid>
 
-            <!-- Settings Section -->
-            <Label Text="Settings" Style="{StaticResource Title}" />
+            <!-- Analysis Tools (Phase 4) -->
+            <Label Text="Analysis Tools" Style="{StaticResource Title}" />
 
             <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
                 <Button Grid.Column="0"
+                        Text="Rent vs. Buy"
+                        Command="{Binding NavigateToRentVsBuyCommand}"
+                        Style="{StaticResource OutlineButton}"
+                        AutomationProperties.Name="Open rent versus buy calculator" />
+                <Button Grid.Column="1"
+                        Text="Scenarios"
+                        Command="{Binding NavigateToScenariosCommand}"
+                        Style="{StaticResource OutlineButton}"
+                        AutomationProperties.Name="Open scenario planner" />
+            </Grid>
+
+            <!-- Settings Section -->
+            <Label Text="Settings" Style="{StaticResource Title}" />
+
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="12" RowDefinitions="Auto,Auto" RowSpacing="12">
+                <Button Grid.Row="0" Grid.Column="0"
                         Text="Loan Settings"
                         Command="{Binding NavigateToLoanSettingsCommand}"
                         Style="{StaticResource OutlineButton}" />
-                <Button Grid.Column="1"
+                <Button Grid.Row="0" Grid.Column="1"
                         Text="Export/Import"
                         Command="{Binding NavigateToDataManagementCommand}"
+                        Style="{StaticResource OutlineButton}" />
+                <Button Grid.Row="1" Grid.Column="0"
+                        Text="Commute Settings"
+                        Command="{Binding NavigateToCommuteSettingsCommand}"
+                        Style="{StaticResource OutlineButton}" />
+                <Button Grid.Row="1" Grid.Column="1"
+                        Text="Cloud Backup"
+                        Command="{Binding NavigateToSyncSettingsCommand}"
                         Style="{StaticResource OutlineButton}" />
             </Grid>
 

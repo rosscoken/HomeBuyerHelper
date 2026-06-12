@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:HomeBuyerHelper.ViewModels.Budget"
+             x:Class="HomeBuyerHelper.Pages.Budget.OneTimeEventEditPage"
+             x:DataType="vm:OneTimeEventEditViewModel"
+             Title="{Binding Title}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="12">
+
+            <Label Text="Name" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+            <Entry Text="{Binding Name}"
+                   Placeholder="e.g., Moving Costs, Hawaii Trip"
+                   AutomationProperties.Name="Event name"/>
+
+            <Label Text="Amount" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+            <Entry Text="{Binding Amount}"
+                   Keyboard="Numeric"
+                   Placeholder="0"
+                   AutomationProperties.Name="Event amount"/>
+
+            <Label Text="Month" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+            <DatePicker Date="{Binding Date}"
+                        AutomationProperties.Name="Event date"/>
+
+            <Label Text="Category" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+            <Picker ItemsSource="{Binding Categories}"
+                    SelectedItem="{Binding Category}"
+                    AutomationProperties.Name="Event category"/>
+
+            <Label Text="Notes" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+            <Editor Text="{Binding Notes}" HeightRequest="80" Placeholder="Optional notes"
+                    AutomationProperties.Name="Event notes"/>
+
+            <Label Text="{Binding ErrorMessage}"
+                   IsVisible="{Binding HasError}"
+                   TextColor="{StaticResource Error}"
+                   Style="{StaticResource Body}"/>
+
+            <Button Text="Save"
+                    Command="{Binding SaveCommand}"
+                    Style="{StaticResource PrimaryButton}"
+                    AutomationProperties.Name="Save event"/>
+            <Button Text="Cancel"
+                    Command="{Binding CancelCommand}"
+                    Style="{StaticResource TextButton}"
+                    AutomationProperties.Name="Cancel"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

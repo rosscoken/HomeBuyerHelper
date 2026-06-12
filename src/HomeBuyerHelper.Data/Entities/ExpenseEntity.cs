@@ -22,6 +22,8 @@ public class ExpenseEntity
 
     public bool IsEssential { get; set; }
 
+    public bool IsVariable { get; set; }
+
     public bool ContinuesAfterPurchase { get; set; }
 
     public string? Notes { get; set; }

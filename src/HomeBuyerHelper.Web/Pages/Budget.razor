@@ -1,0 +1,245 @@
+@page "/budget"
+@inject IIncomeRepository IncomeRepository
+@inject IExpenseRepository ExpenseRepository
+@inject IOneTimeEventRepository EventRepository
+@inject IUserPreferencesRepository PreferencesRepository
+@inject IIncomeScenarioService IncomeScenarioService
+@inject ICashFlowProjectionService ProjectionService
+
+<PageTitle>Budget · HomeBuyerHelper</PageTitle>
+
+<h1>Budget Planner</h1>
+
+<div class="grid-2">
+    <div class="card">
+        <h2>Income Sources</h2>
+        <div class="row">
+            <span><label>Name</label><input @bind="_newIncome.Name" /></span>
+            <span><label>Amount</label><input type="number" @bind="_newIncome.GrossAmount" /></span>
+            <span>
+                <label>Frequency</label>
+                <select @bind="_newIncome.Frequency">
+                    @foreach (var frequency in Enum.GetValues<IncomeFrequency>())
+                    {
+                        <option value="@frequency">@frequency</option>
+                    }
+                </select>
+            </span>
+            <span>
+                <label>Guaranteed?</label>
+                <input type="checkbox" @bind="_newIncome.IsReliable" />
+            </span>
+            <button @onclick="AddIncomeAsync">Add</button>
+        </div>
+        <table>
+            <tbody>
+                @foreach (var source in _income)
+                {
+                    <tr>
+                        <td>@source.Name</td>
+                        <td>@source.MonthlyGrossIncome.ToString("C0")/mo</td>
+                        <td>@(source.IsReliable ? "Guaranteed" : $"Variable ({source.Probability:F0}%)")</td>
+                        <td><button class="danger" @onclick="() => DeleteIncomeAsync(source)">✕</button></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <p class="muted">
+            Monthly by scenario — Conservative: <strong>@_conservative.ToString("C0")</strong> ·
+            Realistic: <strong>@_realistic.ToString("C0")</strong> ·
+            Expected: <strong>@_expected.ToString("C0")</strong>
+        </p>
+    </div>
+
+    <div class="card">
+        <h2>Expenses</h2>
+        <div class="row">
+            <span><label>Name</label><input @bind="_newExpense.Name" /></span>
+            <span><label>Amount/mo</label><input type="number" @bind="_newExpense.Amount" /></span>
+            <span>
+                <label>Variable?</label>
+                <input type="checkbox" @bind="_newExpense.IsVariable" />
+            </span>
+            <button @onclick="AddExpenseAsync">Add</button>
+        </div>
+        <table>
+            <tbody>
+                @foreach (var expense in _expenses)
+                {
+                    <tr>
+                        <td>@expense.Name</td>
+                        <td>@expense.MonthlyAmount.ToString("C0")/mo</td>
+                        <td>@(expense.IsVariable ? "Variable" : "Fixed")</td>
+                        <td><button class="danger" @onclick="() => DeleteExpenseAsync(expense)">✕</button></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <p class="muted">Total: <strong>@_expenses.Sum(e => e.MonthlyAmount).ToString("C0")/mo</strong></p>
+    </div>
+</div>
+
+<div class="card">
+    <h2>One-Time Events & Emergency Fund</h2>
+    <div class="row">
+        <span><label>Event</label><input @bind="_newEvent.Name" /></span>
+        <span><label>Amount</label><input type="number" @bind="_newEvent.Amount" /></span>
+        <span><label>Month</label><input type="month" @bind="_eventMonth" /></span>
+        <button @onclick="AddEventAsync">Add Event</button>
+    </div>
+    @foreach (var budgetEvent in _events)
+    {
+        <span class="muted">@budgetEvent.Name (@budgetEvent.Amount.ToString("C0"), @budgetEvent.Date.ToString("MMM yyyy"))
+            <button class="danger" @onclick="() => DeleteEventAsync(budgetEvent)">✕</button> ·
+        </span>
+    }
+    <div class="row" style="margin-top:10px">
+        <span><label>Emergency fund balance</label><input type="number" @bind="_fundBalance" /></span>
+        <span><label>Target (months of expenses)</label><input type="number" @bind="_fundMonths" /></span>
+        <button class="secondary" @onclick="SaveFundAsync">Save Fund</button>
+    </div>
+</div>
+
+<h2>
+    24-Month Cash Flow
+    <select @bind="_scenario" @bind:after="ProjectAsync" style="margin-left:10px">
+        <option value="@IncomeScenario.Conservative">Conservative</option>
+        <option value="@IncomeScenario.Realistic">Realistic</option>
+        <option value="@IncomeScenario.Expected">Expected</option>
+    </select>
+</h2>
+
+@if (_projection.Count > 0)
+{
+    <table>
+        <thead>
+            <tr><th>Month</th><th>Income</th><th>Expenses</th><th>Surplus</th><th>Cumulative</th><th>Emergency Fund</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var month in _projection)
+            {
+                <tr>
+                    <td>@month.Month.ToString("MMM yyyy") @(month.IsCrunchMonth ? "⚠" : "")</td>
+                    <td>@month.TotalIncome.ToString("C0")</td>
+                    <td>@month.TotalExpenses.ToString("C0")</td>
+                    <td class="@(month.Surplus < 0 ? "neg" : "pos")">@month.Surplus.ToString("C0")</td>
+                    <td>@month.CumulativeSurplus.ToString("C0")</td>
+                    <td class="@(month.EmergencyFundWarning ? "neg" : "")">@month.EmergencyFundBalance.ToString("C0")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<IncomeSource> _income = new();
+    private List<Expense> _expenses = new();
+    private List<OneTimeEvent> _events = new();
+    private IReadOnlyList<MonthlyProjection> _projection = Array.Empty<MonthlyProjection>();
+
+    private IncomeSource _newIncome = NewIncome();
+    private Expense _newExpense = NewExpense();
+    private OneTimeEvent _newEvent = NewEvent();
+    private DateTime _eventMonth = DateTime.Today;
+    private decimal _fundBalance;
+    private int _fundMonths = 6;
+    private IncomeScenario _scenario = IncomeScenario.Realistic;
+
+    private decimal _conservative;
+    private decimal _realistic;
+    private decimal _expected;
+
+    private static IncomeSource NewIncome() => new() { Name = "", GrossAmount = 0, Frequency = IncomeFrequency.Monthly, IsReliable = true, Probability = 70 };
+    private static Expense NewExpense() => new() { Name = "", Amount = 0 };
+    private static OneTimeEvent NewEvent() => new() { Name = "", Amount = 0, Date = DateTime.Today };
+
+    protected override async Task OnInitializedAsync()
+    {
+        var preferences = await PreferencesRepository.GetAsync();
+        _fundBalance = preferences.EmergencyFundBalance;
+        _fundMonths = preferences.EmergencyFundTargetMonths;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _income = (await IncomeRepository.GetAllAsync()).ToList();
+        _expenses = (await ExpenseRepository.GetAllAsync()).ToList();
+        _events = (await EventRepository.GetAllAsync()).ToList();
+
+        _conservative = Math.Round(IncomeScenarioService.GetAverageMonthlyIncome(_income, IncomeScenario.Conservative), 0);
+        _realistic = Math.Round(IncomeScenarioService.GetAverageMonthlyIncome(_income, IncomeScenario.Realistic), 0);
+        _expected = Math.Round(IncomeScenarioService.GetAverageMonthlyIncome(_income, IncomeScenario.Expected), 0);
+
+        await ProjectAsync();
+    }
+
+    private async Task ProjectAsync()
+    {
+        var preferences = await PreferencesRepository.GetAsync();
+        _projection = ProjectionService.Project(new CashFlowProjectionInput
+        {
+            IncomeSources = _income,
+            Expenses = _expenses,
+            OneTimeEvents = _events,
+            Scenario = _scenario,
+            EmergencyFund = new EmergencyFundConfig
+            {
+                TargetMonths = preferences.EmergencyFundTargetMonths,
+                CurrentBalance = preferences.EmergencyFundBalance
+            }
+        });
+    }
+
+    private async Task AddIncomeAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_newIncome.Name) || _newIncome.GrossAmount <= 0) return;
+        await IncomeRepository.CreateAsync(_newIncome);
+        _newIncome = NewIncome();
+        await LoadAsync();
+    }
+
+    private async Task DeleteIncomeAsync(IncomeSource source)
+    {
+        await IncomeRepository.DeleteAsync(source.Id);
+        await LoadAsync();
+    }
+
+    private async Task AddExpenseAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_newExpense.Name) || _newExpense.Amount <= 0) return;
+        await ExpenseRepository.CreateAsync(_newExpense);
+        _newExpense = NewExpense();
+        await LoadAsync();
+    }
+
+    private async Task DeleteExpenseAsync(Expense expense)
+    {
+        await ExpenseRepository.DeleteAsync(expense.Id);
+        await LoadAsync();
+    }
+
+    private async Task AddEventAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_newEvent.Name) || _newEvent.Amount <= 0) return;
+        _newEvent.Date = _eventMonth;
+        await EventRepository.CreateAsync(_newEvent);
+        _newEvent = NewEvent();
+        await LoadAsync();
+    }
+
+    private async Task DeleteEventAsync(OneTimeEvent budgetEvent)
+    {
+        await EventRepository.DeleteAsync(budgetEvent.Id);
+        await LoadAsync();
+    }
+
+    private async Task SaveFundAsync()
+    {
+        var preferences = await PreferencesRepository.GetAsync();
+        preferences.EmergencyFundBalance = _fundBalance;
+        preferences.EmergencyFundTargetMonths = _fundMonths;
+        await PreferencesRepository.SaveAsync(preferences);
+        await ProjectAsync();
+    }
+}

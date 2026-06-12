@@ -22,11 +22,28 @@ public partial class App : Application
         await CheckOnboardingStatusAsync();
     }
 
+    /// <summary>
+    /// Applies the persisted theme selection (P4-DRK-002).
+    /// </summary>
+    public static void ApplyTheme(int themePreference)
+    {
+        if (Current != null)
+        {
+            Current.UserAppTheme = themePreference switch
+            {
+                1 => AppTheme.Light,
+                2 => AppTheme.Dark,
+                _ => AppTheme.Unspecified
+            };
+        }
+    }
+
     private async Task CheckOnboardingStatusAsync()
     {
         try
         {
             var preferences = await _preferencesRepository.GetAsync();
+            ApplyTheme(preferences.ThemePreference);
             if (!preferences.HasCompletedOnboarding)
             {
                 await Shell.Current.GoToAsync("Welcome");

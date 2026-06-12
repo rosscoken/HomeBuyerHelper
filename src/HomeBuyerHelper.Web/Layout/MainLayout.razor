@@ -1,0 +1,24 @@
+@inherits LayoutComponentBase
+
+<div class="app-shell">
+    <header class="app-header">
+        <span class="app-logo">🏠 HomeBuyerHelper</span>
+        <nav class="app-nav">
+            <NavLink href="" Match="NavLinkMatch.All">Dashboard</NavLink>
+            <NavLink href="properties">Properties</NavLink>
+            <NavLink href="criteria">Criteria</NavLink>
+            <NavLink href="compare">Compare</NavLink>
+            <NavLink href="budget">Budget</NavLink>
+            <NavLink href="funding">Funding</NavLink>
+            <NavLink href="rent-vs-buy">Rent vs Buy</NavLink>
+        </nav>
+    </header>
+
+    <main class="app-main">
+        @Body
+    </main>
+
+    <footer class="app-footer">
+        Web preview · All data stays in this browser's local storage · No accounts, no tracking
+    </footer>
+</div>

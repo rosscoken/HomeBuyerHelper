@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:HomeBuyerHelper.ViewModels.Budget"
+             xmlns:models="clr-namespace:HomeBuyerHelper.Core.Models;assembly=HomeBuyerHelper.Core"
+             x:Class="HomeBuyerHelper.Pages.Budget.IncomeSetupPage"
+             x:DataType="vm:IncomeSetupViewModel"
+             Title="{Binding Title}">
+
+    <Grid RowDefinitions="Auto,*,Auto" Padding="16">
+
+        <!-- Scenario Summary -->
+        <Frame Grid.Row="0" Style="{StaticResource CardFrame}" Margin="0,0,0,16" Padding="16,12">
+            <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto" ColumnSpacing="8">
+                <Label Grid.Row="0" Grid.Column="0" Text="{Binding ConservativeMonthly, StringFormat='{0:C0}'}"
+                       Style="{StaticResource Subtitle}" HorizontalTextAlignment="Center"/>
+                <Label Grid.Row="0" Grid.Column="1" Text="{Binding RealisticMonthly, StringFormat='{0:C0}'}"
+                       Style="{StaticResource Subtitle}" TextColor="{StaticResource Primary}" HorizontalTextAlignment="Center"/>
+                <Label Grid.Row="0" Grid.Column="2" Text="{Binding ExpectedMonthly, StringFormat='{0:C0}'}"
+                       Style="{StaticResource Subtitle}" HorizontalTextAlignment="Center"/>
+                <Label Grid.Row="1" Grid.Column="0" Text="Conservative" Style="{StaticResource Caption}"
+                       TextColor="{StaticResource Gray500}" HorizontalTextAlignment="Center"/>
+                <Label Grid.Row="1" Grid.Column="1" Text="Realistic" Style="{StaticResource Caption}"
+                       TextColor="{StaticResource Gray500}" HorizontalTextAlignment="Center"/>
+                <Label Grid.Row="1" Grid.Column="2" Text="Expected" Style="{StaticResource Caption}"
+                       TextColor="{StaticResource Gray500}" HorizontalTextAlignment="Center"/>
+            </Grid>
+        </Frame>
+
+        <!-- Income List -->
+        <CollectionView Grid.Row="1"
+                        ItemsSource="{Binding IncomeSources}"
+                        SelectionMode="None">
+            <CollectionView.EmptyView>
+                <VerticalStackLayout VerticalOptions="Center" Spacing="16" Padding="32">
+                    <Label Text="No Income Sources"
+                           Style="{StaticResource Title}"
+                           HorizontalTextAlignment="Center"/>
+                    <Label Text="Add your salary, bonus, RSU vests, and other income to plan your budget."
+                           Style="{StaticResource Body}"
+                           HorizontalTextAlignment="Center"
+                           TextColor="{StaticResource Gray500}"/>
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:IncomeSource">
+                    <SwipeView>
+                        <SwipeView.RightItems>
+                            <SwipeItems>
+                                <SwipeItem Text="Delete"
+                                           BackgroundColor="{StaticResource Error}"
+                                           Command="{Binding Source={RelativeSource AncestorType={x:Type vm:IncomeSetupViewModel}}, Path=DeleteSourceCommand}"
+                                           CommandParameter="{Binding}" />
+                            </SwipeItems>
+                        </SwipeView.RightItems>
+
+                        <Frame Style="{StaticResource CardFrame}" Margin="0,4">
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:IncomeSetupViewModel}}, Path=EditSourceCommand}"
+                                    CommandParameter="{Binding}"/>
+                            </Frame.GestureRecognizers>
+                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12">
+                                <Label Grid.Row="0" Grid.Column="0"
+                                       Text="{Binding Name}"
+                                       Style="{StaticResource Subtitle}"
+                                       LineBreakMode="TailTruncation"/>
+                                <Label Grid.Row="0" Grid.Column="1"
+                                       Text="{Binding MonthlyGrossIncome, StringFormat='{0:C0}/mo'}"
+                                       Style="{StaticResource Body}"
+                                       TextColor="{StaticResource Primary}"
+                                       FontAttributes="Bold"/>
+                                <HorizontalStackLayout Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Spacing="8">
+                                    <Label Text="{Binding IncomeType}"
+                                           Style="{StaticResource Caption}"
+                                           TextColor="{StaticResource Gray500}"/>
+                                    <Label Text="{Binding Frequency}"
+                                           Style="{StaticResource Caption}"
+                                           TextColor="{StaticResource Gray500}"/>
+                                    <Label Text="Variable"
+                                           Style="{StaticResource Caption}"
+                                           TextColor="{StaticResource Warning}"
+                                           IsVisible="{Binding IsReliable, Converter={StaticResource InvertedBoolConverter}}"/>
+                                </HorizontalStackLayout>
+                            </Grid>
+                        </Frame>
+                    </SwipeView>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <Button Grid.Row="2"
+                Text="+ Add Income Source"
+                Command="{Binding AddNewCommand}"
+                Style="{StaticResource PrimaryButton}"
+                Margin="0,16,0,0"
+                AutomationProperties.Name="Add new income source"/>
+
+        <ActivityIndicator Grid.Row="1"
+                           IsRunning="{Binding IsBusy}"
+                           IsVisible="{Binding IsBusy}"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center" />
+
+    </Grid>
+
+</ContentPage>

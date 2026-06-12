@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:HomeBuyerHelper.ViewModels.Budget"
+             x:Class="HomeBuyerHelper.Pages.Budget.IncomeEditPage"
+             x:DataType="vm:IncomeEditViewModel"
+             Title="{Binding Title}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="12">
+
+            <Label Text="Name" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+            <Entry Text="{Binding Name}"
+                   Placeholder="e.g., My Salary, Annual Bonus"
+                   AutomationProperties.Name="Income source name"/>
+
+            <Label Text="Type" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+            <Picker ItemsSource="{Binding IncomeTypes}"
+                    SelectedItem="{Binding IncomeType}"
+                    AutomationProperties.Name="Income type"/>
+
+            <Label Text="Amount (gross, per occurrence)" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+            <Entry Text="{Binding GrossAmount}"
+                   Keyboard="Numeric"
+                   Placeholder="0"
+                   AutomationProperties.Name="Gross amount"/>
+
+            <Label Text="Frequency" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+            <Picker ItemsSource="{Binding Frequencies}"
+                    SelectedItem="{Binding Frequency}"
+                    AutomationProperties.Name="Income frequency"/>
+
+            <VerticalStackLayout Spacing="12" IsVisible="{Binding ShowPaymentMonth}">
+                <Label Text="Payment Month (for annual) or cycle anchor (for quarterly)"
+                       Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                <Picker ItemsSource="{Binding PaymentMonths}"
+                        SelectedIndex="{Binding PaymentMonthIndex}"
+                        AutomationProperties.Name="Payment month"/>
+            </VerticalStackLayout>
+
+            <!-- RSU helper calculator -->
+            <Frame Style="{StaticResource CardFrame}" IsVisible="{Binding IsRsu}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="RSU Vest Calculator" Style="{StaticResource Subtitle}"/>
+                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8" RowDefinitions="Auto,Auto" RowSpacing="4">
+                        <Label Grid.Row="0" Grid.Column="0" Text="Shares/vest" Style="{StaticResource Caption}"
+                               TextColor="{StaticResource Gray500}"/>
+                        <Label Grid.Row="0" Grid.Column="1" Text="Share price" Style="{StaticResource Caption}"
+                               TextColor="{StaticResource Gray500}"/>
+                        <Label Grid.Row="0" Grid.Column="2" Text="Withholding %" Style="{StaticResource Caption}"
+                               TextColor="{StaticResource Gray500}"/>
+                        <Entry Grid.Row="1" Grid.Column="0" Text="{Binding RsuShares}" Keyboard="Numeric"
+                               AutomationProperties.Name="Shares per vest"/>
+                        <Entry Grid.Row="1" Grid.Column="1" Text="{Binding RsuSharePrice}" Keyboard="Numeric"
+                               AutomationProperties.Name="Estimated share price"/>
+                        <Entry Grid.Row="1" Grid.Column="2" Text="{Binding RsuWithholding}" Keyboard="Numeric"
+                               AutomationProperties.Name="Tax withholding percent"/>
+                    </Grid>
+                    <Label Text="{Binding RsuNetPerVest, StringFormat='Net per vest: {0:C0}'}"
+                           Style="{StaticResource Body}" FontAttributes="Bold"/>
+                    <Button Text="Use as Amount"
+                            Command="{Binding ApplyRsuValueCommand}"
+                            Style="{StaticResource TextButton}"
+                            AutomationProperties.Name="Use calculated value as amount"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <Grid ColumnDefinitions="*,Auto">
+                <Label Text="Guaranteed / reliable income"
+                       Style="{StaticResource Body}"
+                       VerticalOptions="Center"/>
+                <Switch Grid.Column="1" IsToggled="{Binding IsReliable}"
+                        AutomationProperties.Name="Income is guaranteed"/>
+            </Grid>
+
+            <VerticalStackLayout Spacing="8" IsVisible="{Binding IsReliable, Converter={StaticResource InvertedBoolConverter}}">
+                <Label Text="{Binding Probability, StringFormat='Probability of receiving: {0:F0}%'}"
+                       Style="{StaticResource Body}"/>
+                <Slider Value="{Binding Probability}" Minimum="0" Maximum="100"
+                        AutomationProperties.Name="Probability slider"/>
+                <Label Text="Used by the Realistic scenario. Conservative excludes variable income entirely."
+                       Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+            </VerticalStackLayout>
+
+            <Grid ColumnDefinitions="*,Auto">
+                <Label Text="Starts on a future date"
+                       Style="{StaticResource Body}"
+                       VerticalOptions="Center"/>
+                <Switch Grid.Column="1" IsToggled="{Binding HasStartDate}"
+                        AutomationProperties.Name="Income has a start date"/>
+            </Grid>
+            <DatePicker Date="{Binding StartDateValue}"
+                        IsVisible="{Binding HasStartDate}"
+                        AutomationProperties.Name="Income start date"/>
+
+            <Label Text="Notes" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+            <Editor Text="{Binding Notes}" HeightRequest="80" Placeholder="Optional notes"
+                    AutomationProperties.Name="Income notes"/>
+
+            <Label Text="{Binding ErrorMessage}"
+                   IsVisible="{Binding HasError}"
+                   TextColor="{StaticResource Error}"
+                   Style="{StaticResource Body}"/>
+
+            <Button Text="Save"
+                    Command="{Binding SaveCommand}"
+                    Style="{StaticResource PrimaryButton}"
+                    AutomationProperties.Name="Save income source"/>
+            <Button Text="Cancel"
+                    Command="{Binding CancelCommand}"
+                    Style="{StaticResource TextButton}"
+                    AutomationProperties.Name="Cancel"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

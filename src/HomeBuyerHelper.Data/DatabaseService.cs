@@ -13,8 +13,17 @@ public class DatabaseService : IDatabaseService
     private readonly string _databasePath;
 
     public DatabaseService()
+        : this(null)
     {
-        _databasePath = Path.Combine(
+    }
+
+    /// <summary>
+    /// Creates a database service with an explicit database file path.
+    /// Used by tests to isolate database files; the app uses the default path.
+    /// </summary>
+    public DatabaseService(string? databasePath)
+    {
+        _databasePath = databasePath ?? Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "HomeBuyerHelper",
             "homebuyerhelper.db");
@@ -62,6 +71,9 @@ public class DatabaseService : IDatabaseService
         await _database.CreateTableAsync<IncomeSourceEntity>();
         await _database.CreateTableAsync<ExpenseEntity>();
         await _database.CreateTableAsync<FundingSourceEntity>();
+        await _database.CreateTableAsync<OneTimeEventEntity>();
+        await _database.CreateTableAsync<PropertyPhotoEntity>();
+        await _database.CreateTableAsync<PropertyProConEntity>();
     }
 
     public async Task<string> ExportBackupAsync()
@@ -121,5 +133,8 @@ public class DatabaseService : IDatabaseService
         await db.DeleteAllAsync<IncomeSourceEntity>();
         await db.DeleteAllAsync<ExpenseEntity>();
         await db.DeleteAllAsync<FundingSourceEntity>();
+        await db.DeleteAllAsync<OneTimeEventEntity>();
+        await db.DeleteAllAsync<PropertyPhotoEntity>();
+        await db.DeleteAllAsync<PropertyProConEntity>();
     }
 }

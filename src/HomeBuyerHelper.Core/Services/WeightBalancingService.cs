@@ -1,7 +1,7 @@
-namespace HomeBuyerHelper.Core.Services;
 
 using HomeBuyerHelper.Core.Models;
 
+namespace HomeBuyerHelper.Core.Services;
 /// <summary>
 /// Service for balancing criterion weights to ensure they sum to 100%.
 /// </summary>
@@ -18,7 +18,9 @@ public class WeightBalancingService : IWeightBalancingService
     public WeightBalanceResult Rebalance(IList<EvaluationCriterion> criteria, int? changedCriterionId = null)
     {
         if (criteria.Count == 0)
+        {
             return new WeightBalanceResult { Success = true };
+        }
 
         var result = new WeightBalanceResult { Success = true };
         var totalWeight = criteria.Sum(c => c.Weight);
@@ -32,7 +34,9 @@ public class WeightBalancingService : IWeightBalancingService
 
         // If already balanced, return early
         if (totalWeight == 100)
+        {
             return result;
+        }
 
         var lockedCriteria = criteria.Where(c => c.IsWeightLocked).ToList();
         var unlockedCriteria = criteria.Where(c => !c.IsWeightLocked).ToList();
@@ -97,7 +101,10 @@ public class WeightBalancingService : IWeightBalancingService
     /// </summary>
     public void NormalizeToPercent(IList<EvaluationCriterion> criteria)
     {
-        if (criteria.Count == 0) return;
+        if (criteria.Count == 0)
+        {
+            return;
+        }
 
         var totalWeight = criteria.Sum(c => c.Weight);
         if (totalWeight == 0)
@@ -131,7 +138,10 @@ public class WeightBalancingService : IWeightBalancingService
     /// </summary>
     public void ApplyRankingWeights(IList<EvaluationCriterion> criteria)
     {
-        if (criteria.Count == 0) return;
+        if (criteria.Count == 0)
+        {
+            return;
+        }
 
         // Ranking formula: #1 = 25%, #2 = 20%, descending from there
         var weights = new[] { 25, 20, 15, 12, 10, 8, 5, 3, 2 };

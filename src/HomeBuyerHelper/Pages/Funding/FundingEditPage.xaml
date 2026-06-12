@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:HomeBuyerHelper.ViewModels.Funding"
+             x:Class="HomeBuyerHelper.Pages.Funding.FundingEditPage"
+             x:DataType="vm:FundingEditViewModel"
+             Title="{Binding Title}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="12">
+
+            <Label Text="Source Type" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+            <Picker ItemsSource="{Binding TypeNames}"
+                    SelectedIndex="{Binding TypeIndex}"
+                    AutomationProperties.Name="Funding source type"/>
+
+            <Label Text="Nickname (optional)" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+            <Entry Text="{Binding Name}"
+                   Placeholder="e.g., Chase savings, MSFT shares"
+                   AutomationProperties.Name="Funding source nickname"/>
+
+            <Label Text="Amount to use" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+            <Entry Text="{Binding Amount}"
+                   Keyboard="Numeric"
+                   Placeholder="0"
+                   AutomationProperties.Name="Amount to use"/>
+
+            <!-- Brokerage fields (P3-FUN-004) -->
+            <VerticalStackLayout Spacing="12" IsVisible="{Binding IsBrokerage}">
+                <Label Text="Cost basis (what you originally paid)" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                <Entry Text="{Binding CostBasis}" Keyboard="Numeric"
+                       AutomationProperties.Name="Cost basis"/>
+                <Grid ColumnDefinitions="*,Auto">
+                    <VerticalStackLayout>
+                        <Label Text="Held more than 1 year" Style="{StaticResource Body}"/>
+                        <Label Text="Long-term gains get preferential rates (0/15/20%)"
+                               Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                    </VerticalStackLayout>
+                    <Switch Grid.Column="1" IsToggled="{Binding IsLongTermHolding}"
+                            AutomationProperties.Name="Long-term holding"/>
+                </Grid>
+            </VerticalStackLayout>
+
+            <!-- Age (IRA/401k) -->
+            <VerticalStackLayout Spacing="12" IsVisible="{Binding NeedsAge}">
+                <Label Text="Your age" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                <Entry Text="{Binding OwnerAge}" Keyboard="Numeric"
+                       AutomationProperties.Name="Account owner age"/>
+                <Grid ColumnDefinitions="*,Auto">
+                    <VerticalStackLayout>
+                        <Label Text="First-time home buyer" Style="{StaticResource Body}"/>
+                        <Label Text="IRS definition: no home owned in the past 2 years"
+                               Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                    </VerticalStackLayout>
+                    <Switch Grid.Column="1" IsToggled="{Binding IsFirstTimeBuyer}"
+                            AutomationProperties.Name="First-time home buyer"/>
+                </Grid>
+            </VerticalStackLayout>
+
+            <!-- Roth fields (P3-FUN-007) -->
+            <VerticalStackLayout Spacing="12" IsVisible="{Binding IsRothIra}">
+                <Label Text="Amount from contributions (always tax-free)" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                <Entry Text="{Binding RothContributionPortion}" Keyboard="Numeric"
+                       AutomationProperties.Name="Roth contribution portion"/>
+                <Grid ColumnDefinitions="*,Auto">
+                    <Label Text="Account open 5+ years" Style="{StaticResource Body}" VerticalOptions="Center"/>
+                    <Switch Grid.Column="1" IsToggled="{Binding IsRothAccount5Years}"
+                            AutomationProperties.Name="Roth account open five years"/>
+                </Grid>
+            </VerticalStackLayout>
+
+            <!-- 401k fields (P3-FUN-009) -->
+            <VerticalStackLayout Spacing="12" IsVisible="{Binding Is401k}">
+                <Grid ColumnDefinitions="*,Auto">
+                    <VerticalStackLayout>
+                        <Label Text="Loan (repay to yourself)" Style="{StaticResource Body}"/>
+                        <Label Text="Off = hardship withdrawal (taxed + 10% penalty under 59½)"
+                               Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                    </VerticalStackLayout>
+                    <Switch Grid.Column="1" IsToggled="{Binding Is401kLoan}"
+                            AutomationProperties.Name="401k loan"/>
+                </Grid>
+            </VerticalStackLayout>
+
+            <!-- Gift fields (P3-FUN-008) -->
+            <VerticalStackLayout Spacing="12" IsVisible="{Binding IsGift}">
+                <Label Text="Donor name" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+                <Entry Text="{Binding DonorName}" Placeholder="e.g., Mom and Dad"
+                       AutomationProperties.Name="Gift donor name"/>
+                <Label Text="Your lender will require a gift letter. Gifts typically need to be 'seasoned' in your account for 60 days before closing."
+                       Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+            </VerticalStackLayout>
+
+            <!-- Live tax preview -->
+            <Frame Style="{StaticResource CardFrame}"
+                   IsVisible="{Binding TaxPreview, Converter={StaticResource IsNotNullConverter}}">
+                <Label Text="{Binding TaxPreview}" Style="{StaticResource Body}"/>
+            </Frame>
+
+            <Label Text="Notes" Style="{StaticResource Caption}" TextColor="{StaticResource Gray500}"/>
+            <Editor Text="{Binding Notes}" HeightRequest="60" Placeholder="Optional notes"
+                    AutomationProperties.Name="Funding source notes"/>
+
+            <Label Text="{Binding ErrorMessage}"
+                   IsVisible="{Binding HasError}"
+                   TextColor="{StaticResource Error}"
+                   Style="{StaticResource Body}"/>
+
+            <Button Text="Save"
+                    Command="{Binding SaveCommand}"
+                    Style="{StaticResource PrimaryButton}"
+                    AutomationProperties.Name="Save funding source"/>
+            <Button Text="Cancel"
+                    Command="{Binding CancelCommand}"
+                    Style="{StaticResource TextButton}"
+                    AutomationProperties.Name="Cancel"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

@@ -11,10 +11,14 @@ public class CalculationService : ICalculationService
     public decimal CalculateMonthlyMortgagePayment(decimal principal, decimal annualInterestRate, int termYears)
     {
         if (principal <= 0 || termYears <= 0)
+        {
             return 0;
+        }
 
         if (annualInterestRate <= 0)
+        {
             return principal / (termYears * 12m);
+        }
 
         var monthlyRate = annualInterestRate / 100 / 12;
         var numberOfPayments = termYears * 12;
@@ -94,7 +98,11 @@ public class CalculationService : ICalculationService
 
     public decimal CalculateDTI(decimal monthlyDebt, decimal monthlyIncome)
     {
-        if (monthlyIncome <= 0) return 0;
+        if (monthlyIncome <= 0)
+        {
+            return 0;
+        }
+
         return Math.Round(monthlyDebt / monthlyIncome * 100, 2);
     }
 
@@ -153,17 +161,8 @@ public class CalculationService : ICalculationService
             RequiredDownPayment = downPaymentAmount,
             EstimatedMonthlyPayment = Math.Round(estimatedPayment, 2),
             DTIWithMaxPrice = dtiAtMax,
-            MeetsConventionalGuidelines = dtiAtMax <= 43
+            MeetsConventionalGuidelines = dtiAtMax <= maxDTI
         };
-    }
-
-    public Task<IReadOnlyList<BudgetMonth>> GenerateBudgetProjectionsAsync(
-        int propertyId,
-        int monthsToProject = 12)
-    {
-        // This would typically fetch income/expense data and generate projections
-        // For now, return empty list - will be implemented in Phase 2
-        return Task.FromResult<IReadOnlyList<BudgetMonth>>(new List<BudgetMonth>());
     }
 
     public IReadOnlyList<AmortizationEntry> CalculateAmortizationSchedule(

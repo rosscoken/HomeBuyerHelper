@@ -1,0 +1,92 @@
+@page "/rent-vs-buy"
+@inject IRentVsBuyService RentVsBuyService
+@inject IUserPreferencesRepository PreferencesRepository
+
+<PageTitle>Rent vs Buy · HomeBuyerHelper</PageTitle>
+
+<h1>Rent vs. Buy</h1>
+<p class="muted">Year-by-year wealth comparison: home equity vs. renting and investing the difference.</p>
+
+<div class="card">
+    <div class="row">
+        <span><label>Purchase Price</label><input type="number" @bind="_price" /></span>
+        <span><label>Current Rent/mo</label><input type="number" @bind="_rent" /></span>
+        <span><label>Other Ownership Costs/mo</label><input type="number" @bind="_ownershipCosts" /></span>
+    </div>
+    <div class="row">
+        <span><label>Rent Increase %/yr</label><input type="number" step="0.1" @bind="_rentIncrease" /></span>
+        <span><label>Investment Return %/yr</label><input type="number" step="0.1" @bind="_investReturn" /></span>
+        <span><label>Appreciation %/yr</label><input type="number" step="0.1" @bind="_appreciation" /></span>
+        <span><label>Horizon (years)</label><input type="number" min="1" max="30" @bind="_horizon" /></span>
+    </div>
+    <button @onclick="CompareAsync">Compare</button>
+    @if (_error != null) { <p class="error-text">@_error</p> }
+</div>
+
+@if (_result != null && _result.Years.Count > 0)
+{
+    <div class="card">
+        <h2>@_verdict</h2>
+        <p class="muted">Monthly cost of owning in year one: @_result.InitialMonthlyOwnershipCost.ToString("C0")</p>
+    </div>
+
+    <table>
+        <thead>
+            <tr><th>Year</th><th>Buy Net Wealth</th><th>Rent Net Wealth</th><th>Ahead</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var year in _result.Years)
+            {
+                <tr>
+                    <td>@year.Year</td>
+                    <td>@year.BuyNetWealth.ToString("C0")</td>
+                    <td>@year.RentNetWealth.ToString("C0")</td>
+                    <td class="@(year.BuyingIsAhead ? "pos" : "neg")">@(year.BuyingIsAhead ? "Buy" : "Rent")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private decimal _price;
+    private decimal _rent;
+    private decimal _ownershipCosts = 800m;
+    private decimal _rentIncrease = 3m;
+    private decimal _investReturn = 7m;
+    private decimal _appreciation = 3m;
+    private int _horizon = 10;
+    private string? _error;
+    private string _verdict = "";
+    private RentVsBuyResult? _result;
+
+    private async Task CompareAsync()
+    {
+        if (_price <= 0 || _rent <= 0)
+        {
+            _error = "Enter a purchase price and your current rent.";
+            return;
+        }
+
+        _error = null;
+        var preferences = await PreferencesRepository.GetAsync();
+
+        _result = RentVsBuyService.Compare(new RentVsBuyInput
+        {
+            PurchasePrice = _price,
+            DownPaymentPercent = preferences.DefaultDownPaymentPercent,
+            InterestRate = preferences.DefaultInterestRate,
+            MortgageTermYears = preferences.DefaultMortgageTerm,
+            MonthlyOwnershipCosts = _ownershipCosts,
+            CurrentMonthlyRent = _rent,
+            AnnualRentIncreasePercent = _rentIncrease,
+            InvestmentReturnPercent = _investReturn,
+            HomeAppreciationPercent = _appreciation,
+            HorizonYears = Math.Clamp(_horizon, 1, 30)
+        });
+
+        _verdict = _result.BreakevenYear is int year
+            ? $"Buying pulls ahead in year {year} — {_result.FinalAdvantage:C0} ahead after {_horizon} years."
+            : $"Renting stays ahead for the full {_horizon}-year horizon ({Math.Abs(_result.FinalAdvantage):C0} better).";
+    }
+}
