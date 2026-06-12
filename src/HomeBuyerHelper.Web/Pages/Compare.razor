@@ -12,7 +12,7 @@
 @if (_loaded && _results.Count < 2)
 {
     <div class="empty-state">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
         <p>Add and score at least two <a href="properties">properties</a> to compare them side by side.</p>
     </div>
 }
@@ -75,7 +75,7 @@ else if (_loaded)
                     <tr>
                         <td>
                             <strong>@result.Property.Nickname</strong>
-                            @if (cost == _lowestCost) { <span class="badge ok" style="margin-left:8px">Lowest</span> }
+                            @if (cost == _lowestCost) { <span class="badge ok ml-8">Lowest</span> }
                         </td>
                         <td class="num">@cost.MonthlyHousing.ToString("C0")</td>
                         <td class="num">@cost.MonthlyCommuteValue.ToString("C0")</td>

@@ -25,7 +25,7 @@
             <span><label>State Rate %</label><input type="number" step="0.1" @bind="_stateRate" /></span>
             <button class="secondary sm" @onclick="SaveTaxSettingsAsync">Save</button>
         </div>
-        <p class="muted" style="margin-bottom:0">
+        <p class="muted mb-0">
             Federal marginal: <span class="badge brand">@_federalRate%</span>
             Long-term capital gains: <span class="badge brand">@_ltcgRate%</span>
         </p>
@@ -49,7 +49,7 @@
             <span><label>Nickname</label><input @bind="_newName" /></span>
             <span><label>Amount</label><input type="number" @bind="_newAmount" /></span>
         </div>
-        <div class="row" style="margin-top:12px">
+        <div class="row mt-12">
             @if (_newType == FundingType.Investment)
             {
                 <span><label>Cost Basis</label><input type="number" @bind="_newCostBasis" /></span>
@@ -106,7 +106,7 @@
     @if (_plan.TotalTax > 0)
     {
         <div class="callout">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
+            <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
             <span>
                 Set aside <strong>@_plan.TotalTax.ToString("C0")</strong> for taxes — capital gains and IRA
                 distributions are due with your tax return next April. Use cheapest money first:

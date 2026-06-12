@@ -21,7 +21,7 @@
         </span>
         <button class="secondary" @onclick="ApplyTemplateAsync">Apply Template</button>
     </div>
-    <p class="muted" style="margin-bottom:0">Applying replaces your current criteria.</p>
+    <p class="muted mb-0">Applying replaces your current criteria.</p>
 </div>
 
 @if (_editing != null)
@@ -41,12 +41,12 @@
                 </select>
             </span>
         </div>
-        <div class="row" style="margin-top:12px">
+        <div class="row mt-12">
             <span><label>What does a 1 look like?</label><input size="40" @bind="_editing.ScoreAnchorLow" /></span>
             <span><label>What does a 10 look like?</label><input size="40" @bind="_editing.ScoreAnchorHigh" /></span>
         </div>
         @if (_error != null) { <p class="error-text">@_error</p> }
-        <div class="row" style="margin-top:14px">
+        <div class="row mt-14">
             <button @onclick="SaveAsync">Save Criterion</button>
             <button class="secondary" @onclick="() => _editing = null">Cancel</button>
         </div>
@@ -55,7 +55,7 @@
 else
 {
     <button @onclick="StartAdd">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+        <svg aria-hidden="true" focusable="false" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
         Add Criterion
     </button>
 }
@@ -65,7 +65,7 @@ else
     <span class="badge @(_totalWeight == 100 ? "ok" : "warn")">
         @if (_totalWeight == 100)
         {
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            <svg aria-hidden="true" focusable="false" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
         }
         Total: @_totalWeight%
     </span>
@@ -78,7 +78,7 @@ else
 @if (_criteria.Count == 0)
 {
     <div class="empty-state">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+        <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
         <p>No criteria yet — apply a template above or add your own.</p>
     </div>
 }

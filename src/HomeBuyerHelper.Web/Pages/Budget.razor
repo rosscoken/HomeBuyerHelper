@@ -59,7 +59,7 @@
                 </table>
             </div>
         }
-        <p class="muted" style="margin-bottom:0">
+        <p class="muted mb-0">
             Monthly by scenario — Conservative: <strong>@_conservative.ToString("C0")</strong> ·
             Realistic: <strong>@_realistic.ToString("C0")</strong> ·
             Expected: <strong>@_expected.ToString("C0")</strong>
@@ -95,7 +95,7 @@
                 </table>
             </div>
         }
-        <p class="muted" style="margin-bottom:0">Total: <strong>@_expenses.Sum(e => e.MonthlyAmount).ToString("C0")/mo</strong></p>
+        <p class="muted mb-0">Total: <strong>@_expenses.Sum(e => e.MonthlyAmount).ToString("C0")/mo</strong></p>
     </div>
 </div>
 
@@ -119,7 +119,7 @@
             }
         </div>
     }
-    <div class="row" style="margin-top:12px">
+    <div class="row mt-12">
         <span><label>Emergency fund balance</label><input type="number" @bind="_fundBalance" /></span>
         <span><label>Target (months of expenses)</label><input type="number" @bind="_fundMonths" /></span>
         <button class="secondary sm" @onclick="SaveFundAsync">Save Fund</button>
@@ -148,7 +148,7 @@
                     <tr>
                         <td>
                             <strong>@month.Month.ToString("MMM yyyy")</strong>
-                            @if (month.IsCrunchMonth) { <span class="badge warn" style="margin-left:8px">Crunch</span> }
+                            @if (month.IsCrunchMonth) { <span class="badge warn ml-8">Crunch</span> }
                         </td>
                         <td class="num">@month.TotalIncome.ToString("C0")</td>
                         <td class="num">@month.TotalExpenses.ToString("C0")</td>

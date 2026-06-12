@@ -3,6 +3,18 @@ using System.Globalization;
 namespace HomeBuyerHelper.Converters;
 
 /// <summary>
+/// Theme-aware color lookup for converters, which can't use AppThemeBinding.
+/// Values mirror Resources/Styles/Colors.xaml.
+/// </summary>
+internal static class ThemeColors
+{
+    internal static Color Pick(string light, string dark) =>
+        Application.Current?.RequestedTheme == AppTheme.Dark
+            ? Color.FromArgb(dark)
+            : Color.FromArgb(light);
+}
+
+/// <summary>
 /// Inverts a boolean value.
 /// </summary>
 public class InvertedBoolConverter : IValueConverter
@@ -183,9 +195,9 @@ public class BoolToColorConverter : IValueConverter
     {
         if (value is bool isSelected && isSelected)
         {
-            return Color.FromArgb("#EEEAFE"); // SurfaceVariant / selected
+            return ThemeColors.Pick("#EEEAFE", "#2A2350"); // SurfaceVariant / selected
         }
-        return Color.FromArgb("#FFFFFF"); // Surface / unselected
+        return ThemeColors.Pick("#FFFFFF", "#1A1726"); // Surface / unselected
     }
 
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
@@ -203,9 +215,9 @@ public class BoolToStrokeConverter : IValueConverter
     {
         if (value is bool isSelected && isSelected)
         {
-            return Color.FromArgb("#5B40E8"); // Primary / selected
+            return ThemeColors.Pick("#5B40E8", "#8B72FF"); // Primary / selected
         }
-        return Color.FromArgb("#E6E3F2"); // Gray300 / unselected
+        return ThemeColors.Pick("#E6E3F2", "#3A3554"); // Gray300 / unselected
     }
 
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
@@ -323,8 +335,8 @@ public class BoolToAlertColorConverter : IValueConverter
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         return value is bool warning && warning
-            ? Color.FromArgb("#E11D48")
-            : Color.FromArgb("#8E89A8");
+            ? ThemeColors.Pick("#E11D48", "#FB7185") // Error
+            : ThemeColors.Pick("#8E89A8", "#777291"); // TextDisabled
     }
 
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
