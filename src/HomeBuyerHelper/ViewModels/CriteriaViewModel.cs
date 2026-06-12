@@ -91,7 +91,7 @@ public partial class CriteriaViewModel : BaseViewModel
             });
             if (fileResult == null) return;
 
-            var json = await File.ReadAllTextAsync(fileResult.FullPath);
+            var json = await Services.FileResultExtensions.ReadAllTextAsync(fileResult);
             var template = _templateService.ParseTemplate(json);
 
             // Preview before import (P4-TMP-002)

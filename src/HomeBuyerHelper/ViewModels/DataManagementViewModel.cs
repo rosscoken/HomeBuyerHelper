@@ -21,6 +21,8 @@ public partial class DataManagementViewModel : BaseViewModel
     [ObservableProperty]
     private string? _selectedFilePath;
 
+    private string? _selectedFileContent;
+
     [ObservableProperty]
     private bool _replaceExisting;
 
@@ -193,9 +195,12 @@ public partial class DataManagementViewModel : BaseViewModel
 
             if (fileResult != null)
             {
-                SelectedFilePath = fileResult.FullPath;
-                var content = await File.ReadAllTextAsync(fileResult.FullPath);
-                ImportValidation = await _exportService.ValidateImportFileAsync(content);
+                // Read through the stream once and cache: FullPath is not
+                // reliably readable on Android/iOS, and the picked file may
+                // not be re-readable later.
+                SelectedFilePath = fileResult.FileName;
+                _selectedFileContent = await Services.FileResultExtensions.ReadAllTextAsync(fileResult);
+                ImportValidation = await _exportService.ValidateImportFileAsync(_selectedFileContent);
                 IsFileSelected = true;
             }
         }
@@ -208,7 +213,7 @@ public partial class DataManagementViewModel : BaseViewModel
     [RelayCommand]
     private async Task ImportDataAsync()
     {
-        if (string.IsNullOrEmpty(SelectedFilePath) || ImportValidation == null || !ImportValidation.IsValid)
+        if (string.IsNullOrEmpty(_selectedFileContent) || ImportValidation == null || !ImportValidation.IsValid)
         {
             SetError("Please select a valid backup file first.");
             return;
@@ -230,8 +235,7 @@ public partial class DataManagementViewModel : BaseViewModel
 
         await ExecuteBusyAsync(async () =>
         {
-            var content = await File.ReadAllTextAsync(SelectedFilePath);
-            var success = await _exportService.ImportFromJsonAsync(content, ReplaceExisting);
+            var success = await _exportService.ImportFromJsonAsync(_selectedFileContent!, ReplaceExisting);
 
             if (success)
             {
@@ -242,6 +246,7 @@ public partial class DataManagementViewModel : BaseViewModel
 
                 // Clear import state
                 SelectedFilePath = null;
+                _selectedFileContent = null;
                 ImportValidation = null;
                 IsFileSelected = false;
                 ReplaceExisting = false;
@@ -257,6 +262,7 @@ public partial class DataManagementViewModel : BaseViewModel
     private void ClearSelection()
     {
         SelectedFilePath = null;
+        _selectedFileContent = null;
         ImportValidation = null;
         IsFileSelected = false;
         ReplaceExisting = false;

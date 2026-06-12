@@ -56,7 +56,7 @@ public class ShareBackupSyncService : ICloudSyncService
                 return new SyncResult { Success = false, Message = "No file selected." };
             }
 
-            var json = await File.ReadAllTextAsync(fileResult.FullPath);
+            var json = await fileResult.ReadAllTextAsync();
             var imported = await _exportService.ImportFromJsonAsync(json, replaceExisting: true);
 
             return new SyncResult
