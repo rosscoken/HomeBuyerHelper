@@ -114,8 +114,8 @@ else
                     </span>
                 </div>
                 <div class="p-score">
-                    <span class="progress @(property.TotalCriteriaCount > 0 && property.ScoredCriteriaCount == property.TotalCriteriaCount ? "green" : "")">
-                        <i style="width:@(property.TotalCriteriaCount == 0 ? 0 : property.ScoredCriteriaCount * 100 / property.TotalCriteriaCount)%"></i>
+                    <span class="progress @(property.IsFullyScored ? "green" : "")">
+                        <i style="width:@(Math.Min(property.ScoreCompletionPercent, 100))%"></i>
                     </span>
                     <span>@property.ScoredCriteriaCount/@property.TotalCriteriaCount scored</span>
                 </div>

@@ -19,6 +19,7 @@
     <!-- Accent Colors -->
     <Color x:Key="Accent">#0E9F6E</Color>
     <Color x:Key="AccentDark">#066D4D</Color>
+    <Color x:Key="AccentAmber">#F59E0B</Color>
 
     <!-- Semantic Colors -->
     <Color x:Key="Success">#0E9F6E</Color>
@@ -66,5 +67,6 @@
     <Color x:Key="Gray200Dark">#2C2840</Color>
     <Color x:Key="PrimaryLightDark">#8B72FF</Color>
     <Color x:Key="SecondaryDarkMode">#2A2350</Color>
+    <Color x:Key="ErrorDarkMode">#FB7185</Color>
 
 </ResourceDictionary>

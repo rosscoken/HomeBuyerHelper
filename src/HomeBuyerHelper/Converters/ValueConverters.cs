@@ -4,7 +4,8 @@ namespace HomeBuyerHelper.Converters;
 
 /// <summary>
 /// Theme-aware color lookup for converters, which can't use AppThemeBinding.
-/// Values mirror Resources/Styles/Colors.xaml.
+/// Every hex used through this helper must have a matching token in
+/// Resources/Styles/Colors.xaml; update both together to avoid drift.
 /// </summary>
 internal static class ThemeColors
 {
