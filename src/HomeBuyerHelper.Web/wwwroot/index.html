@@ -41,6 +41,15 @@
         <a class="dismiss">🗙</a>
     </div>
     <script src="_framework/blazor.webassembly.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            // Resolve against baseURI so the scope is correct both locally ("/")
+            // and on project pages ("/HomeBuyerHelper/").
+            navigator.serviceWorker
+                .register(new URL('service-worker.js', document.baseURI))
+                .catch(error => console.warn('Offline support unavailable:', error));
+        }
+    </script>
 </body>
 
 </html>
