@@ -17,7 +17,7 @@
 
 const CACHE = 'homebuyerhelper-v1';
 const SHELL_KEY = 'app-shell';
-const IS_DEV = ['localhost', '127.0.0.1'].includes(self.location.hostname);
+const IS_DEV = ['localhost', '127.0.0.1', '[::1]', '::1'].includes(self.location.hostname);
 
 self.addEventListener('install', () => {
     self.skipWaiting();
@@ -44,18 +44,19 @@ self.addEventListener('fetch', event => {
     }
     event.respondWith(
         event.request.mode === 'navigate'
-            ? handleNavigation(event.request)
-            : staleWhileRevalidate(event.request)
+            ? handleNavigation(event)
+            : staleWhileRevalidate(event)
     );
 });
 
-// The server answers every route with the SPA shell (index.html / 404.html),
-// so one cached copy under a fixed key serves any offline navigation.
-async function handleNavigation(request) {
+// The server answers every route with the SPA shell — index.html with a 200,
+// or its 404.html copy (deep links on GitHub Pages) with a 404 status — so
+// one cached copy under a fixed key serves any offline navigation.
+async function handleNavigation(event) {
     const cache = await caches.open(CACHE);
     try {
-        const fresh = await fetch(request);
-        if (fresh.ok) {
+        const fresh = await fetch(event.request);
+        if (fresh.ok || fresh.status === 404) {
             await cache.put(SHELL_KEY, fresh.clone());
         }
         return fresh;
@@ -65,18 +66,20 @@ async function handleNavigation(request) {
     }
 }
 
-async function staleWhileRevalidate(request) {
+async function staleWhileRevalidate(event) {
     const cache = await caches.open(CACHE);
-    const cached = await cache.match(request);
-    const refresh = fetch(request)
-        .then(response => {
+    const cached = await cache.match(event.request);
+    const refresh = fetch(event.request)
+        .then(async response => {
             if (response.ok) {
-                cache.put(request, response.clone());
+                await cache.put(event.request, response.clone());
             }
             return response;
         })
         .catch(() => undefined);
     if (cached) {
+        // Keep the worker alive until the background refresh has been cached.
+        event.waitUntil(refresh);
         return cached;
     }
     return (await refresh) ?? Response.error();
