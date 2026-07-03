@@ -224,6 +224,8 @@ a:hover { text-decoration: underline; text-underline-offset: 3px; }
     backdrop-filter: blur(14px) saturate(1.4);
     -webkit-backdrop-filter: blur(14px) saturate(1.4);
     border-bottom: 1px solid var(--border);
+    /* Keeps the header clear of the notch/status bar in installed (standalone) mode */
+    padding-top: env(safe-area-inset-top, 0px);
 }
 
 .header-inner {
@@ -327,6 +329,47 @@ a:hover { text-decoration: underline; text-underline-offset: 3px; }
 }
 
 .app-footer svg { width: 13px; height: 13px; }
+
+/* ---------- Bottom tab bar (mobile app shell) ---------- */
+
+.tab-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    display: none;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 2px;
+    background: var(--header-bg);
+    backdrop-filter: blur(14px) saturate(1.4);
+    -webkit-backdrop-filter: blur(14px) saturate(1.4);
+    border-top: 1px solid var(--border);
+    padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px));
+}
+
+.tab-bar a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-height: 48px;
+    padding: 5px 2px;
+    border-radius: 12px;
+    color: var(--text-3);
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: color 0.15s ease, background 0.15s ease;
+}
+
+.tab-bar a svg { width: 22px; height: 22px; }
+.tab-bar a:hover { text-decoration: none; }
+.tab-bar a:active { background: var(--surface-2); }
+.tab-bar a.active { color: var(--primary); }
 
 /* ---------- Cards & layout ---------- */
 
@@ -846,10 +889,25 @@ td.score-good, td.score-mid, td.score-bad { font-weight: 700; text-align: center
     *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
 
+/* ---------- Mobile app shell ---------- */
+
 @media (max-width: 640px) {
     h1 { font-size: 1.45rem; }
-    .app-main { padding: 22px 14px 40px; }
     .header-inner { padding: 10px 14px; }
-    .app-nav { margin-left: 0; width: 100%; }
     .card { padding: 16px; }
+
+    /* Top nav gives way to the bottom tab bar; header keeps just the brand */
+    .app-nav { display: none; }
+    .tab-bar { display: grid; }
+
+    /* Room for the fixed tab bar (plus the iPhone home indicator) */
+    .app-main { padding: 22px 14px calc(96px + env(safe-area-inset-bottom, 0px)); }
+    .app-footer { padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+
+    /* Comfortable touch targets (Apple HIG: 44pt minimum) */
+    button { min-height: 44px; }
+    button.danger, .tab-bar a { min-height: 44px; }
+    input, select { min-height: 44px; }
+    .seg button { min-height: 36px; }
+    .app-nav a, .step, .module-card { -webkit-tap-highlight-color: transparent; }
 }
