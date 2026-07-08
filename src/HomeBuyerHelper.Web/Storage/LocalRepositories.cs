@@ -441,6 +441,12 @@ public class LocalOfferScenarioRepository : IOfferScenarioRepository
 
     public Task UpdateAsync(OfferScenario offer)
     {
+        var existing = _store.Find(offer.Id);
+        if (existing != null)
+        {
+            offer.CreatedAt = existing.CreatedAt;
+        }
+
         offer.UpdatedAt = DateTime.UtcNow;
         _store.Update(offer);
         return Task.CompletedTask;

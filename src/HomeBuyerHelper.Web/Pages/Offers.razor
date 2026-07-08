@@ -280,6 +280,7 @@ else
     private List<OfferEvaluation> _evaluations = new();
     private UserPreferences? _preferences;
     private string? _error;
+    private bool _isInitialized;
 
     // Form state
     private int? _editingId;
@@ -307,13 +308,37 @@ else
         _termYears = _preferences.DefaultMortgageTerm;
 
         _properties = (await PropertyRepository.GetActiveAsync()).ToList();
+        _isInitialized = true;
         if (_properties.Count > 0)
         {
-            _selectedPropertyId = PropertyIdParam is int id && _properties.Any(p => p.Id == id)
-                ? id
-                : _properties[0].Id;
-            await LoadOffersAsync();
+            await SelectPropertyFromRouteAsync();
         }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!_isInitialized || _properties.Count == 0)
+        {
+            return;
+        }
+
+        await SelectPropertyFromRouteAsync();
+    }
+
+    private async Task SelectPropertyFromRouteAsync()
+    {
+        var selectedPropertyId = PropertyIdParam is int id && _properties.Any(p => p.Id == id)
+            ? id
+            : _properties[0].Id;
+
+        if (_selectedPropertyId == selectedPropertyId)
+        {
+            return;
+        }
+
+        _selectedPropertyId = selectedPropertyId;
+        CancelEdit();
+        await LoadOffersAsync();
     }
 
     private async Task OnPropertyChangedAsync(ChangeEventArgs e)

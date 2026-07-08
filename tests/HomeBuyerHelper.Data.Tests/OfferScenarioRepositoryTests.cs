@@ -8,7 +8,7 @@ namespace HomeBuyerHelper.Data.Tests;
 /// <summary>
 /// Integration tests for the offer scenario repository.
 /// </summary>
-public sealed class OfferScenarioRepositoryTests : IDisposable
+public sealed class OfferScenarioRepositoryTests : IAsyncLifetime
 {
     private readonly string _dbPath;
     private readonly DatabaseService _databaseService;
@@ -21,8 +21,13 @@ public sealed class OfferScenarioRepositoryTests : IDisposable
         _repository = new OfferScenarioRepository(_databaseService);
     }
 
-    public void Dispose()
+    public Task InitializeAsync() => Task.CompletedTask;
+
+    public async Task DisposeAsync()
     {
+        var connection = await _databaseService.GetConnectionAsync();
+        await connection.CloseAsync();
+
         if (File.Exists(_dbPath))
         {
             File.Delete(_dbPath);
@@ -103,5 +108,26 @@ public sealed class OfferScenarioRepositoryTests : IDisposable
         var reloaded = await _repository.GetByIdAsync(id);
         reloaded!.OfferPrice.Should().Be(520_000m);
         reloaded.WaiveInspection.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task UpdatePreservesCreatedAtWhenModelDoesNotProvideIt()
+    {
+        var id = await _repository.CreateAsync(SampleOffer());
+        var original = await _repository.GetByIdAsync(id);
+        original.Should().NotBeNull();
+        var createdAt = original!.CreatedAt;
+
+        var replacementModel = SampleOffer();
+        replacementModel.Id = id;
+        replacementModel.OfferPrice = 530_000m;
+        replacementModel.CreatedAt = default;
+
+        await _repository.UpdateAsync(replacementModel);
+
+        var updated = await _repository.GetByIdAsync(id);
+        updated.Should().NotBeNull();
+        updated!.CreatedAt.Should().Be(createdAt);
+        updated.OfferPrice.Should().Be(530_000m);
     }
 }

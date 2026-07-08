@@ -143,7 +143,10 @@ public class OfferEvaluation
     /// <summary>Seller credit actually usable after financing concession caps.</summary>
     public decimal SellerCreditApplied { get; init; }
 
-    /// <summary>Whether the requested seller credit was reduced by concession caps.</summary>
+    /// <summary>
+    /// Whether the requested seller credit was reduced by concession caps or by
+    /// available settlement costs after lender credits are applied.
+    /// </summary>
     public bool SellerCreditWasCapped { get; init; }
 
     /// <summary>Lender credit applied.</summary>
