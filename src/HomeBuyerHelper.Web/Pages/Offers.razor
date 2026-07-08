@@ -327,6 +327,13 @@ else
 
     private async Task SelectPropertyFromRouteAsync()
     {
+        if (_properties.Count == 0)
+        {
+            _selectedProperty = null;
+            _evaluations = new();
+            return;
+        }
+
         var selectedPropertyId = PropertyIdParam is int id && _properties.Any(p => p.Id == id)
             ? id
             : _properties[0].Id;

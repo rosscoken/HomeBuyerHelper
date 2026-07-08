@@ -56,8 +56,13 @@ public class OfferScenarioRepository : IOfferScenarioRepository
     {
         var db = await _databaseService.GetConnectionAsync();
         var existing = await db.FindAsync<OfferScenarioEntity>(offer.Id);
+        if (existing == null)
+        {
+            return;
+        }
+
         var entity = MapToEntity(offer);
-        entity.CreatedAt = existing?.CreatedAt ?? entity.CreatedAt;
+        entity.CreatedAt = existing.CreatedAt;
         entity.UpdatedAt = DateTime.UtcNow;
         await db.UpdateAsync(entity);
     }
