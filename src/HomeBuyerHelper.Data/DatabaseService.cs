@@ -74,6 +74,7 @@ public class DatabaseService : IDatabaseService
         await _database.CreateTableAsync<OneTimeEventEntity>();
         await _database.CreateTableAsync<PropertyPhotoEntity>();
         await _database.CreateTableAsync<PropertyProConEntity>();
+        await _database.CreateTableAsync<OfferScenarioEntity>();
     }
 
     public async Task<string> ExportBackupAsync()
@@ -136,5 +137,6 @@ public class DatabaseService : IDatabaseService
         await db.DeleteAllAsync<OneTimeEventEntity>();
         await db.DeleteAllAsync<PropertyPhotoEntity>();
         await db.DeleteAllAsync<PropertyProConEntity>();
+        await db.DeleteAllAsync<OfferScenarioEntity>();
     }
 }

@@ -412,6 +412,61 @@ public class LocalFundingRepository : IFundingRepository
 }
 
 /// <summary>
+/// localStorage-backed offer scenario repository.
+/// </summary>
+public class LocalOfferScenarioRepository : IOfferScenarioRepository
+{
+    private readonly LocalStore<OfferScenario> _store;
+
+    public LocalOfferScenarioRepository(IJSRuntime js)
+    {
+        _store = new LocalStore<OfferScenario>(js, "offers", o => o.Id, (o, id) => o.Id = id);
+    }
+
+    public Task<OfferScenario?> GetByIdAsync(int id) => Task.FromResult(_store.Find(id));
+
+    public Task<IReadOnlyList<OfferScenario>> GetByPropertyIdAsync(int propertyId) =>
+        Task.FromResult<IReadOnlyList<OfferScenario>>(
+            _store.Items.Where(o => o.PropertyId == propertyId).OrderBy(o => o.Id).ToList());
+
+    public Task<IReadOnlyList<OfferScenario>> GetAllAsync() =>
+        Task.FromResult<IReadOnlyList<OfferScenario>>(_store.Items.OrderBy(o => o.Id).ToList());
+
+    public Task<int> CreateAsync(OfferScenario offer)
+    {
+        offer.CreatedAt = DateTime.UtcNow;
+        offer.UpdatedAt = DateTime.UtcNow;
+        return Task.FromResult(_store.Add(offer));
+    }
+
+    public Task UpdateAsync(OfferScenario offer)
+    {
+        var existing = _store.Find(offer.Id);
+        if (existing != null)
+        {
+            offer.CreatedAt = existing.CreatedAt;
+        }
+
+        offer.UpdatedAt = DateTime.UtcNow;
+        _store.Update(offer);
+        return Task.CompletedTask;
+    }
+
+    public Task DeleteAsync(int id)
+    {
+        _store.Delete(id);
+        return Task.CompletedTask;
+    }
+
+    public Task DeleteByPropertyIdAsync(int propertyId)
+    {
+        _store.Items.RemoveAll(o => o.PropertyId == propertyId);
+        _store.Save();
+        return Task.CompletedTask;
+    }
+}
+
+/// <summary>
 /// localStorage-backed photo records (no file storage in the browser preview;
 /// kept so shared services like PropertyService can cascade cleanly).
 /// </summary>

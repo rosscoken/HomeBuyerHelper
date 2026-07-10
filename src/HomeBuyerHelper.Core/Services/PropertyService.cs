@@ -13,19 +13,22 @@ public class PropertyService : IPropertyService
     private readonly ICriteriaRepository _criteriaRepository;
     private readonly IPhotoRepository _photoRepository;
     private readonly IProConRepository _proConRepository;
+    private readonly IOfferScenarioRepository _offerScenarioRepository;
 
     public PropertyService(
         IPropertyRepository propertyRepository,
         IScoreRepository scoreRepository,
         ICriteriaRepository criteriaRepository,
         IPhotoRepository photoRepository,
-        IProConRepository proConRepository)
+        IProConRepository proConRepository,
+        IOfferScenarioRepository offerScenarioRepository)
     {
         _propertyRepository = propertyRepository;
         _scoreRepository = scoreRepository;
         _criteriaRepository = criteriaRepository;
         _photoRepository = photoRepository;
         _proConRepository = proConRepository;
+        _offerScenarioRepository = offerScenarioRepository;
     }
 
     public async Task<IReadOnlyList<Property>> GetPropertiesWithScoresAsync()
@@ -152,9 +155,10 @@ public class PropertyService : IPropertyService
 
     public async Task DeletePropertyAsync(int id)
     {
-        // Cascade: scores, photos (records + files), and pros/cons go with
-        // the property so nothing orphans or leaks.
+        // Cascade: scores, photos (records + files), pros/cons, and offer
+        // scenarios go with the property so nothing orphans or leaks.
         await _scoreRepository.DeleteByPropertyIdAsync(id);
+        await _offerScenarioRepository.DeleteByPropertyIdAsync(id);
 
         foreach (var photo in await _photoRepository.GetByPropertyIdAsync(id))
         {

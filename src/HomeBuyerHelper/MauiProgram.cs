@@ -55,6 +55,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<IFundingRepository, FundingRepository>();
         builder.Services.AddSingleton<IPhotoRepository, PhotoRepository>();
         builder.Services.AddSingleton<IProConRepository, ProConRepository>();
+        builder.Services.AddSingleton<IOfferScenarioRepository, OfferScenarioRepository>();
 
         // Register platform abstractions
         builder.Services.AddSingleton<IKeyValueStore, Services.MauiPreferencesStore>();
@@ -75,6 +76,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<ITaxImpactService, TaxImpactService>();
         builder.Services.AddSingleton<IRentVsBuyService, RentVsBuyService>();
         builder.Services.AddSingleton<IScenarioService, ScenarioService>();
+        builder.Services.AddSingleton<IOfferPlanningService, OfferPlanningService>();
         builder.Services.AddSingleton<ICriteriaTemplateService, CriteriaTemplateService>();
 
         // Register main view models (transient - new instance per page)

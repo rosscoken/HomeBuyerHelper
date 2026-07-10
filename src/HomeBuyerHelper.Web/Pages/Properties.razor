@@ -2,6 +2,7 @@
 @inject IPropertyService PropertyService
 @inject ICriteriaRepository CriteriaRepository
 @inject IScoreRepository ScoreRepository
+@inject NavigationManager Nav
 
 <PageTitle>Properties · HomeBuyerHelper</PageTitle>
 
@@ -122,6 +123,7 @@ else
                 <div class="p-actions">
                     <button class="sm" @onclick="() => StartScore(property)">Score</button>
                     <button class="secondary sm" @onclick="() => StartEdit(property)">Edit</button>
+                    <button class="secondary sm" @onclick="@(() => Nav.NavigateTo($"offers/{property.Id}"))">Offers</button>
                     <button type="button" class="danger sm" aria-label="Delete property @property.Nickname" @onclick="() => DeleteAsync(property)">✕</button>
                 </div>
             </div>

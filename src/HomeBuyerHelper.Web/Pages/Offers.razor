@@ -1,0 +1,517 @@
+@page "/offers"
+@page "/offers/{PropertyIdParam:int}"
+@inject IPropertyRepository PropertyRepository
+@inject IOfferScenarioRepository OfferRepository
+@inject IOfferPlanningService OfferPlanningService
+@inject IUserPreferencesRepository PreferencesRepository
+
+<PageTitle>Offers · HomeBuyerHelper</PageTitle>
+
+<h1>Offer Planner</h1>
+<p class="page-sub">Plan out different offer structures on a house — price, financing, points, credits, and contingencies — and compare what each one really costs.</p>
+
+@if (_properties.Count == 0)
+{
+    <div class="empty-state">
+        <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <p>Add a property first, then come back to plan offers on it.</p>
+    </div>
+}
+else
+{
+    <div class="card">
+        <div class="row">
+            <span>
+                <label>Property</label>
+                <select value="@_selectedPropertyId" @onchange="OnPropertyChangedAsync">
+                    @foreach (var property in _properties)
+                    {
+                        <option value="@property.Id">@property.Nickname — asking @property.AskingPrice.ToString("C0")</option>
+                    }
+                </select>
+            </span>
+            @if (_selectedProperty != null)
+            {
+                <button class="secondary sm" @onclick="StartFromAskingAsync">Start from asking price</button>
+            }
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>@(_editingId == null ? "Add an Offer Structure" : $"Edit \"{_name}\"")</h2>
+        <div class="row">
+            <span><label>Name</label><input @bind="_name" placeholder="e.g., Aggressive, Safe, Cash-heavy" /></span>
+            <span><label>Offer Price</label><input type="number" @bind="_offerPrice" /></span>
+            <span><label>Escalate up to (optional)</label><input type="number" @bind="_escalationMax" /></span>
+        </div>
+        <div class="row mt-12">
+            <span><label>Down Payment % (100 = cash)</label><input type="number" step="1" @bind="_downPercent" /></span>
+            <span><label>Rate %</label><input type="number" step="0.125" @bind="_rate" /></span>
+            <span>
+                <label>Term</label>
+                <select @bind="_termYears">
+                    <option value="15">15 years</option>
+                    <option value="20">20 years</option>
+                    <option value="30">30 years</option>
+                </select>
+            </span>
+            <span><label>Discount Points</label><input type="number" step="0.25" @bind="_points" /></span>
+        </div>
+        <div class="row mt-12">
+            <span><label>Seller Credit</label><input type="number" @bind="_sellerCredit" /></span>
+            <span><label>Lender Credit</label><input type="number" @bind="_lenderCredit" /></span>
+            <span><label>Earnest Money</label><input type="number" @bind="_earnestMoney" /></span>
+            <span><label>Days to Close</label><input type="number" @bind="_closingDays" /></span>
+        </div>
+        <div class="row mt-12">
+            <span><label>Waive inspection?</label><input type="checkbox" @bind="_waiveInspection" /></span>
+            <span><label>Waive financing?</label><input type="checkbox" @bind="_waiveFinancing" /></span>
+            <span><label>Waive appraisal?</label><input type="checkbox" @bind="_waiveAppraisal" /></span>
+            <span><label>Notes</label><input @bind="_notes" placeholder="optional" /></span>
+        </div>
+        <div class="row mt-14">
+            <button @onclick="SaveOfferAsync">@(_editingId == null ? "Add Offer" : "Save Changes")</button>
+            @if (_editingId != null)
+            {
+                <button class="secondary" @onclick="CancelEdit">Cancel</button>
+            }
+        </div>
+        @if (_error != null) { <p class="error-text">@_error</p> }
+    </div>
+
+    @if (_evaluations.Count > 0 && _selectedProperty != null)
+    {
+        <h2>Compare Structures — @_selectedProperty.Nickname</h2>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        @foreach (var eval in _evaluations)
+                        {
+                            <th class="num">@eval.Offer.Name</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Offer strength</td>
+                        @foreach (var eval in _evaluations)
+                        {
+                            <td class="num"><span class="badge @StrengthBadgeClass(eval)">@eval.StrengthLabel (@eval.StrengthScore)</span></td>
+                        }
+                    </tr>
+                    <tr>
+                        <td>Offer price</td>
+                        @foreach (var eval in _evaluations)
+                        {
+                            <td class="num">
+                                <strong>@eval.Offer.OfferPrice.ToString("C0")</strong>
+                                @if (eval.Offer.EscalationMaxPrice is decimal esc && esc > eval.Offer.OfferPrice)
+                                {
+                                    <span class="muted"> ↗ @esc.ToString("C0")</span>
+                                }
+                            </td>
+                        }
+                    </tr>
+                    <tr>
+                        <td>vs. asking</td>
+                        @foreach (var eval in _evaluations)
+                        {
+                            <td class="num @(eval.VsAskingAmount > 0 ? "neg" : eval.VsAskingAmount < 0 ? "pos" : "")">
+                                @(eval.VsAskingAmount >= 0 ? "+" : "−")@Math.Abs(eval.VsAskingAmount).ToString("C0") (@eval.VsAskingPercent.ToString("+0.0;−0.0;0")%)
+                            </td>
+                        }
+                    </tr>
+                    <tr>
+                        <td>Down payment</td>
+                        @foreach (var eval in _evaluations)
+                        {
+                            <td class="num">@eval.DownPayment.ToString("C0") <span class="muted">(@eval.Offer.DownPaymentPercent.ToString("0.#")%)</span></td>
+                        }
+                    </tr>
+                    <tr>
+                        <td>Loan / rate</td>
+                        @foreach (var eval in _evaluations)
+                        {
+                            <td class="num">
+                                @if (eval.LoanAmount > 0)
+                                {
+                                    @eval.LoanAmount.ToString("C0") <span class="muted">@@ @eval.EffectiveInterestRate.ToString("0.###")%</span>
+                                }
+                                else
+                                {
+                                    <span class="badge brand">All cash</span>
+                                }
+                            </td>
+                        }
+                    </tr>
+                    <tr>
+                        <td>Monthly P&amp;I</td>
+                        @foreach (var eval in _evaluations)
+                        {
+                            <td class="num @BestClass(eval, e => e.MonthlyPrincipalAndInterest)">@eval.MonthlyPrincipalAndInterest.ToString("C0")</td>
+                        }
+                    </tr>
+                    <tr>
+                        <td>Total monthly cost</td>
+                        @foreach (var eval in _evaluations)
+                        {
+                            <td class="num @BestClass(eval, e => e.TotalMonthlyCost)"><strong>@eval.TotalMonthlyCost.ToString("C0")</strong>@(eval.MonthlyPMI > 0 ? " *" : "")</td>
+                        }
+                    </tr>
+                    <tr>
+                        <td>Closing costs + points</td>
+                        @foreach (var eval in _evaluations)
+                        {
+                            <td class="num">
+                                @((eval.EstimatedClosingCosts + eval.PointsCost).ToString("C0"))
+                                @if (eval.PointsCost > 0)
+                                {
+                                    <span class="muted"> (incl. @eval.PointsCost.ToString("C0") points)</span>
+                                }
+                            </td>
+                        }
+                    </tr>
+                    <tr>
+                        <td>Credits applied</td>
+                        @foreach (var eval in _evaluations)
+                        {
+                            <td class="num">
+                                @if (eval.SellerCreditApplied + eval.LenderCreditApplied > 0)
+                                {
+                                    <span class="pos">−@((eval.SellerCreditApplied + eval.LenderCreditApplied).ToString("C0"))</span>
+                                    @if (eval.SellerCreditWasCapped)
+                                    {
+                                        <span class="badge warn ml-8">capped</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="muted">—</span>
+                                }
+                            </td>
+                        }
+                    </tr>
+                    <tr>
+                        <td>Cash to close</td>
+                        @foreach (var eval in _evaluations)
+                        {
+                            <td class="num @BestClass(eval, e => e.CashToClose)"><strong>@eval.CashToClose.ToString("C0")</strong></td>
+                        }
+                    </tr>
+                    <tr>
+                        <td>Earnest money at risk</td>
+                        @foreach (var eval in _evaluations)
+                        {
+                            <td class="num">@(eval.Offer.EarnestMoney > 0 ? eval.Offer.EarnestMoney.ToString("C0") : "—")</td>
+                        }
+                    </tr>
+                    <tr>
+                        <td>Points breakeven</td>
+                        @foreach (var eval in _evaluations)
+                        {
+                            <td class="num">@(eval.PointsBreakevenMonths is int months ? $"{months} mo" : "—")</td>
+                        }
+                    </tr>
+                    <tr>
+                        <td>Total interest (@_evaluations[0].Offer.TermYears yrs)</td>
+                        @foreach (var eval in _evaluations)
+                        {
+                            <td class="num">@eval.TotalInterest.ToString("C0")</td>
+                        }
+                    </tr>
+                    <tr>
+                        <td>Contingencies waived</td>
+                        @foreach (var eval in _evaluations)
+                        {
+                            <td class="num">@WaivedSummary(eval.Offer)</td>
+                        }
+                    </tr>
+                    <tr>
+                        <td>Close in</td>
+                        @foreach (var eval in _evaluations)
+                        {
+                            <td class="num">@eval.Offer.ClosingDays days</td>
+                        }
+                    </tr>
+                    <tr>
+                        <td></td>
+                        @foreach (var eval in _evaluations)
+                        {
+                            <td class="num">
+                                <button type="button" class="secondary sm" @onclick="() => EditOffer(eval.Offer)">Edit</button>
+                                <button type="button" class="danger sm ml-8" aria-label="Delete offer @eval.Offer.Name" @onclick="() => DeleteOfferAsync(eval.Offer)">✕</button>
+                            </td>
+                        }
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        @if (_evaluations.Any(e => e.MonthlyPMI > 0))
+        {
+            <p class="muted">* includes PMI — down payments under 20% add @_evaluations.Where(e => e.MonthlyPMI > 0).Max(e => e.MonthlyPMI).ToString("C0")/mo or less until you reach 20% equity.</p>
+        }
+        <div class="callout">
+            <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
+            <span>
+                Strength is a rough read of how competitive each structure looks to a seller —
+                price, cash certainty, waived contingencies, earnest money, and close speed.
+                Waiving contingencies raises strength but puts your earnest money and inspection
+                protections at risk; talk it through with your agent.
+            </span>
+        </div>
+    }
+    else if (_selectedProperty != null)
+    {
+        <div class="empty-state">
+            <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg>
+            <p>No offers yet for @_selectedProperty.Nickname. Add one above, or start from the asking price.</p>
+        </div>
+    }
+}
+
+@code {
+    [Parameter] public int? PropertyIdParam { get; set; }
+
+    private List<Property> _properties = new();
+    private Property? _selectedProperty;
+    private int _selectedPropertyId;
+    private List<OfferEvaluation> _evaluations = new();
+    private UserPreferences? _preferences;
+    private string? _error;
+    private bool _isInitialized;
+
+    // Form state
+    private int? _editingId;
+    private string _name = "";
+    private decimal _offerPrice;
+    private decimal? _escalationMax;
+    private decimal _downPercent = 20m;
+    private decimal _rate = 7.0m;
+    private int _termYears = 30;
+    private decimal _points;
+    private decimal _sellerCredit;
+    private decimal _lenderCredit;
+    private decimal _earnestMoney;
+    private int _closingDays = 30;
+    private bool _waiveInspection;
+    private bool _waiveFinancing;
+    private bool _waiveAppraisal;
+    private string _notes = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        _preferences = await PreferencesRepository.GetAsync();
+        _downPercent = _preferences.DefaultDownPaymentPercent;
+        _rate = _preferences.DefaultInterestRate;
+        _termYears = _preferences.DefaultMortgageTerm;
+
+        _properties = (await PropertyRepository.GetActiveAsync()).ToList();
+        _isInitialized = true;
+        if (_properties.Count > 0)
+        {
+            await SelectPropertyFromRouteAsync();
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!_isInitialized || _properties.Count == 0)
+        {
+            return;
+        }
+
+        await SelectPropertyFromRouteAsync();
+    }
+
+    private async Task SelectPropertyFromRouteAsync()
+    {
+        if (_properties.Count == 0)
+        {
+            _selectedProperty = null;
+            _evaluations = new();
+            return;
+        }
+
+        var selectedPropertyId = PropertyIdParam is int id && _properties.Any(p => p.Id == id)
+            ? id
+            : _properties[0].Id;
+
+        if (_selectedPropertyId == selectedPropertyId)
+        {
+            return;
+        }
+
+        _selectedPropertyId = selectedPropertyId;
+        CancelEdit();
+        await LoadOffersAsync();
+    }
+
+    private async Task OnPropertyChangedAsync(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var id))
+        {
+            _selectedPropertyId = id;
+            CancelEdit();
+            await LoadOffersAsync();
+        }
+    }
+
+    private async Task LoadOffersAsync()
+    {
+        _selectedProperty = _properties.FirstOrDefault(p => p.Id == _selectedPropertyId);
+        if (_selectedProperty == null || _preferences == null)
+        {
+            _evaluations = new();
+            return;
+        }
+
+        var offers = await OfferRepository.GetByPropertyIdAsync(_selectedPropertyId);
+        _evaluations = OfferPlanningService.Compare(
+                offers,
+                _selectedProperty,
+                _preferences.DefaultPropertyTaxRate,
+                _preferences.DefaultMonthlyInsurance)
+            .ToList();
+    }
+
+    private async Task StartFromAskingAsync()
+    {
+        if (_selectedProperty == null || _preferences == null) return;
+
+        var offer = OfferPlanningService.BuildDefaultOffer(_selectedProperty, _preferences);
+        offer.Name = NextDefaultName();
+        await OfferRepository.CreateAsync(offer);
+        await LoadOffersAsync();
+    }
+
+    private string NextDefaultName()
+    {
+        var existing = _evaluations.Select(e => e.Offer.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        if (!existing.Contains("Asking price")) return "Asking price";
+        var n = 2;
+        while (existing.Contains($"Asking price {n}")) n++;
+        return $"Asking price {n}";
+    }
+
+    private async Task SaveOfferAsync()
+    {
+        if (_selectedProperty == null) return;
+
+        if (_offerPrice <= 0)
+        {
+            _error = "Enter an offer price.";
+            return;
+        }
+        if (_downPercent < 0 || _downPercent > 100)
+        {
+            _error = "Down payment must be between 0 and 100 percent.";
+            return;
+        }
+
+        _error = null;
+        var offer = new OfferScenario
+        {
+            Id = _editingId ?? 0,
+            PropertyId = _selectedPropertyId,
+            Name = string.IsNullOrWhiteSpace(_name) ? $"Offer {_evaluations.Count + 1}" : _name.Trim(),
+            OfferPrice = _offerPrice,
+            EscalationMaxPrice = _escalationMax > 0 ? _escalationMax : null,
+            DownPaymentPercent = _downPercent,
+            InterestRate = _rate,
+            TermYears = _termYears,
+            DiscountPoints = Math.Max(0, _points),
+            SellerCredit = Math.Max(0, _sellerCredit),
+            LenderCredit = Math.Max(0, _lenderCredit),
+            EarnestMoney = Math.Max(0, _earnestMoney),
+            ClosingDays = Math.Max(1, _closingDays),
+            WaiveInspection = _waiveInspection,
+            WaiveFinancing = _waiveFinancing,
+            WaiveAppraisal = _waiveAppraisal,
+            Notes = string.IsNullOrWhiteSpace(_notes) ? null : _notes.Trim()
+        };
+
+        if (_editingId == null)
+        {
+            await OfferRepository.CreateAsync(offer);
+        }
+        else
+        {
+            await OfferRepository.UpdateAsync(offer);
+        }
+
+        CancelEdit();
+        await LoadOffersAsync();
+    }
+
+    private void EditOffer(OfferScenario offer)
+    {
+        _editingId = offer.Id;
+        _name = offer.Name;
+        _offerPrice = offer.OfferPrice;
+        _escalationMax = offer.EscalationMaxPrice;
+        _downPercent = offer.DownPaymentPercent;
+        _rate = offer.InterestRate;
+        _termYears = offer.TermYears;
+        _points = offer.DiscountPoints;
+        _sellerCredit = offer.SellerCredit;
+        _lenderCredit = offer.LenderCredit;
+        _earnestMoney = offer.EarnestMoney;
+        _closingDays = offer.ClosingDays;
+        _waiveInspection = offer.WaiveInspection;
+        _waiveFinancing = offer.WaiveFinancing;
+        _waiveAppraisal = offer.WaiveAppraisal;
+        _notes = offer.Notes ?? "";
+    }
+
+    private void CancelEdit()
+    {
+        _editingId = null;
+        _name = "";
+        _offerPrice = 0;
+        _escalationMax = null;
+        _points = 0;
+        _sellerCredit = 0;
+        _lenderCredit = 0;
+        _earnestMoney = 0;
+        _closingDays = 30;
+        _waiveInspection = false;
+        _waiveFinancing = false;
+        _waiveAppraisal = false;
+        _notes = "";
+        _error = null;
+        if (_preferences != null)
+        {
+            _downPercent = _preferences.DefaultDownPaymentPercent;
+            _rate = _preferences.DefaultInterestRate;
+            _termYears = _preferences.DefaultMortgageTerm;
+        }
+    }
+
+    private async Task DeleteOfferAsync(OfferScenario offer)
+    {
+        await OfferRepository.DeleteAsync(offer.Id);
+        if (_editingId == offer.Id)
+        {
+            CancelEdit();
+        }
+        await LoadOffersAsync();
+    }
+
+    private string StrengthBadgeClass(OfferEvaluation eval) =>
+        eval.StrengthScore >= 60 ? "ok" : eval.StrengthScore >= 40 ? "brand" : "warn";
+
+    /// <summary>Marks the lowest value across offers as the best (green) cell.</summary>
+    private string BestClass(OfferEvaluation eval, Func<OfferEvaluation, decimal> metric) =>
+        _evaluations.Count > 1 && metric(eval) == _evaluations.Min(metric) ? "pos" : "";
+
+    private static string WaivedSummary(OfferScenario offer)
+    {
+        var waived = new List<string>();
+        if (offer.WaiveInspection) waived.Add("inspection");
+        if (offer.WaiveFinancing) waived.Add("financing");
+        if (offer.WaiveAppraisal) waived.Add("appraisal");
+        return waived.Count == 0 ? "none" : string.Join(", ", waived);
+    }
+}
