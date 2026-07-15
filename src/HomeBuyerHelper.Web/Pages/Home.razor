@@ -52,30 +52,23 @@
     else
     {
         <h2>Property Rankings</h2>
-        <div class="table-wrap">
-            <table>
-                <thead>
-                    <tr><th style="width:60px">Rank</th><th>Property</th><th class="num">Price</th><th style="width:38%">Score</th></tr>
-                </thead>
-                <tbody>
-                    @foreach (var ranking in _rankings)
-                    {
-                        <tr>
-                            <td><span class="rank-chip r@(ranking.Rank)">@ranking.Rank</span></td>
-                            <td><strong>@ranking.Property.Nickname</strong></td>
-                            <td class="num">@ranking.Property.EffectivePrice.ToString("C0")</td>
-                            <td>
-                                <span class="score-cell">
-                                    <span class="progress @(ranking.ScorePercentage >= 80 ? "green" : ranking.ScorePercentage >= 50 ? "" : "amber")">
-                                        <i style="width:@(ranking.ScorePercentage.ToString("F0"))%"></i>
-                                    </span>
-                                    <strong>@ranking.ScorePercentage.ToString("F0")%</strong>
-                                </span>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+        <div class="score-list">
+            @foreach (var ranking in _rankings)
+            {
+                <div class="score-item">
+                    <div class="score-item-head">
+                        <span class="rank-chip r@(ranking.Rank)">@ranking.Rank</span>
+                        <strong>@ranking.Property.Nickname</strong>
+                        <span class="item-actions"><span class="badge brand">@ranking.Property.EffectivePrice.ToString("C0")</span></span>
+                    </div>
+                    <span class="score-cell">
+                        <span class="progress @(ranking.ScorePercentage >= 80 ? "green" : ranking.ScorePercentage >= 50 ? "" : "amber")">
+                            <i style="width:@(ranking.ScorePercentage.ToString("F0"))%"></i>
+                        </span>
+                        <strong>@ranking.ScorePercentage.ToString("F0")%</strong>
+                    </span>
+                </div>
+            }
         </div>
     }
 

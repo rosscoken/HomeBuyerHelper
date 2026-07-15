@@ -77,8 +77,8 @@ log('two properties added and scored');
 
 // --- 4. Rankings on dashboard
 await page.goto(BASE, { waitUntil: 'networkidle' });
-await page.waitForSelector('table');
-expect((await page.textContent('table')).includes('Craftsman'), 'dashboard ranks properties');
+await page.waitForSelector('.rank-chip');
+expect((await page.textContent('.score-list')).includes('Craftsman'), 'dashboard ranks properties');
 await page.screenshot({ path: `${SHOTS}/dashboard.png` });
 
 // --- 5. Compare shows scores + true total cost, no native-app copy
@@ -220,8 +220,8 @@ await page.fill('input[placeholder="REPLACE"]', 'REPLACE');
 await page.click('button:text-is("Replace all data")');
 await page.waitForLoadState('networkidle');
 await page.goto(BASE, { waitUntil: 'networkidle' });
-await page.waitForSelector('table');
-expect((await page.textContent('table')).includes('Craftsman'), 'import restores properties');
+await page.waitForSelector('.rank-chip');
+expect((await page.textContent('.score-list')).includes('Craftsman'), 'import restores properties');
 
 // --- 10. Mobile reachability: everything via tab bar or dashboard cards
 const mobile = await browser.newPage({ viewport: { width: 390, height: 844 } });

@@ -23,6 +23,21 @@
 }
 else if (_loaded)
 {
+    @if (_bestFit != null && _lowestCost != null)
+    {
+        var bestCostName = _trueCosts.First(t => t.Cost == _lowestCost).Result.Property.Nickname;
+        <div class="verdict-card">
+            <h2>
+                @(_bestFit.Property.Nickname == bestCostName
+                    ? $"{_bestFit.Property.Nickname} wins on both fit and cost"
+                    : $"{_bestFit.Property.Nickname} fits best · {bestCostName} costs least")
+            </h2>
+            <p>
+                Best fit: <strong>@_bestFit.Property.Nickname</strong> (@_bestFit.ScorePercentage.ToString("F0")% of your criteria) ·
+                Lowest true cost: <strong>@bestCostName</strong> (@_lowestCost.MonthlyTotal.ToString("C0")/mo incl. commute)
+            </p>
+        </div>
+    }
     <h2>Scores by Criterion</h2>
     <div class="table-wrap">
         <table>
@@ -100,6 +115,7 @@ else if (_loaded)
     private List<PropertyComparisonResult> _results = new();
     private List<(PropertyComparisonResult Result, TrueTotalCost Cost)> _trueCosts = new();
     private TrueTotalCost? _lowestCost;
+    private PropertyComparisonResult? _bestFit;
     private UserPreferences? _preferences;
 
     protected override async Task OnInitializedAsync()
@@ -118,6 +134,7 @@ else if (_loaded)
             .OrderBy(t => t.Item2.MonthlyTotal)
             .Select(t => t.Item2)
             .FirstOrDefault();
+        _bestFit = _results.OrderByDescending(r => r.ScorePercentage).FirstOrDefault();
 
         _loaded = true;
     }

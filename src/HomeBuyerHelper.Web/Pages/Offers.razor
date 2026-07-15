@@ -119,6 +119,14 @@ else
     @if (_evaluations.Count > 0 && _selectedProperty != null)
     {
         <h2>Compare Structures — @_selectedProperty.Nickname</h2>
+        @if (_evaluations.Count > 1)
+        {
+            var cheapest = _evaluations.OrderBy(e => e.CashToClose).First();
+            <p class="muted">
+                Strongest: <strong>@_evaluations[0].Offer.Name</strong> (@_evaluations[0].StrengthScore) ·
+                Lowest cash to close: <strong>@cheapest.Offer.Name</strong> (@cheapest.CashToClose.ToString("C0"))
+            </p>
+        }
         <div class="table-wrap">
             <table>
                 <thead>
