@@ -66,7 +66,6 @@ public class ExpenseRepository : IExpenseRepository
         IsEssential = entity.IsEssential,
         IsVariable = entity.IsVariable,
         ContinuesAfterPurchase = entity.ContinuesAfterPurchase,
-        EndsAtPurchase = entity.EndsAtPurchase,
         Notes = entity.Notes,
         CreatedAt = entity.CreatedAt,
         UpdatedAt = entity.UpdatedAt
@@ -82,7 +81,6 @@ public class ExpenseRepository : IExpenseRepository
         IsEssential = model.IsEssential,
         IsVariable = model.IsVariable,
         ContinuesAfterPurchase = model.ContinuesAfterPurchase,
-        EndsAtPurchase = model.EndsAtPurchase,
         Notes = model.Notes,
         CreatedAt = model.CreatedAt,
         UpdatedAt = model.UpdatedAt

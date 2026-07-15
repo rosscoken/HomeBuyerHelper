@@ -112,6 +112,37 @@ await page.waitForSelector('table');
 expect((await page.textContent('table')).includes('Cash to close'), 'offer evaluation renders');
 await page.screenshot({ path: `${SHOTS}/offers.png`, fullPage: true });
 
+// --- 8b. My Plan: set on Offers, verify Budget/Funding/Dashboard react
+await page.click('button:text-is("Set as plan")');
+await page.waitForSelector('.badge.ok:has-text("Plan")');
+log('plan set on offer');
+
+await page.goto(BASE + '/budget', { waitUntil: 'networkidle' });
+expect((await page.textContent('.app-main')).includes('Projection includes'),
+    'budget projection announces the plan');
+
+await page.goto(BASE + '/funding', { waitUntil: 'networkidle' });
+const fundingBody = await page.textContent('.app-main');
+expect(/cash to close|covers|shortfall|surplus/i.test(fundingBody),
+    'funding shows plan coverage');
+
+await page.goto(BASE, { waitUntil: 'networkidle' });
+expect((await page.textContent('.app-main')).includes('Your Plan'),
+    'dashboard shows Your Plan card');
+await page.screenshot({ path: `${SHOTS}/plan-dashboard.png`, fullPage: true });
+
+// Probe: deleting the planned property must self-heal, not crash
+// (covered by unit tests; here we just confirm clear works from the UI)
+await page.goto(BASE + '/offers', { waitUntil: 'networkidle' });
+await page.click('button:text-is("Clear plan")');
+await page.waitForSelector('button:text-is("Set as plan")');
+await page.goto(BASE, { waitUntil: 'networkidle' });
+expect(!(await page.textContent('.app-main')).includes('Your Plan'),
+    'clearing the plan removes the dashboard card');
+await page.goto(BASE + '/offers', { waitUntil: 'networkidle' });
+await page.click('button:text-is("Set as plan")');
+await page.waitForSelector('.badge.ok:has-text("Plan")');
+
 // --- 9. Rent vs Buy
 await page.goto(BASE + '/rent-vs-buy', { waitUntil: 'networkidle' });
 await setField('Purchase Price', '525000');

@@ -48,9 +48,15 @@ public class Expense
     /// <summary>
     /// Whether this expense stops once the user buys their home (e.g. rent).
     /// When a plan is active, the cash flow projection drops these expenses
-    /// from the purchase month onward.
+    /// from the purchase month onward. Alias over
+    /// <see cref="ContinuesAfterPurchase"/> so there is a single stored flag.
     /// </summary>
-    public bool EndsAtPurchase { get; set; }
+    [JsonIgnore]
+    public bool EndsAtPurchase
+    {
+        get => !ContinuesAfterPurchase;
+        set => ContinuesAfterPurchase = !value;
+    }
 
     /// <summary>
     /// Optional notes about this expense.
