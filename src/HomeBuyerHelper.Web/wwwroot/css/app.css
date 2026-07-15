@@ -141,6 +141,12 @@
 
 html { scroll-behavior: smooth; }
 
+html {
+    /* Contain pull-to-refresh in the installed PWA so an accidental drag
+       doesn't reload the app mid-form. */
+    overscroll-behavior-y: contain;
+}
+
 body {
     margin: 0;
     font-family: var(--font-body);

@@ -51,7 +51,7 @@ else
         </div>
     </div>
 
-    <div class="card">
+    <form class="card" @onsubmit="SaveOfferAsync" @onsubmit:preventDefault>
         <h2>@(_editingId == null ? "Add an Offer Structure" : $"Edit \"{_name}\"")</h2>
         <div class="row">
             <span><label>Name</label><input @bind="_name" placeholder="e.g., Aggressive, Safe, Cash-heavy" /></span>
@@ -107,14 +107,14 @@ else
             <span><label>Notes</label><input @bind="_notes" placeholder="optional" /></span>
         </div>
         <div class="row mt-14">
-            <button @onclick="SaveOfferAsync">@(_editingId == null ? "Add Offer" : "Save Changes")</button>
+            <button type="submit">@(_editingId == null ? "Add Offer" : "Save Changes")</button>
             @if (_editingId != null)
             {
-                <button class="secondary" @onclick="CancelEdit">Cancel</button>
+                <button type="button" class="secondary" @onclick="CancelEdit">Cancel</button>
             }
         </div>
         @if (_error != null) { <p class="error-text">@_error</p> }
-    </div>
+    </form>
 
     @if (_evaluations.Count > 0 && _selectedProperty != null)
     {

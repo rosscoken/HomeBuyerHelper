@@ -40,7 +40,7 @@ else
 <div class="grid-2">
     <div class="card">
         <h2>Your Tax Situation</h2>
-        <div class="row">
+        <form class="row" @onsubmit="SaveTaxSettingsAsync" @onsubmit:preventDefault>
             <span>
                 <label>Filing Status</label>
                 <select @bind="_filingStatus">
@@ -52,15 +52,15 @@ else
             </span>
             <span><label>Taxable Income</label><input type="number" @bind="_taxableIncome" /></span>
             <span><label>State Rate %</label><input type="number" step="0.1" @bind="_stateRate" /></span>
-            <button class="secondary sm" @onclick="SaveTaxSettingsAsync">Save</button>
-        </div>
+            <button type="submit" class="secondary sm">Save</button>
+        </form>
         <p class="muted mb-0">
             Federal marginal: <span class="badge brand">@_federalRate%</span>
             Long-term capital gains: <span class="badge brand">@_ltcgRate%</span>
         </p>
     </div>
 
-    <div class="card">
+    <form class="card" @onsubmit="AddSourceAsync" @onsubmit:preventDefault>
         <h2>Add a Source</h2>
         <div class="row">
             <span>
@@ -98,9 +98,9 @@ else
             {
                 <span><label>Loan (vs withdrawal)?</label><input type="checkbox" @bind="_newIs401kLoan" /></span>
             }
-            <button class="sm" @onclick="AddSourceAsync">Add Source</button>
+            <button type="submit" class="sm">Add Source</button>
         </div>
-    </div>
+    </form>
 </div>
 
 @if (_plan != null && _plan.Sources.Count > 0)

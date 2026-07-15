@@ -11,7 +11,7 @@
 
 @if (_editing != null)
 {
-    <div class="card">
+    <form class="card" @onsubmit="SaveAsync" @onsubmit:preventDefault>
         <h2>@(_editing.Id == 0 ? "Add Property" : $"Edit: {_editing.Nickname}")</h2>
         <div class="row">
             <span><label>Nickname *</label><input @bind="_editing.Nickname" placeholder="e.g. The blue craftsman" /></span>
@@ -81,10 +81,10 @@
         }
         @if (_error != null) { <p class="error-text">@_error</p> }
         <div class="row mt-14">
-            <button @onclick="SaveAsync">Save Property</button>
-            <button class="secondary" @onclick="() => _editing = null">Cancel</button>
+            <button type="submit">Save Property</button>
+            <button type="button" class="secondary" @onclick="() => _editing = null">Cancel</button>
         </div>
-    </div>
+    </form>
 }
 else
 {
