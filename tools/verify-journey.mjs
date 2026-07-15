@@ -35,10 +35,14 @@ const setField = async (label, value, scope = page) => {
     else await el.fill(String(value));
 };
 
-// --- 1. Fresh dashboard shows getting-started steps
+// --- 1. Fresh visit redirects to onboarding; skipping lands on dashboard
 await page.goto(BASE, { waitUntil: 'networkidle' });
-await page.waitForSelector('h1');
-expect((await page.textContent('.app-main')).includes('three steps'), 'fresh dashboard shows steps');
+await page.waitForURL('**/welcome');
+expect(page.url().includes('welcome'), 'first run redirects to onboarding');
+await page.screenshot({ path: `${SHOTS}/welcome.png` });
+await page.click('button:text-is("Skip for now")');
+await page.waitForSelector('h1:has-text("Dashboard")');
+expect((await page.textContent('.app-main')).includes('three steps'), 'skipped onboarding shows getting-started steps');
 
 // --- 2. Criteria via template
 await page.goto(BASE + '/criteria', { waitUntil: 'networkidle' });
@@ -151,6 +155,26 @@ await page.click('button:has-text("Compare")');
 await page.waitForSelector('.verdict-card');
 log('rent-vs-buy verdict renders');
 
+// --- 9a. Scenarios: buy-now vs wait comparison (prefilled from the plan)
+await page.goto(BASE + '/scenarios', { waitUntil: 'networkidle' });
+await page.click('button:has-text("Compare")');
+await page.waitForSelector('.verdict-card');
+expect((await page.textContent('table')).toLowerCase().includes('cash to close'),
+    'scenarios table renders buy-now vs wait');
+await page.screenshot({ path: `${SHOTS}/scenarios.png`, fullPage: true });
+
+// --- 9a2. Report: sections render, CSVs download
+await page.goto(BASE + '/report', { waitUntil: 'networkidle' });
+const reportText = await page.textContent('.app-main');
+expect(reportText.includes('Your Plan'), 'report shows plan section');
+expect(reportText.includes('Property Comparison'), 'report shows comparison');
+expect(/cash flow/i.test(reportText), 'report shows cash flow');
+const csvDownload = page.waitForEvent('download');
+await page.click('button:has-text("Comparison CSV")');
+const csv = await csvDownload;
+expect((await csv.suggestedFilename()).endsWith('.csv'), 'comparison CSV downloads');
+await page.screenshot({ path: `${SHOTS}/report.png`, fullPage: true });
+
 // --- 9b. Settings: change a default and see it flow into calculations
 await page.goto(BASE + '/settings', { waitUntil: 'networkidle' });
 await setField('Interest Rate %', '6.0');
@@ -181,7 +205,8 @@ await page.fill('input[placeholder="DELETE"]', 'DELETE');
 await page.click('button:text-is("Delete all data")');
 await page.waitForLoadState('networkidle');
 await page.goto(BASE, { waitUntil: 'networkidle' });
-expect((await page.textContent('.app-main')).includes('three steps'), 'delete-all resets to first-run');
+await page.waitForURL('**/welcome');
+expect(page.url().includes('welcome'), 'delete-all resets to first-run onboarding');
 
 await page.goto(BASE + '/settings/data', { waitUntil: 'networkidle' });
 await page.setInputFiles('input[type="file"]', backupPath);
@@ -196,9 +221,17 @@ expect((await page.textContent('table')).includes('Craftsman'), 'import restores
 // --- 10. Mobile reachability: everything via tab bar or dashboard cards
 const mobile = await browser.newPage({ viewport: { width: 390, height: 844 } });
 await mobile.goto(BASE, { waitUntil: 'networkidle' });
-await mobile.waitForSelector('.tab-bar');
+// Fresh context lands on onboarding (client-side redirect arrives after
+// goto resolves — wait for the page, not the URL); skip to reach the grid.
+await mobile.waitForSelector('button:text-is("Skip for now")');
+await mobile.click('button:text-is("Skip for now")');
+await mobile.waitForSelector('h1:has-text("Dashboard")');
+await mobile.waitForSelector('.module-card'); // async init done: module grid rendered
 const reachable = await mobile.$$eval('.tab-bar a, .module-card', els => els.map(e => e.getAttribute('href')));
 log('mobile-reachable routes:', reachable.join(', '));
+for (const route of ['offers', 'settings', 'funding', 'rent-vs-buy', 'scenarios']) {
+    expect(reachable.includes(route), `mobile can reach /${route}`);
+}
 await mobile.close();
 
 await browser.close();

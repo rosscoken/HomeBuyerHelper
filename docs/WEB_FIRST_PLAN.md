@@ -1,5 +1,9 @@
 # Web-First Implementation Plan
 
+> **Status (2026-07-15):** All seven milestones (M1–M7) are implemented on
+> this branch and verified by `tools/verify-journey.mjs` plus the Core/Data
+> test suites.
+
 **Decision:** The Blazor web app is the primary surface. The MAUI app stays
 compiling (shared Core/Data, DI registrations kept current) but gets no new
 UI until the web app is first class.
