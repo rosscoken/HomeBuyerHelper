@@ -15,7 +15,7 @@
 <div class="grid-2">
     <div class="card">
         <h2>Income Sources</h2>
-        <div class="row">
+        <form class="row" @onsubmit="AddIncomeAsync" @onsubmit:preventDefault>
             <span><label>Name</label><input @bind="_newIncome.Name" /></span>
             <span><label>Amount</label><input type="number" @bind="_newIncome.GrossAmount" /></span>
             <span>
@@ -31,8 +31,8 @@
                 <label>Guaranteed?</label>
                 <input type="checkbox" @bind="_newIncome.IsReliable" />
             </span>
-            <button class="sm" @onclick="AddIncomeAsync">Add</button>
-        </div>
+            <button type="submit" class="sm">Add</button>
+        </form>
         @if (_income.Count > 0)
         {
             <div class="table-wrap">
@@ -69,7 +69,14 @@
 
     <div class="card">
         <h2>Expenses</h2>
-        <div class="row">
+        <div class="seg quick-picks expense-picks" aria-label="Common expenses">
+            @foreach (var preset in ExpensePresets)
+            {
+                var current = preset;
+                <button type="button" @onclick="() => ApplyExpensePreset(current)">@current.Name</button>
+            }
+        </div>
+        <form class="row mt-12" @onsubmit="AddExpenseAsync" @onsubmit:preventDefault>
             <span><label>Name</label><input @bind="_newExpense.Name" /></span>
             <span><label>Amount/mo</label><input type="number" @bind="_newExpense.Amount" /></span>
             <span>
@@ -80,8 +87,8 @@
                 <label>Ends at purchase?</label>
                 <input type="checkbox" @bind="_newExpense.EndsAtPurchase" />
             </span>
-            <button class="sm" @onclick="AddExpenseAsync">Add</button>
-        </div>
+            <button type="submit" class="sm">Add</button>
+        </form>
         @if (_expenses.Count > 0)
         {
             <div class="table-wrap">
@@ -112,12 +119,12 @@
 
 <div class="card">
     <h2>One-Time Events &amp; Emergency Fund</h2>
-    <div class="row">
+    <form class="row" @onsubmit="AddEventAsync" @onsubmit:preventDefault>
         <span><label>Event</label><input @bind="_newEvent.Name" /></span>
         <span><label>Amount</label><input type="number" @bind="_newEvent.Amount" /></span>
         <span><label>Month</label><input type="month" @bind="_eventMonth" /></span>
-        <button class="sm" @onclick="AddEventAsync">Add Event</button>
-    </div>
+        <button type="submit" class="sm">Add Event</button>
+    </form>
     @if (_events.Count > 0)
     {
         <div class="inline-list">
@@ -216,6 +223,28 @@
 
     private static IncomeSource NewIncome() => new() { Name = "", GrossAmount = 0, Frequency = IncomeFrequency.Monthly, IsReliable = true, Probability = 70 };
     private static Expense NewExpense() => new() { Name = "", Amount = 0 };
+
+    /// <summary>
+    /// One-tap starters for the expenses everyone has. Rent is marked
+    /// "ends at purchase" since that's what buying replaces.
+    /// </summary>
+    private static readonly (string Name, bool IsVariable, bool EndsAtPurchase)[] ExpensePresets =
+    {
+        ("Rent", false, true),
+        ("Groceries", true, false),
+        ("Car", false, false),
+        ("Utilities", true, false),
+        ("Insurance", false, false),
+        ("Dining out", true, false),
+        ("Subscriptions", false, false)
+    };
+
+    private void ApplyExpensePreset((string Name, bool IsVariable, bool EndsAtPurchase) preset)
+    {
+        _newExpense.Name = preset.Name;
+        _newExpense.IsVariable = preset.IsVariable;
+        _newExpense.EndsAtPurchase = preset.EndsAtPurchase;
+    }
     private static OneTimeEvent NewEvent() => new() { Name = "", Amount = 0, Date = DateTime.Today };
 
     protected override async Task OnInitializedAsync()

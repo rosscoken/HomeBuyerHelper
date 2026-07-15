@@ -51,15 +51,38 @@ else
         </div>
     </div>
 
-    <div class="card">
+    <form class="card" @onsubmit="SaveOfferAsync" @onsubmit:preventDefault>
         <h2>@(_editingId == null ? "Add an Offer Structure" : $"Edit \"{_name}\"")</h2>
         <div class="row">
             <span><label>Name</label><input @bind="_name" placeholder="e.g., Aggressive, Safe, Cash-heavy" /></span>
-            <span><label>Offer Price</label><input type="number" @bind="_offerPrice" /></span>
-            <span><label>Escalate up to (optional)</label><input type="number" @bind="_escalationMax" /></span>
+            <span>
+                <label>Offer Price</label>
+                <input type="number" @bind="_offerPrice" @bind:event="oninput" />
+                @if (_offerPrice >= 10_000) { <span class="money-hint">= @_offerPrice.ToString("C0")</span> }
+            </span>
+            <span>
+                <label>Escalate up to (optional)</label>
+                <input type="number" @bind="_escalationMax" @bind:event="oninput" />
+                @if (_escalationMax >= 10_000) { <span class="money-hint">= @_escalationMax?.ToString("C0")</span> }
+            </span>
         </div>
         <div class="row mt-12">
-            <span><label>Down Payment % (100 = cash)</label><input type="number" step="1" @bind="_downPercent" /></span>
+            <span>
+                <label>Down Payment % (100 = cash)</label>
+                <span class="input-with-picks">
+                    <input type="number" step="1" @bind="_downPercent" />
+                    <span class="seg quick-picks" aria-label="Common down payments">
+                        @foreach (var pick in new[] { 5m, 10m, 20m, 100m })
+                        {
+                            var value = pick;
+                            <button type="button" class="@(_downPercent == value ? "on" : "")"
+                                    @onclick="() => _downPercent = value">
+                                @(value == 100m ? "Cash" : $"{value:0}%")
+                            </button>
+                        }
+                    </span>
+                </span>
+            </span>
             <span><label>Rate %</label><input type="number" step="0.125" @bind="_rate" /></span>
             <span>
                 <label>Term</label>
@@ -84,14 +107,14 @@ else
             <span><label>Notes</label><input @bind="_notes" placeholder="optional" /></span>
         </div>
         <div class="row mt-14">
-            <button @onclick="SaveOfferAsync">@(_editingId == null ? "Add Offer" : "Save Changes")</button>
+            <button type="submit">@(_editingId == null ? "Add Offer" : "Save Changes")</button>
             @if (_editingId != null)
             {
-                <button class="secondary" @onclick="CancelEdit">Cancel</button>
+                <button type="button" class="secondary" @onclick="CancelEdit">Cancel</button>
             }
         </div>
         @if (_error != null) { <p class="error-text">@_error</p> }
-    </div>
+    </form>
 
     @if (_evaluations.Count > 0 && _selectedProperty != null)
     {
@@ -278,16 +301,24 @@ else
                         @foreach (var eval in _evaluations)
                         {
                             <td class="num">
-                                @if (eval.Offer.Id == _planOfferId)
+                                @if (_confirmingDeleteId == eval.Offer.Id)
                                 {
-                                    <button type="button" class="secondary sm" @onclick="ClearPlanAsync">Clear plan</button>
+                                    <button type="button" class="danger sm" aria-label="Confirm delete offer @eval.Offer.Name" @onclick="() => DeleteOfferAsync(eval.Offer)">Delete</button>
+                                    <button type="button" class="secondary sm ml-8" @onclick="() => _confirmingDeleteId = null">Keep</button>
                                 }
                                 else
                                 {
-                                    <button type="button" class="sm" @onclick="() => SetPlanAsync(eval.Offer)">Set as plan</button>
+                                    @if (eval.Offer.Id == _planOfferId)
+                                    {
+                                        <button type="button" class="secondary sm" @onclick="ClearPlanAsync">Clear plan</button>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="sm" @onclick="() => SetPlanAsync(eval.Offer)">Set as plan</button>
+                                    }
+                                    <button type="button" class="secondary sm ml-8" @onclick="() => EditOffer(eval.Offer)">Edit</button>
+                                    <button type="button" class="danger sm ml-8" aria-label="Delete offer @eval.Offer.Name" @onclick="() => _confirmingDeleteId = eval.Offer.Id">✕</button>
                                 }
-                                <button type="button" class="secondary sm ml-8" @onclick="() => EditOffer(eval.Offer)">Edit</button>
-                                <button type="button" class="danger sm ml-8" aria-label="Delete offer @eval.Offer.Name" @onclick="() => DeleteOfferAsync(eval.Offer)">✕</button>
                             </td>
                         }
                     </tr>
@@ -335,6 +366,7 @@ else
 
     // Form state
     private int? _editingId;
+    private int? _confirmingDeleteId;
     private string _name = "";
     private decimal _offerPrice;
     private decimal? _escalationMax;
@@ -547,6 +579,7 @@ else
 
     private async Task DeleteOfferAsync(OfferScenario offer)
     {
+        _confirmingDeleteId = null;
         await OfferRepository.DeleteAsync(offer.Id);
         if (_editingId == offer.Id)
         {

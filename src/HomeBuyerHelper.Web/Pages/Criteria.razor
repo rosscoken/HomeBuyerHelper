@@ -37,11 +37,10 @@
 
 @if (_editing != null)
 {
-    <div class="card">
+    <form class="card" @onsubmit="SaveAsync" @onsubmit:preventDefault>
         <h2>@(_editing.Id == 0 ? "Add Criterion" : $"Edit: {_editing.Name}")</h2>
         <div class="row">
             <span><label>Name *</label><input @bind="_editing.Name" placeholder="e.g. Kitchen quality" /></span>
-            <span><label>Weight %</label><input type="number" min="1" max="50" @bind="_editing.Weight" /></span>
             <span>
                 <label>Category</label>
                 <select @bind="_editing.Category">
@@ -53,15 +52,23 @@
             </span>
         </div>
         <div class="row mt-12">
-            <span><label>What does a 1 look like?</label><input size="40" @bind="_editing.ScoreAnchorLow" /></span>
-            <span><label>What does a 10 look like?</label><input size="40" @bind="_editing.ScoreAnchorHigh" /></span>
+            <span class="grow">
+                <label>Weight — <span class="badge brand">@_editing.Weight%</span></label>
+                <input type="range" min="1" max="50" step="1"
+                       @bind="_editing.Weight" @bind:event="oninput"
+                       aria-label="Weight percent" />
+            </span>
+        </div>
+        <div class="row mt-12">
+            <span class="grow"><label>What does a 1 look like?</label><input @bind="_editing.ScoreAnchorLow" /></span>
+            <span class="grow"><label>What does a 10 look like?</label><input @bind="_editing.ScoreAnchorHigh" /></span>
         </div>
         @if (_error != null) { <p class="error-text">@_error</p> }
         <div class="row mt-14">
-            <button @onclick="SaveAsync">Save Criterion</button>
-            <button class="secondary" @onclick="() => _editing = null">Cancel</button>
+            <button type="submit">Save Criterion</button>
+            <button type="button" class="secondary" @onclick="() => _editing = null">Cancel</button>
         </div>
-    </div>
+    </form>
 }
 else
 {
@@ -100,33 +107,36 @@ else
 }
 else
 {
-    <div class="table-wrap">
-        <table>
-            <thead><tr><th>Criterion</th><th style="width:35%">Weight</th><th>Category</th><th style="width:140px"></th></tr></thead>
-            <tbody>
-                @foreach (var criterion in _criteria)
-                {
-                    <tr>
-                        <td><strong>@criterion.Name</strong></td>
-                        <td>
-                            <span class="score-cell">
-                                <span class="progress"><i style="width:@(Math.Min(criterion.Weight * 2, 100))%"></i></span>
-                                <strong>@criterion.Weight%</strong>
-                                @if (criterion.Weight > 40)
-                                {
-                                    <span class="badge warn">Heavy</span>
-                                }
-                            </span>
-                        </td>
-                        <td><span class="chip">@criterion.Category</span></td>
-                        <td style="text-align:right; white-space:nowrap">
+    <div class="score-list">
+        @foreach (var criterion in _criteria)
+        {
+            <div class="score-item criteria-item">
+                <div class="score-item-head">
+                    <strong>@criterion.Name</strong>
+                    <span class="chip">@criterion.Category</span>
+                    @if (criterion.Weight > 40)
+                    {
+                        <span class="badge warn">Heavy</span>
+                    }
+                    <span class="criteria-actions">
+                        @if (_confirmingDeleteId == criterion.Id)
+                        {
+                            <button type="button" class="danger sm" aria-label="Confirm delete criterion @criterion.Name" @onclick="() => DeleteAsync(criterion)">Delete</button>
+                            <button type="button" class="secondary sm" @onclick="() => _confirmingDeleteId = null">Keep</button>
+                        }
+                        else
+                        {
                             <button class="secondary sm" @onclick="() => StartEdit(criterion)">Edit</button>
-                            <button type="button" class="danger sm" aria-label="Delete criterion @criterion.Name" @onclick="() => DeleteAsync(criterion)">✕</button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+                            <button type="button" class="danger sm" aria-label="Delete criterion @criterion.Name" @onclick="() => _confirmingDeleteId = criterion.Id">✕</button>
+                        }
+                    </span>
+                </div>
+                <span class="score-cell">
+                    <span class="progress"><i style="width:@(Math.Min(criterion.Weight * 2, 100))%"></i></span>
+                    <strong>@criterion.Weight%</strong>
+                </span>
+            </div>
+        }
     </div>
 }
 
@@ -137,6 +147,7 @@ else
     private string _selectedTemplate = "FirstTimeBuyer";
     private int _totalWeight;
     private bool _confirmingTemplate;
+    private int? _confirmingDeleteId;
 
     protected override async Task OnInitializedAsync()
     {
@@ -158,7 +169,25 @@ else
     private void StartEdit(EvaluationCriterion criterion)
     {
         _error = null;
-        _editing = criterion;
+        // Edit a copy so slider drags (and Cancel) never mutate the stored object.
+        _editing = new EvaluationCriterion
+        {
+            Id = criterion.Id,
+            Name = criterion.Name,
+            Description = criterion.Description,
+            Weight = criterion.Weight,
+            Category = criterion.Category,
+            ScoreAnchorLow = criterion.ScoreAnchorLow,
+            ScoreAnchorMidLow = criterion.ScoreAnchorMidLow,
+            ScoreAnchorMid = criterion.ScoreAnchorMid,
+            ScoreAnchorMidHigh = criterion.ScoreAnchorMidHigh,
+            ScoreAnchorHigh = criterion.ScoreAnchorHigh,
+            IsSystemSuggested = criterion.IsSystemSuggested,
+            IsWeightLocked = criterion.IsWeightLocked,
+            DisplayOrder = criterion.DisplayOrder,
+            CreatedAt = criterion.CreatedAt,
+            UpdatedAt = criterion.UpdatedAt
+        };
     }
 
     private async Task SaveAsync()
@@ -192,6 +221,7 @@ else
 
     private async Task DeleteAsync(EvaluationCriterion criterion)
     {
+        _confirmingDeleteId = null;
         await CriteriaRepository.DeleteAsync(criterion.Id);
         await LoadAsync();
     }

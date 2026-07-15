@@ -11,16 +11,34 @@
 
 @if (_editing != null)
 {
-    <div class="card">
+    <form class="card" @onsubmit="SaveAsync" @onsubmit:preventDefault>
         <h2>@(_editing.Id == 0 ? "Add Property" : $"Edit: {_editing.Nickname}")</h2>
         <div class="row">
             <span><label>Nickname *</label><input @bind="_editing.Nickname" placeholder="e.g. The blue craftsman" /></span>
-            <span><label>Asking Price</label><input type="number" @bind="_editing.AskingPrice" /></span>
-            <span><label>Offer Price (opt)</label><input type="number" @bind="_editing.OfferPrice" /></span>
+            <span>
+                <label>Asking Price</label>
+                <input type="number" @bind="_editing.AskingPrice" @bind:event="oninput" />
+                @if (_editing.AskingPrice >= 10_000) { <span class="money-hint">= @_editing.AskingPrice.ToString("C0")</span> }
+            </span>
+            <span>
+                <label>Offer Price (opt)</label>
+                <input type="number" @bind="_editing.OfferPrice" @bind:event="oninput" />
+                @if (_editing.OfferPrice >= 10_000) { <span class="money-hint">= @_editing.OfferPrice?.ToString("C0")</span> }
+            </span>
         </div>
         <div class="row mt-12">
-            <span><label>Bedrooms</label><input type="number" @bind="_editing.Bedrooms" /></span>
-            <span><label>Bathrooms</label><input type="number" step="0.5" @bind="_editing.Bathrooms" /></span>
+            <span>
+                <label>Bedrooms</label>
+                <Stepper Label="bedrooms" Min="0" Max="12"
+                         Value="@_editing.Bedrooms"
+                         ValueChanged="@(v => _editing.Bedrooms = (int)v)" />
+            </span>
+            <span>
+                <label>Bathrooms</label>
+                <Stepper Label="bathrooms" Min="0" Max="12" Step="0.5m"
+                         Value="@_editing.Bathrooms"
+                         ValueChanged="@(v => _editing.Bathrooms = v)" />
+            </span>
             <span><label>Square Feet</label><input type="number" @bind="_editing.SquareFeet" /></span>
             <span><label>Year Built</label><input type="number" @bind="_editing.YearBuilt" /></span>
         </div>
@@ -31,7 +49,7 @@
             <span><label>Partner RT min</label><input type="number" @bind="_editing.CommuteMinutesSecondary" /></span>
         </div>
         <div class="row mt-12">
-            <span><label>Notes</label><textarea rows="2" cols="50" @bind="_editing.Notes"></textarea></span>
+            <span class="grow"><label>Notes</label><textarea rows="2" @bind="_editing.Notes"></textarea></span>
         </div>
         <div class="row mt-12">
             <button type="button" class="secondary sm" @onclick="() => _showMore = !_showMore">
@@ -58,15 +76,15 @@
             <div class="row mt-12">
                 <span><label>Annual Property Tax</label><input type="number" @bind="_editing.AnnualPropertyTax" /></span>
                 <span><label>Annual Insurance</label><input type="number" @bind="_editing.AnnualInsurance" /></span>
-                <span><label>Listing URL</label><input size="40" @bind="_editing.ListingUrl" placeholder="https://" /></span>
+                <span class="grow"><label>Listing URL</label><input @bind="_editing.ListingUrl" placeholder="https://" /></span>
             </div>
         }
         @if (_error != null) { <p class="error-text">@_error</p> }
         <div class="row mt-14">
-            <button @onclick="SaveAsync">Save Property</button>
-            <button class="secondary" @onclick="() => _editing = null">Cancel</button>
+            <button type="submit">Save Property</button>
+            <button type="button" class="secondary" @onclick="() => _editing = null">Cancel</button>
         </div>
-    </div>
+    </form>
 }
 else
 {
@@ -80,28 +98,29 @@ else
 {
     <div class="card">
         <h2>Score: @_scoring.Nickname</h2>
-        <p class="muted">1 = poor · 10 = perfect. Anchors show what the extremes mean.</p>
-        <div class="table-wrap">
-            <table>
-                <thead><tr><th>Criterion</th><th>Weight</th><th>Score (1-10)</th><th>Anchors</th></tr></thead>
-                <tbody>
-                    @foreach (var criterion in _criteria)
+        <p class="muted">Tap a number — 1 = poor, 10 = perfect. Tap it again to clear.</p>
+        <div class="score-list">
+            @foreach (var criterion in _criteria)
+            {
+                <div class="score-item">
+                    <div class="score-item-head">
+                        <strong>@criterion.Name</strong>
+                        <span class="badge brand">@criterion.Weight%</span>
+                        @if (_scoreDraft.TryGetValue(criterion.Id, out var draft) && draft > 0)
+                        {
+                            <span class="score-pill @(draft >= 8 ? "good" : draft >= 5 ? "mid" : "bad")">@draft</span>
+                        }
+                    </div>
+                    @if (!string.IsNullOrEmpty(criterion.ScoreAnchorLow) || !string.IsNullOrEmpty(criterion.ScoreAnchorHigh))
                     {
-                        <tr>
-                            <td><strong>@criterion.Name</strong></td>
-                            <td><span class="badge brand">@criterion.Weight%</span></td>
-                            <td>
-                                <input type="number" min="1" max="10" style="width:70px"
-                                       @bind="_scoreDraft[criterion.Id]" />
-                            </td>
-                            <td class="muted">
-                                @if (!string.IsNullOrEmpty(criterion.ScoreAnchorLow)) { <span>1: @criterion.ScoreAnchorLow · </span> }
-                                @if (!string.IsNullOrEmpty(criterion.ScoreAnchorHigh)) { <span>10: @criterion.ScoreAnchorHigh</span> }
-                            </td>
-                        </tr>
+                        <p class="muted score-anchors">
+                            @if (!string.IsNullOrEmpty(criterion.ScoreAnchorLow)) { <span><strong>1</strong> @criterion.ScoreAnchorLow</span> }
+                            @if (!string.IsNullOrEmpty(criterion.ScoreAnchorHigh)) { <span><strong>10</strong> @criterion.ScoreAnchorHigh</span> }
+                        </p>
                     }
-                </tbody>
-            </table>
+                    <ScorePicker @bind-Value="_scoreDraft[criterion.Id]" />
+                </div>
+            }
         </div>
         <div class="row">
             <button @onclick="SaveScoresAsync">Save Scores</button>
@@ -149,10 +168,19 @@ else
                     <span>@property.ScoredCriteriaCount/@property.TotalCriteriaCount scored</span>
                 </div>
                 <div class="p-actions">
-                    <button class="sm" @onclick="() => StartScore(property)">Score</button>
-                    <button class="secondary sm" @onclick="() => StartEdit(property)">Edit</button>
-                    <button class="secondary sm" @onclick="@(() => Nav.NavigateTo($"offers/{property.Id}"))">Offers</button>
-                    <button type="button" class="danger sm" aria-label="Delete property @property.Nickname" @onclick="() => DeleteAsync(property)">✕</button>
+                    @if (_confirmingDeleteId == property.Id)
+                    {
+                        <span class="muted">Delete @property.Nickname and its scores &amp; offers?</span>
+                        <button type="button" class="danger sm" aria-label="Confirm delete property @property.Nickname" @onclick="() => DeleteAsync(property)">Delete</button>
+                        <button type="button" class="secondary sm" @onclick="() => _confirmingDeleteId = null">Keep</button>
+                    }
+                    else
+                    {
+                        <button class="sm" @onclick="() => StartScore(property)">Score</button>
+                        <button class="secondary sm" @onclick="() => StartEdit(property)">Edit</button>
+                        <button class="secondary sm" @onclick="@(() => Nav.NavigateTo($"offers/{property.Id}"))">Offers</button>
+                        <button type="button" class="danger sm" aria-label="Delete property @property.Nickname" @onclick="() => _confirmingDeleteId = property.Id">✕</button>
+                    }
                 </div>
             </div>
         }
@@ -167,6 +195,7 @@ else
     private Dictionary<int, int> _scoreDraft = new();
     private string? _error;
     private bool _showMore;
+    private int? _confirmingDeleteId;
 
     protected override async Task OnInitializedAsync()
     {
@@ -282,6 +311,7 @@ else
 
     private async Task DeleteAsync(Property property)
     {
+        _confirmingDeleteId = null;
         await PropertyService.DeletePropertyAsync(property.Id);
         await LoadAsync();
     }

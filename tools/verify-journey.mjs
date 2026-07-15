@@ -48,7 +48,7 @@ expect((await page.textContent('.app-main')).includes('three steps'), 'skipped o
 await page.goto(BASE + '/criteria', { waitUntil: 'networkidle' });
 await page.click('text=Apply Template');
 // Confirm step may appear when criteria already exist; first run has none.
-await page.waitForSelector('table');
+await page.waitForSelector('.criteria-item');
 expect((await page.textContent('h2 .badge')).includes('100%'), 'template weights total 100%');
 
 // --- 3. Two properties, scored
@@ -64,10 +64,11 @@ for (const [nick, price, commute] of [['Craftsman on 5th', '525000', '50'], ['Co
 for (const nick of ['Craftsman on 5th', 'Condo Downtown']) {
     await page.click(`.property-card:has-text("${nick}") >> button:text-is("Score")`);
     await page.waitForSelector('h2:has-text("Score:")');
-    const inputs = page.locator('.card:has(h2:has-text("Score:")) tbody input');
-    const n = await inputs.count();
+    const items = page.locator('.card:has(h2:has-text("Score:")) .score-item');
+    const n = await items.count();
     for (let i = 0; i < n; i++) {
-        await inputs.nth(i).fill(String(nick.startsWith('Craftsman') ? 5 + (i % 5) : 4 + (i % 6)));
+        const score = nick.startsWith('Craftsman') ? 5 + (i % 5) : 4 + (i % 6);
+        await items.nth(i).locator(`.score-picker button:text-is("${score}")`).click();
     }
     await page.click('text=Save Scores');
     await page.waitForSelector('h2:has-text("Score:")', { state: 'detached' });

@@ -6,6 +6,7 @@
 <h1>Settings</h1>
 <p class="page-sub">These defaults drive the numbers on Compare, Rent vs. Buy, and Offers. Change them here and every calculation updates.</p>
 
+<form @onsubmit="SaveAsync" @onsubmit:preventDefault>
 <div class="grid-2">
     <div class="card">
         <h2>Loan Defaults</h2>
@@ -48,9 +49,10 @@
 </div>
 
 <div class="row mt-14">
-    <button @onclick="SaveAsync">Save Settings</button>
+    <button type="submit">Save Settings</button>
     @if (_saved) { <span class="badge ok">Saved</span> }
 </div>
+</form>
 @if (_error != null) { <p class="error-text">@_error</p> }
 
 @code {
