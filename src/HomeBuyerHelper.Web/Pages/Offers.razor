@@ -10,6 +10,16 @@
 <h1>Offer Planner</h1>
 <p class="page-sub">Plan out different offer structures on a house — price, financing, points, credits, and contingencies — and compare what each one really costs.</p>
 
+@if (_preferences != null)
+{
+    <p class="muted">
+        When a property has no tax or insurance entered, estimates assume
+        @(_preferences.DefaultPropertyTaxRate.ToString("0.##"))% property tax and
+        @(_preferences.DefaultMonthlyInsurance.ToString("C0"))/mo insurance —
+        <a href="settings">edit</a>
+    </p>
+}
+
 @if (_properties.Count == 0)
 {
     <div class="empty-state">

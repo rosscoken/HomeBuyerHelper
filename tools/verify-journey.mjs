@@ -120,6 +120,48 @@ await page.click('button:has-text("Compare")');
 await page.waitForSelector('.verdict-card');
 log('rent-vs-buy verdict renders');
 
+// --- 9b. Settings: change a default and see it flow into calculations
+await page.goto(BASE + '/settings', { waitUntil: 'networkidle' });
+await setField('Interest Rate %', '6.0');
+await page.click('button:has-text("Save Settings")');
+await page.waitForSelector('.badge.ok:has-text("Saved")');
+await page.goto(BASE + '/offers', { waitUntil: 'networkidle' });
+expect((await page.textContent('.card')).length > 0, 'offers loads after settings change');
+const rateField = page.locator('span:has(> label:text-is("Rate %")) input').first();
+expect(await rateField.inputValue() === '6.0', 'offer form defaults to saved 6.0% rate');
+
+// --- 9c. Criteria template confirm guard (criteria already exist now)
+await page.goto(BASE + '/criteria', { waitUntil: 'networkidle' });
+await page.click('text=Apply Template');
+expect(await page.locator('text=/replaces your \\d+ current criteria/i').count() > 0,
+    'template apply asks for confirmation when criteria exist');
+await page.click('button:text-is("Cancel")');
+
+// --- 9d. Backup round-trip: export → delete all → import → data restored
+await page.goto(BASE + '/settings/data', { waitUntil: 'networkidle' });
+const downloadPromise = page.waitForEvent('download');
+await page.click('text=Download backup');
+const download = await downloadPromise;
+const backupPath = `${SHOTS}/backup.json`;
+await download.saveAs(backupPath);
+expect((await page.textContent('.badge.brand')).includes('Last backup:'), 'last-backup stamp updates');
+
+await page.fill('input[placeholder="DELETE"]', 'DELETE');
+await page.click('button:text-is("Delete all data")');
+await page.waitForLoadState('networkidle');
+await page.goto(BASE, { waitUntil: 'networkidle' });
+expect((await page.textContent('.app-main')).includes('three steps'), 'delete-all resets to first-run');
+
+await page.goto(BASE + '/settings/data', { waitUntil: 'networkidle' });
+await page.setInputFiles('input[type="file"]', backupPath);
+await page.waitForSelector('input[placeholder="REPLACE"]');
+await page.fill('input[placeholder="REPLACE"]', 'REPLACE');
+await page.click('button:text-is("Replace all data")');
+await page.waitForLoadState('networkidle');
+await page.goto(BASE, { waitUntil: 'networkidle' });
+await page.waitForSelector('table');
+expect((await page.textContent('table')).includes('Craftsman'), 'import restores properties');
+
 // --- 10. Mobile reachability: everything via tab bar or dashboard cards
 const mobile = await browser.newPage({ viewport: { width: 390, height: 844 } });
 await mobile.goto(BASE, { waitUntil: 'networkidle' });

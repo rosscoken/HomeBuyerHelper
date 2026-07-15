@@ -108,6 +108,11 @@
             _error = "Workdays per month must be between 1 and 31.";
             return;
         }
+        if (_monthlyInsurance < 0 || _timeValueHourlyRate < 0)
+        {
+            _error = "Insurance and time value can't be negative.";
+            return;
+        }
 
         _error = null;
         var preferences = await PreferencesRepository.GetAsync();
