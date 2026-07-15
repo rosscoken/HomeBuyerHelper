@@ -1,0 +1,371 @@
+@page "/report"
+@inject IPropertyService PropertyService
+@inject ICriteriaRepository CriteriaRepository
+@inject ITrueTotalCostService TrueTotalCostService
+@inject IUserPreferencesRepository PreferencesRepository
+@inject IPlanService PlanService
+@inject IIncomeRepository IncomeRepository
+@inject IExpenseRepository ExpenseRepository
+@inject IOneTimeEventRepository EventRepository
+@inject ICashFlowProjectionService ProjectionService
+@inject IJSRuntime JS
+
+<PageTitle>Report · HomeBuyerHelper</PageTitle>
+
+<style>
+    @@media print {
+        .app-header, .app-footer, .tab-bar, .report-actions { display: none !important; }
+        html, body { background: #fff !important; color: #000 !important; }
+        .app-main { padding: 0 !important; max-width: none !important; }
+        .card { box-shadow: none !important; border: 1px solid #ccc !important; background: #fff !important; }
+        .table-wrap { overflow: visible !important; }
+        table { break-inside: auto; }
+        tr { break-inside: avoid; }
+        a { color: #000 !important; text-decoration: none !important; }
+        .badge, .score-pill { border: 1px solid #999 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+</style>
+
+<h1>HomeBuyerHelper Report</h1>
+<p class="page-sub">Generated @_generatedAt.ToString("MMMM d, yyyy 'at' h:mm tt") · @_results.Count propert@(_results.Count == 1 ? "y" : "ies")</p>
+
+@if (_loaded)
+{
+    <div class="row report-actions">
+        <button type="button" @onclick="PrintAsync">Print / Save as PDF</button>
+        <button type="button" class="secondary sm" disabled="@(_results.Count == 0)" @onclick="DownloadComparisonCsvAsync">Comparison CSV</button>
+        <button type="button" class="secondary sm" @onclick="DownloadCashFlowCsvAsync">Cash Flow CSV</button>
+    </div>
+
+    @if (_plan != null)
+    {
+        <h2>Your Plan</h2>
+        <div class="card">
+            <div class="row">
+                <span>
+                    <label>Property</label>
+                    <strong>@_plan.Property.Nickname</strong>
+                </span>
+                <span>
+                    <label>Offer</label>
+                    <strong>@_plan.Offer.Name</strong> <span class="muted">@_plan.Offer.OfferPrice.ToString("C0")</span>
+                </span>
+                <span>
+                    <label>Effective rate / term</label>
+                    <strong>@_plan.Evaluation.EffectiveInterestRate.ToString("F2")% / @_plan.Offer.TermYears yr</strong>
+                </span>
+                <span>
+                    <label>Total monthly cost</label>
+                    <strong>@_plan.Evaluation.TotalMonthlyCost.ToString("C0")/mo</strong>
+                </span>
+            </div>
+            <div class="row mt-12">
+                <span>
+                    <label>Cash to close</label>
+                    <strong>@_plan.Evaluation.CashToClose.ToString("C0")</strong>
+                </span>
+                <span>
+                    <label>Funding net available</label>
+                    <strong>@_plan.FundingNetAvailable.ToString("C0")</strong>
+                </span>
+                <span>
+                    <label>@(_plan.FundingSurplus >= 0 ? "Funding surplus" : "Funding shortfall")</label>
+                    <span class="badge @(_plan.FundingSurplus >= 0 ? "ok" : "warn")">
+                        @(_plan.FundingSurplus >= 0 ? "+" : "−")@Math.Abs(_plan.FundingSurplus).ToString("C0")
+                    </span>
+                </span>
+            </div>
+
+            <h3 class="mt-14">Affordability by Scenario</h3>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr><th>Scenario</th><th class="num">Monthly Income</th><th class="num">Housing %</th><th>Zone</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var assessment in _plan.Affordability)
+                        {
+                            <tr>
+                                <td>@assessment.Scenario</td>
+                                <td class="num">@assessment.GrossMonthlyIncome.ToString("C0")</td>
+                                <td class="num">@assessment.HousingPercentage.ToString("F1")%</td>
+                                <td><span class="badge @ZoneBadgeClass(assessment.Zone)">@assessment.ZoneLabel</span></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+    <h2>Property Comparison</h2>
+    @if (_results.Count == 0)
+    {
+        <p class="muted">No properties yet. <a href="properties">Add properties</a> to build a comparison.</p>
+    }
+    else
+    {
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Criterion (Weight)</th>
+                        @foreach (var result in _results) { <th style="text-align:center">@result.Property.Nickname</th> }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var criterion in _criteria)
+                    {
+                        <tr>
+                            <td>@criterion.Name <span class="muted">(@criterion.Weight%)</span></td>
+                            @foreach (var result in _results)
+                            {
+                                var score = result.Scores.FirstOrDefault(s => s.CriterionId == criterion.Id);
+                                @if (score == null)
+                                {
+                                    <td class="muted" style="text-align:center">–</td>
+                                }
+                                else
+                                {
+                                    <td style="text-align:center"><span class="score-pill @ScoreClass(score.Score)">@score.Score</span></td>
+                                }
+                            }
+                        </tr>
+                    }
+                    <tr class="total-row">
+                        <td><strong>Total Score</strong></td>
+                        @foreach (var result in _results)
+                        {
+                            <td style="text-align:center"><strong>@result.ScorePercentage.ToString("F0")%</strong></td>
+                        }
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    }
+
+    <h2>True Total Cost</h2>
+    @if (_results.Count == 0)
+    {
+        <p class="muted">No properties yet. <a href="properties">Add properties</a> to see true total cost.</p>
+    }
+    else
+    {
+        <p class="muted">Commute time valued at @_preferences?.TimeValueHourlyRate.ToString("C0")/hr × @_preferences?.WorkdaysPerMonth workdays/mo.</p>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr><th>Property</th><th class="num">Housing/mo</th><th class="num">Commute/mo</th><th class="num">Total/mo</th><th class="num">30-Year</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var (result, cost) in _trueCosts)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@result.Property.Nickname</strong>
+                                @if (cost == _lowestCost) { <span class="badge ok ml-8">Lowest</span> }
+                            </td>
+                            <td class="num">@cost.MonthlyHousing.ToString("C0")</td>
+                            <td class="num">@cost.MonthlyCommuteValue.ToString("C0")</td>
+                            <td class="num"><strong>@cost.MonthlyTotal.ToString("C0")</strong></td>
+                            <td class="num">@cost.ThirtyYearTotal.ToString("C0")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    <h2>Cash Flow (Realistic, 24 months)</h2>
+    <p class="muted">
+        @if (_plan != null)
+        {
+            <text>Includes <strong>@_plan.Property.Nickname</strong> at @_plan.Evaluation.TotalMonthlyCost.ToString("C0")/mo starting @_purchaseMonth.ToString("MMM yyyy").</text>
+        }
+        else
+        {
+            <text>Income and expenses only — no plan is set.</text>
+        }
+    </p>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Month</th><th class="num">Income</th><th class="num">Expenses</th><th class="num">Surplus</th><th class="num">Cumulative</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var month in _projection)
+                {
+                    <tr>
+                        <td>
+                            <strong>@month.Month.ToString("MMM yyyy")</strong>
+                            @if (month.IsCrunchMonth) { <span class="badge warn ml-8">Crunch</span> }
+                        </td>
+                        <td class="num">@month.TotalIncome.ToString("C0")</td>
+                        <td class="num">@month.TotalExpenses.ToString("C0")</td>
+                        <td class="num @(month.Surplus < 0 ? "neg" : "pos")">@month.Surplus.ToString("C0")</td>
+                        <td class="num">@month.CumulativeSurplus.ToString("C0")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private bool _loaded;
+    private DateTime _generatedAt;
+    private IReadOnlyList<EvaluationCriterion> _criteria = Array.Empty<EvaluationCriterion>();
+    private List<PropertyComparisonResult> _results = new();
+    private List<(PropertyComparisonResult Result, TrueTotalCost Cost)> _trueCosts = new();
+    private TrueTotalCost? _lowestCost;
+    private UserPreferences? _preferences;
+    private PlanSnapshot? _plan;
+    private DateTime _purchaseMonth;
+    private IReadOnlyList<MonthlyProjection> _projection = Array.Empty<MonthlyProjection>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _generatedAt = DateTime.Now;
+
+        _criteria = await CriteriaRepository.GetAllAsync();
+        var properties = await PropertyService.GetPropertiesWithScoresAsync();
+        _results = (await PropertyService.ComparePropertiesAsync(properties.Select(p => p.Id))).ToList();
+
+        var preferences = await PreferencesRepository.GetAsync();
+        _preferences = preferences;
+        _trueCosts = _results
+            .Select(result => (result, TrueTotalCostService.Calculate(result.Property, preferences)))
+            .ToList();
+        _lowestCost = _trueCosts
+            .Where(t => t.Item2.MonthlyTotal > 0)
+            .OrderBy(t => t.Item2.MonthlyTotal)
+            .Select(t => t.Item2)
+            .FirstOrDefault();
+
+        _plan = await PlanService.GetSnapshotAsync();
+        _purchaseMonth = _plan?.TargetPurchaseMonth is DateTime month
+            ? new DateTime(month.Year, month.Month, 1)
+            : FirstOfNextMonth();
+
+        var income = await IncomeRepository.GetAllAsync();
+        var expenses = await ExpenseRepository.GetAllAsync();
+        var events = await EventRepository.GetAllAsync();
+
+        _projection = ProjectionService.Project(new CashFlowProjectionInput
+        {
+            IncomeSources = income,
+            Expenses = expenses,
+            OneTimeEvents = events,
+            Scenario = IncomeScenario.Realistic,
+            EmergencyFund = new EmergencyFundConfig
+            {
+                TargetMonths = preferences.EmergencyFundTargetMonths,
+                CurrentBalance = preferences.EmergencyFundBalance
+            },
+            PlannedHousing = _plan != null
+                ? new PlannedHousing
+                {
+                    MonthlyCost = _plan.Evaluation.TotalMonthlyCost,
+                    StartMonth = _purchaseMonth
+                }
+                : null
+        });
+
+        _loaded = true;
+    }
+
+    private static DateTime FirstOfNextMonth()
+    {
+        var next = DateTime.Today.AddMonths(1);
+        return new DateTime(next.Year, next.Month, 1);
+    }
+
+    private static string ScoreClass(int score) =>
+        score >= 8 ? "good" : score >= 5 ? "mid" : "bad";
+
+    private static string ZoneBadgeClass(AffordabilityZone zone) => zone switch
+    {
+        AffordabilityZone.Comfortable => "ok",
+        AffordabilityZone.Stretching => "brand",
+        _ => "warn"
+    };
+
+    private async Task PrintAsync() => await JS.InvokeVoidAsync("print");
+
+    private async Task DownloadComparisonCsvAsync() =>
+        await JS.InvokeVoidAsync("hbhDownload", "comparison.csv", BuildComparisonCsv());
+
+    private async Task DownloadCashFlowCsvAsync() =>
+        await JS.InvokeVoidAsync("hbhDownload", "cashflow.csv", BuildCashFlowCsv());
+
+    private string BuildComparisonCsv()
+    {
+        var lines = new List<string>();
+
+        var header = new List<string> { "Criterion", "Weight %" };
+        header.AddRange(_results.Select(r => r.Property.Nickname));
+        lines.Add(CsvRow(header));
+
+        foreach (var criterion in _criteria)
+        {
+            var row = new List<string> { criterion.Name, criterion.Weight.ToString(System.Globalization.CultureInfo.InvariantCulture) };
+            foreach (var result in _results)
+            {
+                var score = result.Scores.FirstOrDefault(s => s.CriterionId == criterion.Id);
+                row.Add(score?.Score.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "");
+            }
+            lines.Add(CsvRow(row));
+        }
+
+        var totalRow = new List<string> { "Total Score", "" };
+        totalRow.AddRange(_results.Select(r => r.ScorePercentage.ToString("F0", System.Globalization.CultureInfo.InvariantCulture) + "%"));
+        lines.Add(CsvRow(totalRow));
+
+        lines.Add(string.Empty);
+        lines.Add(CsvRow(new[] { "Property", "Housing/mo", "Commute/mo", "Total/mo", "30-Year" }));
+        foreach (var (result, cost) in _trueCosts)
+        {
+            lines.Add(CsvRow(new[]
+            {
+                result.Property.Nickname,
+                cost.MonthlyHousing.ToString("F2", System.Globalization.CultureInfo.InvariantCulture),
+                cost.MonthlyCommuteValue.ToString("F2", System.Globalization.CultureInfo.InvariantCulture),
+                cost.MonthlyTotal.ToString("F2", System.Globalization.CultureInfo.InvariantCulture),
+                cost.ThirtyYearTotal.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)
+            }));
+        }
+
+        return string.Join("\r\n", lines);
+    }
+
+    private string BuildCashFlowCsv()
+    {
+        var lines = new List<string> { CsvRow(new[] { "Month", "Income", "Expenses", "Surplus", "Cumulative" }) };
+
+        foreach (var month in _projection)
+        {
+            lines.Add(CsvRow(new[]
+            {
+                month.Month.ToString("yyyy-MM", System.Globalization.CultureInfo.InvariantCulture),
+                month.TotalIncome.ToString("F2", System.Globalization.CultureInfo.InvariantCulture),
+                month.TotalExpenses.ToString("F2", System.Globalization.CultureInfo.InvariantCulture),
+                month.Surplus.ToString("F2", System.Globalization.CultureInfo.InvariantCulture),
+                month.CumulativeSurplus.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)
+            }));
+        }
+
+        return string.Join("\r\n", lines);
+    }
+
+    private static string CsvRow(IEnumerable<string> fields) => string.Join(",", fields.Select(CsvField));
+
+    private static string CsvField(string value)
+    {
+        if (value.IndexOfAny(new[] { ',', '"', '\n', '\r' }) >= 0)
+        {
+            return "\"" + value.Replace("\"", "\"\"") + "\"";
+        }
+
+        return value;
+    }
+}

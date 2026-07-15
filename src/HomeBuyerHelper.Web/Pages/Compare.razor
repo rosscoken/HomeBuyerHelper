@@ -6,8 +6,13 @@
 
 <PageTitle>Compare · HomeBuyerHelper</PageTitle>
 
-<h1>Comparison</h1>
-<p class="page-sub">Side-by-side weighted scores and the true monthly cost of each home.</p>
+<div class="row" style="justify-content:space-between; align-items:start">
+    <div>
+        <h1>Comparison</h1>
+        <p class="page-sub">Side-by-side weighted scores and the true monthly cost of each home.</p>
+    </div>
+    <a href="report"><button type="button" class="secondary sm">Printable report</button></a>
+</div>
 
 @if (_loaded && _results.Count < 2)
 {
