@@ -33,6 +33,34 @@
         <div class="row mt-12">
             <span><label>Notes</label><textarea rows="2" cols="50" @bind="_editing.Notes"></textarea></span>
         </div>
+        <div class="row mt-12">
+            <button type="button" class="secondary sm" @onclick="() => _showMore = !_showMore">
+                @(_showMore ? "Hide details" : "More details")
+            </button>
+        </div>
+        @if (_showMore)
+        {
+            <div class="row mt-12">
+                <span>
+                    <label>Property Type</label>
+                    <select @bind="_editing.PropertyType">
+                        @foreach (var type in Enum.GetValues<PropertyType>())
+                        {
+                            <option value="@type">@type</option>
+                        }
+                    </select>
+                </span>
+                <span><label>Address</label><input @bind="_editing.Address" /></span>
+                <span><label>City</label><input @bind="_editing.City" /></span>
+                <span><label>State</label><input @bind="_editing.State" /></span>
+                <span><label>Zip Code</label><input @bind="_editing.ZipCode" /></span>
+            </div>
+            <div class="row mt-12">
+                <span><label>Annual Property Tax</label><input type="number" @bind="_editing.AnnualPropertyTax" /></span>
+                <span><label>Annual Insurance</label><input type="number" @bind="_editing.AnnualInsurance" /></span>
+                <span><label>Listing URL</label><input size="40" @bind="_editing.ListingUrl" placeholder="https://" /></span>
+            </div>
+        }
         @if (_error != null) { <p class="error-text">@_error</p> }
         <div class="row mt-14">
             <button @onclick="SaveAsync">Save Property</button>
@@ -63,7 +91,7 @@ else
                             <td><strong>@criterion.Name</strong></td>
                             <td><span class="badge brand">@criterion.Weight%</span></td>
                             <td>
-                                <input type="number" min="0" max="10" style="width:70px"
+                                <input type="number" min="1" max="10" style="width:70px"
                                        @bind="_scoreDraft[criterion.Id]" />
                             </td>
                             <td class="muted">
@@ -138,6 +166,7 @@ else
     private Property? _scoring;
     private Dictionary<int, int> _scoreDraft = new();
     private string? _error;
+    private bool _showMore;
 
     protected override async Task OnInitializedAsync()
     {
@@ -154,6 +183,7 @@ else
     {
         _error = null;
         _scoring = null;
+        _showMore = false;
         _editing = new Property { Nickname = "" };
     }
 
@@ -161,6 +191,7 @@ else
     {
         _error = null;
         _scoring = null;
+        _showMore = false;
         // Edit a copy so typing (and Cancel) never mutates the stored object.
         _editing = Clone(property);
     }
