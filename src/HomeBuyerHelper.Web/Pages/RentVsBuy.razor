@@ -9,7 +9,11 @@
 
 <div class="card">
     <div class="row">
-        <span><label>Purchase Price</label><input type="number" @bind="_price" /></span>
+        <span>
+            <label>Purchase Price</label>
+            <input type="number" @bind="_price" @bind:event="oninput" />
+            @if (_price >= 10_000) { <span class="money-hint">= @_price.ToString("C0")</span> }
+        </span>
         <span><label>Current Rent/mo</label><input type="number" @bind="_rent" /></span>
         <span><label>Other Ownership Costs/mo</label><input type="number" @bind="_ownershipCosts" /></span>
     </div>

@@ -601,6 +601,32 @@ input[type="range"]:focus { box-shadow: none; }
 .criteria-item .criteria-actions { margin-left: auto; display: inline-flex; gap: 6px; }
 .criteria-item .score-cell { max-width: 420px; }
 
+/* Generic right-aligned actions inside a stacked list item */
+.score-item .item-actions { margin-left: auto; display: inline-flex; gap: 6px; }
+
+/* One-tap preset chips: wrap freely, look like chips, act like buttons */
+.preset-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 2px; }
+
+.preset-row button {
+    padding: 6px 14px;
+    min-height: 34px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    background: var(--surface-2);
+    color: var(--text-2);
+    border: 1.5px solid var(--border);
+    border-radius: 99px;
+    box-shadow: none;
+}
+
+.preset-row button:hover {
+    transform: none;
+    filter: none;
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--primary-soft);
+}
+
 /* ---------- Score picker ---------- */
 
 .score-list { display: flex; flex-direction: column; gap: 12px; margin: 14px 0; }

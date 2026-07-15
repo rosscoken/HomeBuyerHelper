@@ -14,7 +14,11 @@
     <div class="card">
         <h2>Buy Now</h2>
         <div class="row">
-            <span><label>Purchase Price</label><input type="number" @bind="_purchasePrice" /></span>
+            <span>
+                <label>Purchase Price</label>
+                <input type="number" @bind="_purchasePrice" @bind:event="oninput" />
+                @if (_purchasePrice >= 10_000) { <span class="money-hint">= @_purchasePrice.ToString("C0")</span> }
+            </span>
             <span><label>Down Payment %</label><input type="number" step="1" @bind="_downPercent" /></span>
         </div>
         <div class="row mt-12">

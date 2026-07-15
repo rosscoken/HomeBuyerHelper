@@ -76,7 +76,11 @@ else
                 </select>
             </span>
             <span><label>Nickname</label><input @bind="_newName" /></span>
-            <span><label>Amount</label><input type="number" @bind="_newAmount" /></span>
+            <span>
+                <label>Amount</label>
+                <input type="number" @bind="_newAmount" @bind:event="oninput" />
+                @if (_newAmount >= 10_000) { <span class="money-hint">= @_newAmount.ToString("C0")</span> }
+            </span>
         </div>
         <div class="row mt-12">
             @if (_newType == FundingType.Investment)
@@ -106,31 +110,29 @@ else
 @if (_plan != null && _plan.Sources.Count > 0)
 {
     <h2>Your Funding Plan</h2>
-    <div class="table-wrap">
-        <table>
-            <thead>
-                <tr><th>Source</th><th class="num">Gross</th><th class="num">Est. Tax</th><th class="num">Net</th><th style="width:50px"></th></tr>
-            </thead>
-            <tbody>
-                @foreach (var result in _plan.Sources)
-                {
-                    <tr>
-                        <td><strong>@result.Source.Name</strong> <span class="muted">(@result.Explanation)</span></td>
-                        <td class="num">@result.GrossAmount.ToString("C0")</td>
-                        <td class="num @(result.TotalTax > 0 ? "neg" : "")">@result.TotalTax.ToString("C0")</td>
-                        <td class="num"><strong>@result.NetAmount.ToString("C0")</strong></td>
-                        <td style="text-align:right"><button type="button" class="danger sm" aria-label="Delete funding source @result.Source.Name" @onclick="() => DeleteSourceAsync(result)">✕</button></td>
-                    </tr>
-                }
-                <tr class="total-row">
-                    <td><strong>TOTAL</strong></td>
-                    <td class="num"><strong>@_plan.TotalGross.ToString("C0")</strong></td>
-                    <td class="num"><strong>@_plan.TotalTax.ToString("C0")</strong></td>
-                    <td class="num"><strong>@_plan.TotalNet.ToString("C0")</strong></td>
-                    <td></td>
-                </tr>
-            </tbody>
-        </table>
+    <div class="stat-strip">
+        <div class="stat"><span class="v">@_plan.TotalGross.ToString("C0")</span><span class="k">Gross</span></div>
+        <div class="stat"><span class="v @(_plan.TotalTax > 0 ? "neg" : "")">@_plan.TotalTax.ToString("C0")</span><span class="k">Est. taxes</span></div>
+        <div class="stat"><span class="v pos">@_plan.TotalNet.ToString("C0")</span><span class="k">Net for down payment</span></div>
+    </div>
+    <div class="score-list">
+        @foreach (var result in _plan.Sources)
+        {
+            <div class="score-item">
+                <div class="score-item-head">
+                    <strong>@result.Source.Name</strong>
+                    <span class="badge brand">@result.NetAmount.ToString("C0") net</span>
+                    @if (result.TotalTax > 0)
+                    {
+                        <span class="badge warn">−@result.TotalTax.ToString("C0") tax</span>
+                    }
+                    <span class="item-actions">
+                        <button type="button" class="danger sm" aria-label="Delete funding source @result.Source.Name" @onclick="() => DeleteSourceAsync(result)">✕</button>
+                    </span>
+                </div>
+                <p class="muted mb-0">@result.GrossAmount.ToString("C0") gross · @result.Explanation</p>
+            </div>
+        }
     </div>
     @if (_plan.TotalTax > 0)
     {
