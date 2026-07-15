@@ -47,5 +47,6 @@ builder.Services.AddSingleton<IScenarioService, ScenarioService>();
 builder.Services.AddSingleton<IOfferPlanningService, OfferPlanningService>();
 builder.Services.AddSingleton<ICriteriaTemplateService, CriteriaTemplateService>();
 builder.Services.AddSingleton<IPlanService, PlanService>();
+builder.Services.AddSingleton<IOnboardingRecommendationService, OnboardingRecommendationService>();
 
 await builder.Build().RunAsync();

@@ -79,6 +79,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<IOfferPlanningService, OfferPlanningService>();
         builder.Services.AddSingleton<ICriteriaTemplateService, CriteriaTemplateService>();
         builder.Services.AddSingleton<IPlanService, PlanService>();
+        builder.Services.AddSingleton<IOnboardingRecommendationService, OnboardingRecommendationService>();
 
         // Register main view models (transient - new instance per page)
         builder.Services.AddTransient<DashboardViewModel>();

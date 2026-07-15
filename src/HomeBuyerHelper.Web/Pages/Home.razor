@@ -2,6 +2,8 @@
 @inject IPropertyService PropertyService
 @inject ICriteriaRepository CriteriaRepository
 @inject IPlanService PlanService
+@inject IUserPreferencesRepository PreferencesRepository
+@inject NavigationManager Nav
 
 <PageTitle>HomeBuyerHelper</PageTitle>
 
@@ -177,6 +179,16 @@
                 <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
             </span>
         </a>
+        <a class="module-card" href="scenarios">
+            <span class="module-icon amber">
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </span>
+            <h3>Scenarios</h3>
+            <p>See what changes if you wait — savings, market drift, and rent while you save.</p>
+            <span class="module-link">Open Scenarios
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </span>
+        </a>
     </div>
 }
 
@@ -189,6 +201,17 @@
     protected override async Task OnInitializedAsync()
     {
         _criteriaCount = await CriteriaRepository.GetCountAsync();
+
+        if (_criteriaCount == 0)
+        {
+            var preferences = await PreferencesRepository.GetAsync();
+            if (!preferences.HasCompletedOnboarding)
+            {
+                Nav.NavigateTo("welcome");
+                return;
+            }
+        }
+
         _rankings = await PropertyService.GetPropertyRankingsAsync();
         _plan = await PlanService.GetSnapshotAsync();
         _loaded = true;
