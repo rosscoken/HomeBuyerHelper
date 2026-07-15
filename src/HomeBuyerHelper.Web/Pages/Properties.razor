@@ -15,8 +15,16 @@
         <h2>@(_editing.Id == 0 ? "Add Property" : $"Edit: {_editing.Nickname}")</h2>
         <div class="row">
             <span><label>Nickname *</label><input @bind="_editing.Nickname" placeholder="e.g. The blue craftsman" /></span>
-            <span><label>Asking Price</label><input type="number" @bind="_editing.AskingPrice" /></span>
-            <span><label>Offer Price (opt)</label><input type="number" @bind="_editing.OfferPrice" /></span>
+            <span>
+                <label>Asking Price</label>
+                <input type="number" @bind="_editing.AskingPrice" @bind:event="oninput" />
+                @if (_editing.AskingPrice >= 10_000) { <span class="money-hint">= @_editing.AskingPrice.ToString("C0")</span> }
+            </span>
+            <span>
+                <label>Offer Price (opt)</label>
+                <input type="number" @bind="_editing.OfferPrice" @bind:event="oninput" />
+                @if (_editing.OfferPrice >= 10_000) { <span class="money-hint">= @_editing.OfferPrice?.ToString("C0")</span> }
+            </span>
         </div>
         <div class="row mt-12">
             <span>
@@ -160,10 +168,19 @@ else
                     <span>@property.ScoredCriteriaCount/@property.TotalCriteriaCount scored</span>
                 </div>
                 <div class="p-actions">
-                    <button class="sm" @onclick="() => StartScore(property)">Score</button>
-                    <button class="secondary sm" @onclick="() => StartEdit(property)">Edit</button>
-                    <button class="secondary sm" @onclick="@(() => Nav.NavigateTo($"offers/{property.Id}"))">Offers</button>
-                    <button type="button" class="danger sm" aria-label="Delete property @property.Nickname" @onclick="() => DeleteAsync(property)">✕</button>
+                    @if (_confirmingDeleteId == property.Id)
+                    {
+                        <span class="muted">Delete @property.Nickname and its scores &amp; offers?</span>
+                        <button type="button" class="danger sm" aria-label="Confirm delete property @property.Nickname" @onclick="() => DeleteAsync(property)">Delete</button>
+                        <button type="button" class="secondary sm" @onclick="() => _confirmingDeleteId = null">Keep</button>
+                    }
+                    else
+                    {
+                        <button class="sm" @onclick="() => StartScore(property)">Score</button>
+                        <button class="secondary sm" @onclick="() => StartEdit(property)">Edit</button>
+                        <button class="secondary sm" @onclick="@(() => Nav.NavigateTo($"offers/{property.Id}"))">Offers</button>
+                        <button type="button" class="danger sm" aria-label="Delete property @property.Nickname" @onclick="() => _confirmingDeleteId = property.Id">✕</button>
+                    }
                 </div>
             </div>
         }
@@ -178,6 +195,7 @@ else
     private Dictionary<int, int> _scoreDraft = new();
     private string? _error;
     private bool _showMore;
+    private int? _confirmingDeleteId;
 
     protected override async Task OnInitializedAsync()
     {
@@ -293,6 +311,7 @@ else
 
     private async Task DeleteAsync(Property property)
     {
+        _confirmingDeleteId = null;
         await PropertyService.DeletePropertyAsync(property.Id);
         await LoadAsync();
     }

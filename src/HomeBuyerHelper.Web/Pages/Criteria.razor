@@ -119,8 +119,16 @@ else
                         <span class="badge warn">Heavy</span>
                     }
                     <span class="criteria-actions">
-                        <button class="secondary sm" @onclick="() => StartEdit(criterion)">Edit</button>
-                        <button type="button" class="danger sm" aria-label="Delete criterion @criterion.Name" @onclick="() => DeleteAsync(criterion)">✕</button>
+                        @if (_confirmingDeleteId == criterion.Id)
+                        {
+                            <button type="button" class="danger sm" aria-label="Confirm delete criterion @criterion.Name" @onclick="() => DeleteAsync(criterion)">Delete</button>
+                            <button type="button" class="secondary sm" @onclick="() => _confirmingDeleteId = null">Keep</button>
+                        }
+                        else
+                        {
+                            <button class="secondary sm" @onclick="() => StartEdit(criterion)">Edit</button>
+                            <button type="button" class="danger sm" aria-label="Delete criterion @criterion.Name" @onclick="() => _confirmingDeleteId = criterion.Id">✕</button>
+                        }
                     </span>
                 </div>
                 <span class="score-cell">
@@ -139,6 +147,7 @@ else
     private string _selectedTemplate = "FirstTimeBuyer";
     private int _totalWeight;
     private bool _confirmingTemplate;
+    private int? _confirmingDeleteId;
 
     protected override async Task OnInitializedAsync()
     {
@@ -160,7 +169,25 @@ else
     private void StartEdit(EvaluationCriterion criterion)
     {
         _error = null;
-        _editing = criterion;
+        // Edit a copy so slider drags (and Cancel) never mutate the stored object.
+        _editing = new EvaluationCriterion
+        {
+            Id = criterion.Id,
+            Name = criterion.Name,
+            Description = criterion.Description,
+            Weight = criterion.Weight,
+            Category = criterion.Category,
+            ScoreAnchorLow = criterion.ScoreAnchorLow,
+            ScoreAnchorMidLow = criterion.ScoreAnchorMidLow,
+            ScoreAnchorMid = criterion.ScoreAnchorMid,
+            ScoreAnchorMidHigh = criterion.ScoreAnchorMidHigh,
+            ScoreAnchorHigh = criterion.ScoreAnchorHigh,
+            IsSystemSuggested = criterion.IsSystemSuggested,
+            IsWeightLocked = criterion.IsWeightLocked,
+            DisplayOrder = criterion.DisplayOrder,
+            CreatedAt = criterion.CreatedAt,
+            UpdatedAt = criterion.UpdatedAt
+        };
     }
 
     private async Task SaveAsync()
@@ -194,6 +221,7 @@ else
 
     private async Task DeleteAsync(EvaluationCriterion criterion)
     {
+        _confirmingDeleteId = null;
         await CriteriaRepository.DeleteAsync(criterion.Id);
         await LoadAsync();
     }

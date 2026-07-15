@@ -582,6 +582,15 @@ input[type="range"]:focus { box-shadow: none; }
 .input-with-picks { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .quick-picks button { padding: 6px 12px; font-size: 0.8rem; }
 
+/* Live formatted echo under large money inputs ("= $525,000") */
+.money-hint {
+    display: block;
+    margin-top: 4px;
+    font-size: 0.8rem;
+    color: var(--text-2);
+    font-variant-numeric: tabular-nums;
+}
+
 /* Criteria list rows: actions sit at the row's far edge */
 .criteria-item .criteria-actions { margin-left: auto; display: inline-flex; gap: 6px; }
 .criteria-item .score-cell { max-width: 420px; }
