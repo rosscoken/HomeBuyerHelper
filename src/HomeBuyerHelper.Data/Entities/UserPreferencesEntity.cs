@@ -68,6 +68,12 @@ public class UserPreferencesEntity
 
     public decimal StateMarginalTaxRate { get; set; }
 
+    public int? TargetPropertyId { get; set; }
+
+    public int? TargetOfferScenarioId { get; set; }
+
+    public DateTime? TargetPurchaseMonth { get; set; }
+
     public DateTime CreatedAt { get; set; }
 
     public DateTime UpdatedAt { get; set; }

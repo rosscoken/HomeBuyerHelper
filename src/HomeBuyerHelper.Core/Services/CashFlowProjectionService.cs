@@ -31,8 +31,23 @@ public class CashFlowProjectionService : ICashFlowProjectionService
         var fixedMonthly = input.Expenses.Where(e => !e.IsVariable).Sum(e => e.MonthlyAmount);
         var variableMonthly = input.Expenses.Where(e => e.IsVariable).Sum(e => e.MonthlyAmount);
 
+        // A planned purchase changes the recurring picture from its start month:
+        // expenses marked "ends at purchase" (e.g. rent) drop off, and the
+        // planned housing cost is layered in.
+        var planned = input.PlannedHousing;
+        var plannedStart = planned != null
+            ? new DateTime(planned.StartMonth.Year, planned.StartMonth.Month, 1)
+            : (DateTime?)null;
+        var fixedAfterPurchase = input.Expenses
+            .Where(e => !e.IsVariable && !e.EndsAtPurchase).Sum(e => e.MonthlyAmount);
+        var variableAfterPurchase = input.Expenses
+            .Where(e => e.IsVariable && !e.EndsAtPurchase).Sum(e => e.MonthlyAmount);
+
         // Warning threshold uses typical recurring monthly spend (incl. housing).
-        var typicalMonthlyExpenses = fixedMonthly + variableMonthly + input.MonthlyHousingCost;
+        // With a plan, "typical" is the post-purchase steady state.
+        var typicalMonthlyExpenses = planned != null
+            ? fixedAfterPurchase + variableAfterPurchase + input.MonthlyHousingCost + planned.MonthlyCost
+            : fixedMonthly + variableMonthly + input.MonthlyHousingCost;
         var warningThreshold = typicalMonthlyExpenses * WarningThresholdMonths;
         var fundTarget = input.EmergencyFund != null
             ? typicalMonthlyExpenses * input.EmergencyFund.TargetMonths
@@ -50,15 +65,20 @@ public class CashFlowProjectionService : ICashFlowProjectionService
                 .Where(e => e.Date.Year == month.Year && e.Date.Month == month.Month)
                 .ToList();
 
+            var afterPurchase = plannedStart != null && month >= plannedStart.Value;
+            var monthFixed = afterPurchase ? fixedAfterPurchase : fixedMonthly;
+            var monthVariable = afterPurchase ? variableAfterPurchase : variableMonthly;
+            var monthHousing = input.MonthlyHousingCost + (afterPurchase ? planned!.MonthlyCost : 0);
+
             var projection = new MonthlyProjection
             {
                 Month = month,
                 TotalIncome = Math.Round(
                     _incomeScenarioService.GetTotalForMonth(input.IncomeSources, month, input.Scenario), 2),
-                FixedExpenses = Math.Round(fixedMonthly, 2),
-                VariableExpenses = Math.Round(variableMonthly, 2),
+                FixedExpenses = Math.Round(monthFixed, 2),
+                VariableExpenses = Math.Round(monthVariable, 2),
                 OneTimeExpenses = Math.Round(eventsThisMonth.Sum(e => e.Amount), 2),
-                HousingCost = Math.Round(input.MonthlyHousingCost, 2),
+                HousingCost = Math.Round(monthHousing, 2),
                 EventNames = eventsThisMonth.Select(e => e.Name).ToList()
             };
 

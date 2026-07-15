@@ -149,6 +149,24 @@ public class UserPreferences
     public decimal StateMarginalTaxRate { get; set; }
 
     /// <summary>
+    /// The property the user has designated as their plan target, if any.
+    /// Resolved by PlanService into the integrated "My Plan" picture.
+    /// </summary>
+    public int? TargetPropertyId { get; set; }
+
+    /// <summary>
+    /// The offer scenario the user has designated as their plan, if any.
+    /// Belongs to <see cref="TargetPropertyId"/>.
+    /// </summary>
+    public int? TargetOfferScenarioId { get; set; }
+
+    /// <summary>
+    /// The month the user expects to close on the target property. Drives the
+    /// "rent until then, own after" cash flow projection. Null defaults to next month.
+    /// </summary>
+    public DateTime? TargetPurchaseMonth { get; set; }
+
+    /// <summary>
     /// When preferences were created.
     /// </summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

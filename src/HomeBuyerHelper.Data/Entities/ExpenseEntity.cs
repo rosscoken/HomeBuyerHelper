@@ -26,6 +26,8 @@ public class ExpenseEntity
 
     public bool ContinuesAfterPurchase { get; set; }
 
+    public bool EndsAtPurchase { get; set; }
+
     public string? Notes { get; set; }
 
     public DateTime CreatedAt { get; set; }

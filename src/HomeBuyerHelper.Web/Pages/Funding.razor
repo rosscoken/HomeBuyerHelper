@@ -2,11 +2,40 @@
 @inject IFundingRepository FundingRepository
 @inject ITaxImpactService TaxImpactService
 @inject IUserPreferencesRepository PreferencesRepository
+@inject IPlanService PlanService
 
 <PageTitle>Funding · HomeBuyerHelper</PageTitle>
 
 <h1>Down Payment Funding</h1>
 <p class="page-sub">Where is your down payment coming from, and what will the taxes cost? Estimates only — not tax advice.</p>
+
+@if (_planSnapshot != null)
+{
+    <div class="card">
+        <h2>Covers your plan? — @_planSnapshot.Property.Nickname</h2>
+        <div class="row">
+            <span>
+                <label>Cash to close needed</label>
+                <strong>@_planSnapshot.Evaluation.CashToClose.ToString("C0")</strong>
+            </span>
+            <span>
+                <label>Net available after taxes</label>
+                <strong>@_planSnapshot.FundingNetAvailable.ToString("C0")</strong>
+            </span>
+            <span>
+                <label>@(_planSnapshot.FundingSurplus >= 0 ? "Surplus" : "Shortfall")</label>
+                <span class="badge @(_planSnapshot.FundingSurplus >= 0 ? "ok" : "warn")">
+                    @(_planSnapshot.FundingSurplus >= 0 ? "+" : "−")@Math.Abs(_planSnapshot.FundingSurplus).ToString("C0")
+                </span>
+            </span>
+        </div>
+        <p class="muted mb-0">Target offer: '<strong>@_planSnapshot.Offer.Name</strong>' — <a href="offers">change on Offers</a></p>
+    </div>
+}
+else
+{
+    <p class="muted">Set a plan on the <a href="offers">Offers page</a> to see whether your funding covers it.</p>
+}
 
 <div class="grid-2">
     <div class="card">
@@ -118,6 +147,7 @@
 
 @code {
     private FundingPlanSummary? _plan;
+    private PlanSnapshot? _planSnapshot;
     private TaxFilingStatus _filingStatus = TaxFilingStatus.Single;
     private decimal _taxableIncome;
     private decimal _stateRate;
@@ -150,6 +180,7 @@
         _federalRate = TaxImpactService.GetMarginalFederalRate(preferences.FilingStatus, preferences.EstimatedTaxableIncome);
         _ltcgRate = TaxImpactService.GetLongTermCapitalGainsRate(preferences.FilingStatus, preferences.EstimatedTaxableIncome);
         _plan = TaxImpactService.BuildPlan(await FundingRepository.GetAllAsync(), preferences);
+        _planSnapshot = await PlanService.GetSnapshotAsync();
     }
 
     private async Task SaveTaxSettingsAsync()

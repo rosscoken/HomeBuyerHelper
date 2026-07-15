@@ -46,5 +46,6 @@ builder.Services.AddSingleton<IRentVsBuyService, RentVsBuyService>();
 builder.Services.AddSingleton<IScenarioService, ScenarioService>();
 builder.Services.AddSingleton<IOfferPlanningService, OfferPlanningService>();
 builder.Services.AddSingleton<ICriteriaTemplateService, CriteriaTemplateService>();
+builder.Services.AddSingleton<IPlanService, PlanService>();
 
 await builder.Build().RunAsync();
