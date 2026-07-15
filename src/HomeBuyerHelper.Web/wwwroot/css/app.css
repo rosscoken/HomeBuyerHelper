@@ -529,6 +529,63 @@ input[type="checkbox"] {
 .row .grow { flex: 1 1 320px; min-width: 0; }
 .row .grow input, .row .grow textarea { width: 100%; }
 
+/* Range sliders: strip the text-input chrome, keep the brand accent. */
+input[type="range"] {
+    width: 100%;
+    max-width: 420px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    accent-color: var(--primary);
+    cursor: pointer;
+}
+input[type="range"]:focus { box-shadow: none; }
+
+/* Stepper: − value + */
+.stepper {
+    display: inline-flex;
+    align-items: stretch;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-s);
+    overflow: hidden;
+    background: var(--surface);
+}
+
+.stepper button {
+    width: 42px;
+    min-height: 40px;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: var(--surface-2);
+    color: var(--text);
+    font-size: 1.15rem;
+    font-weight: 700;
+    box-shadow: none;
+}
+
+.stepper button:hover { transform: none; filter: none; background: var(--border); }
+.stepper button:disabled { opacity: 0.35; cursor: default; }
+
+.stepper-value {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 52px;
+    padding: 0 8px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Number input with quick-pick presets beside/below it */
+.input-with-picks { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.quick-picks button { padding: 6px 12px; font-size: 0.8rem; }
+
+/* Criteria list rows: actions sit at the row's far edge */
+.criteria-item .criteria-actions { margin-left: auto; display: inline-flex; gap: 6px; }
+.criteria-item .score-cell { max-width: 420px; }
+
 /* ---------- Score picker ---------- */
 
 .score-list { display: flex; flex-direction: column; gap: 12px; margin: 14px 0; }

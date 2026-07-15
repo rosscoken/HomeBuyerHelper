@@ -1,0 +1,28 @@
+@namespace HomeBuyerHelper.Web.Components
+
+<div class="stepper" role="spinbutton" aria-valuenow="@Value" aria-valuemin="@Min" aria-valuemax="@Max" aria-label="@Label">
+    <button type="button" aria-label="Decrease @Label" disabled="@(Value <= Min)"
+            @onclick="() => AdjustAsync(-Step)">−</button>
+    <span class="stepper-value">@Display</span>
+    <button type="button" aria-label="Increase @Label" disabled="@(Value >= Max)"
+            @onclick="() => AdjustAsync(Step)">+</button>
+</div>
+
+@code {
+    [Parameter] public decimal Value { get; set; }
+
+    [Parameter] public EventCallback<decimal> ValueChanged { get; set; }
+
+    [Parameter] public decimal Step { get; set; } = 1m;
+
+    [Parameter] public decimal Min { get; set; }
+
+    [Parameter] public decimal Max { get; set; } = 99m;
+
+    [Parameter] public string Label { get; set; } = "value";
+
+    private string Display => Value == Math.Floor(Value) ? Value.ToString("0") : Value.ToString("0.#");
+
+    private Task AdjustAsync(decimal delta) =>
+        ValueChanged.InvokeAsync(Math.Clamp(Value + delta, Min, Max));
+}

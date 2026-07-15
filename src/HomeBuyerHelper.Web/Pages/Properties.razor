@@ -19,8 +19,18 @@
             <span><label>Offer Price (opt)</label><input type="number" @bind="_editing.OfferPrice" /></span>
         </div>
         <div class="row mt-12">
-            <span><label>Bedrooms</label><input type="number" @bind="_editing.Bedrooms" /></span>
-            <span><label>Bathrooms</label><input type="number" step="0.5" @bind="_editing.Bathrooms" /></span>
+            <span>
+                <label>Bedrooms</label>
+                <Stepper Label="bedrooms" Min="0" Max="12"
+                         Value="@_editing.Bedrooms"
+                         ValueChanged="@(v => _editing.Bedrooms = (int)v)" />
+            </span>
+            <span>
+                <label>Bathrooms</label>
+                <Stepper Label="bathrooms" Min="0" Max="12" Step="0.5m"
+                         Value="@_editing.Bathrooms"
+                         ValueChanged="@(v => _editing.Bathrooms = v)" />
+            </span>
             <span><label>Square Feet</label><input type="number" @bind="_editing.SquareFeet" /></span>
             <span><label>Year Built</label><input type="number" @bind="_editing.YearBuilt" /></span>
         </div>

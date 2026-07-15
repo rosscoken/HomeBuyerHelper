@@ -59,7 +59,22 @@ else
             <span><label>Escalate up to (optional)</label><input type="number" @bind="_escalationMax" /></span>
         </div>
         <div class="row mt-12">
-            <span><label>Down Payment % (100 = cash)</label><input type="number" step="1" @bind="_downPercent" /></span>
+            <span>
+                <label>Down Payment % (100 = cash)</label>
+                <span class="input-with-picks">
+                    <input type="number" step="1" @bind="_downPercent" />
+                    <span class="seg quick-picks" aria-label="Common down payments">
+                        @foreach (var pick in new[] { 5m, 10m, 20m, 100m })
+                        {
+                            var value = pick;
+                            <button type="button" class="@(_downPercent == value ? "on" : "")"
+                                    @onclick="() => _downPercent = value">
+                                @(value == 100m ? "Cash" : $"{value:0}%")
+                            </button>
+                        }
+                    </span>
+                </span>
+            </span>
             <span><label>Rate %</label><input type="number" step="0.125" @bind="_rate" /></span>
             <span>
                 <label>Term</label>

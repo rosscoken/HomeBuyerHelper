@@ -48,7 +48,7 @@ expect((await page.textContent('.app-main')).includes('three steps'), 'skipped o
 await page.goto(BASE + '/criteria', { waitUntil: 'networkidle' });
 await page.click('text=Apply Template');
 // Confirm step may appear when criteria already exist; first run has none.
-await page.waitForSelector('table');
+await page.waitForSelector('.criteria-item');
 expect((await page.textContent('h2 .badge')).includes('100%'), 'template weights total 100%');
 
 // --- 3. Two properties, scored
