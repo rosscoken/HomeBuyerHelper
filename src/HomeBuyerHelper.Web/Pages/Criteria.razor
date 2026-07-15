@@ -53,8 +53,8 @@
             </span>
         </div>
         <div class="row mt-12">
-            <span><label>What does a 1 look like?</label><input size="40" @bind="_editing.ScoreAnchorLow" /></span>
-            <span><label>What does a 10 look like?</label><input size="40" @bind="_editing.ScoreAnchorHigh" /></span>
+            <span class="grow"><label>What does a 1 look like?</label><input @bind="_editing.ScoreAnchorLow" /></span>
+            <span class="grow"><label>What does a 10 look like?</label><input @bind="_editing.ScoreAnchorHigh" /></span>
         </div>
         @if (_error != null) { <p class="error-text">@_error</p> }
         <div class="row mt-14">

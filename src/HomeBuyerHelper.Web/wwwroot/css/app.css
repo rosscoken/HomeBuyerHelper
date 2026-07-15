@@ -525,6 +525,53 @@ input[type="checkbox"] {
     cursor: pointer;
 }
 
+/* A form field that should soak up available row width (notes, URLs, anchors). */
+.row .grow { flex: 1 1 320px; min-width: 0; }
+.row .grow input, .row .grow textarea { width: 100%; }
+
+/* ---------- Score picker ---------- */
+
+.score-list { display: flex; flex-direction: column; gap: 12px; margin: 14px 0; }
+
+.score-item {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-m);
+    background: var(--surface);
+    padding: 12px 14px;
+}
+
+.score-item-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+
+.score-anchors { display: flex; gap: 16px; flex-wrap: wrap; margin: 0 0 10px; font-size: 0.8rem; }
+.score-anchors strong { color: var(--text); margin-right: 4px; }
+
+.score-picker { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.score-picker button {
+    flex: 1 1 0;
+    min-width: 34px;
+    height: 38px;
+    padding: 0;
+    background: var(--surface-2);
+    color: var(--text-2);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-s);
+    font-weight: 700;
+    font-size: 0.9rem;
+    box-shadow: none;
+}
+
+.score-picker button:hover {
+    transform: none;
+    filter: none;
+    border-color: var(--border-strong);
+    color: var(--text);
+}
+
+.score-picker button.on.bad { background: var(--score-bad-bg); color: var(--score-bad-fg); border-color: var(--score-bad-fg); }
+.score-picker button.on.mid { background: var(--score-mid-bg); color: var(--score-mid-fg); border-color: var(--score-mid-fg); }
+.score-picker button.on.good { background: var(--score-good-bg); color: var(--score-good-fg); border-color: var(--score-good-fg); }
+
 select {
     appearance: none;
     -webkit-appearance: none;
@@ -910,4 +957,29 @@ td.score-good, td.score-mid, td.score-bad { font-weight: 700; text-align: center
     input, select { min-height: 44px; }
     .seg button { min-height: 36px; }
     .app-nav a, .step, .module-card { -webkit-tap-highlight-color: transparent; }
+
+    /* One field per line: full-width inputs beat cramped multi-column rows */
+    .row { align-items: stretch; }
+    .row > span { flex: 1 1 100%; min-width: 0; }
+    .row > span > input:not([type="checkbox"]),
+    .row > span > select,
+    .row > span > textarea,
+    .row input[type="number"] { width: 100%; }
+    .row > button { flex: 1 1 auto; }
+
+    /* Checkboxes read better beside their label than under it */
+    .row > span:has(> input[type="checkbox"]) {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 10px;
+        min-height: 44px;
+    }
+    .row > span:has(> input[type="checkbox"]) label { margin-bottom: 0; }
+    input[type="checkbox"] { width: 22px; height: 22px; }
+
+    /* Score picker: two rows of five 48px targets */
+    .score-picker { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+    .score-picker button { height: 48px; font-size: 1rem; min-height: 0; }
 }

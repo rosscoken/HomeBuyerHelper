@@ -1,0 +1,32 @@
+@namespace HomeBuyerHelper.Web.Components
+
+<div class="score-picker" role="radiogroup" aria-label="Score from 1 to 10">
+    @for (var i = 1; i <= 10; i++)
+    {
+        var score = i;
+        <button type="button"
+                role="radio"
+                aria-checked="@(Value == score ? "true" : "false")"
+                aria-label="Score @score"
+                title="@(Value == score ? "Tap again to clear" : $"Score {score}")"
+                class="@ButtonClass(score)"
+                @onclick="() => SelectAsync(score)">@score</button>
+    }
+</div>
+
+@code {
+    /// <summary>Current score; 0 means unscored.</summary>
+    [Parameter] public int Value { get; set; }
+
+    [Parameter] public EventCallback<int> ValueChanged { get; set; }
+
+    private string ButtonClass(int score)
+    {
+        var band = score >= 8 ? "good" : score >= 5 ? "mid" : "bad";
+        return Value == score ? $"{band} on" : band;
+    }
+
+    // Tapping the selected score again clears it back to unscored.
+    private Task SelectAsync(int score) =>
+        ValueChanged.InvokeAsync(Value == score ? 0 : score);
+}
