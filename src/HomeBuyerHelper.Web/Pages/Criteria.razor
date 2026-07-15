@@ -9,19 +9,30 @@
 
 <div class="card">
     <h2>Start from a template</h2>
-    <div class="row">
-        <span>
-            <label>Template</label>
-            <select @bind="_selectedTemplate">
-                @foreach (var name in HomeBuyerHelper.Core.Data.CommonCriteria.Templates.Keys)
-                {
-                    <option value="@name">@name</option>
-                }
-            </select>
-        </span>
-        <button class="secondary" @onclick="ApplyTemplateAsync">Apply Template</button>
-    </div>
-    <p class="muted mb-0">Applying replaces your current criteria.</p>
+    @if (_confirmingTemplate)
+    {
+        <div class="row">
+            <span class="muted">This replaces your @_criteria.Count current criteria.</span>
+            <button class="danger" @onclick="ApplyTemplateAsync">Replace</button>
+            <button class="secondary" @onclick="() => _confirmingTemplate = false">Cancel</button>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <span>
+                <label>Template</label>
+                <select @bind="_selectedTemplate">
+                    @foreach (var name in HomeBuyerHelper.Core.Data.CommonCriteria.Templates.Keys)
+                    {
+                        <option value="@name">@name</option>
+                    }
+                </select>
+            </span>
+            <button class="secondary" @onclick="OnApplyTemplateClick">Apply Template</button>
+        </div>
+        <p class="muted mb-0">Applying replaces your current criteria.</p>
+    }
 </div>
 
 @if (_editing != null)
@@ -75,6 +86,11 @@ else
     }
 </h2>
 
+@if (_criteria.Any(c => c.Weight > 40))
+{
+    <p class="muted">Criteria over 40% dominate the ranking — consider rebalancing.</p>
+}
+
 @if (_criteria.Count == 0)
 {
     <div class="empty-state">
@@ -96,6 +112,10 @@ else
                             <span class="score-cell">
                                 <span class="progress"><i style="width:@(Math.Min(criterion.Weight * 2, 100))%"></i></span>
                                 <strong>@criterion.Weight%</strong>
+                                @if (criterion.Weight > 40)
+                                {
+                                    <span class="badge warn">Heavy</span>
+                                }
                             </span>
                         </td>
                         <td><span class="chip">@criterion.Category</span></td>
@@ -116,6 +136,7 @@ else
     private string? _error;
     private string _selectedTemplate = "FirstTimeBuyer";
     private int _totalWeight;
+    private bool _confirmingTemplate;
 
     protected override async Task OnInitializedAsync()
     {
@@ -189,6 +210,18 @@ else
         await LoadAsync();
     }
 
+    private async Task OnApplyTemplateClick()
+    {
+        if (_criteria.Count > 0)
+        {
+            _confirmingTemplate = true;
+        }
+        else
+        {
+            await ApplyTemplateAsync();
+        }
+    }
+
     private async Task ApplyTemplateAsync()
     {
         foreach (var existing in await CriteriaRepository.GetAllAsync())
@@ -212,6 +245,7 @@ else
             });
         }
 
+        _confirmingTemplate = false;
         await LoadAsync();
     }
 }

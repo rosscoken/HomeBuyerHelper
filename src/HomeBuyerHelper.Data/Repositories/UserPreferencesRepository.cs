@@ -133,6 +133,9 @@ public class UserPreferencesRepository : IUserPreferencesRepository
         FilingStatus = (TaxFilingStatus)entity.FilingStatus,
         EstimatedTaxableIncome = entity.EstimatedTaxableIncome,
         StateMarginalTaxRate = entity.StateMarginalTaxRate,
+        TargetPropertyId = entity.TargetPropertyId,
+        TargetOfferScenarioId = entity.TargetOfferScenarioId,
+        TargetPurchaseMonth = entity.TargetPurchaseMonth,
         CreatedAt = entity.CreatedAt,
         UpdatedAt = entity.UpdatedAt
     };
@@ -168,6 +171,9 @@ public class UserPreferencesRepository : IUserPreferencesRepository
         FilingStatus = (int)model.FilingStatus,
         EstimatedTaxableIncome = model.EstimatedTaxableIncome,
         StateMarginalTaxRate = model.StateMarginalTaxRate,
+        TargetPropertyId = model.TargetPropertyId,
+        TargetOfferScenarioId = model.TargetOfferScenarioId,
+        TargetPurchaseMonth = model.TargetPurchaseMonth,
         CreatedAt = model.CreatedAt,
         UpdatedAt = model.UpdatedAt
     };

@@ -4,11 +4,25 @@
 @inject IOfferScenarioRepository OfferRepository
 @inject IOfferPlanningService OfferPlanningService
 @inject IUserPreferencesRepository PreferencesRepository
+@inject IPlanService PlanService
+@inject IIncomeRepository IncomeRepository
+@inject IAffordabilityService AffordabilityService
+@inject IIncomeScenarioService IncomeScenarioService
 
 <PageTitle>Offers · HomeBuyerHelper</PageTitle>
 
 <h1>Offer Planner</h1>
 <p class="page-sub">Plan out different offer structures on a house — price, financing, points, credits, and contingencies — and compare what each one really costs.</p>
+
+@if (_preferences != null)
+{
+    <p class="muted">
+        When a property has no tax or insurance entered, estimates assume
+        @(_preferences.DefaultPropertyTaxRate.ToString("0.##"))% property tax and
+        @(_preferences.DefaultMonthlyInsurance.ToString("C0"))/mo insurance —
+        <a href="settings">edit</a>
+    </p>
+}
 
 @if (_properties.Count == 0)
 {
@@ -89,7 +103,13 @@ else
                         <th>Metric</th>
                         @foreach (var eval in _evaluations)
                         {
-                            <th class="num">@eval.Offer.Name</th>
+                            <th class="num">
+                                @eval.Offer.Name
+                                @if (eval.Offer.Id == _planOfferId)
+                                {
+                                    <span class="badge ok ml-8">Plan</span>
+                                }
+                            </th>
                         }
                     </tr>
                 </thead>
@@ -158,6 +178,24 @@ else
                         @foreach (var eval in _evaluations)
                         {
                             <td class="num @BestClass(eval, e => e.TotalMonthlyCost)"><strong>@eval.TotalMonthlyCost.ToString("C0")</strong>@(eval.MonthlyPMI > 0 ? " *" : "")</td>
+                        }
+                    </tr>
+                    <tr>
+                        <td>Affordability <span class="muted">(Realistic)</span></td>
+                        @foreach (var eval in _evaluations)
+                        {
+                            <td class="num">
+                                @if (_hasIncome)
+                                {
+                                    var assessment = AssessOffer(eval);
+                                    <span class="badge @ZoneBadgeClass(assessment.Zone)">@assessment.ZoneLabel</span>
+                                    <span class="muted"> @assessment.HousingPercentage.ToString("0.#")%</span>
+                                }
+                                else
+                                {
+                                    <span class="muted">— <a href="budget">add income</a></span>
+                                }
+                            </td>
                         }
                     </tr>
                     <tr>
@@ -240,7 +278,15 @@ else
                         @foreach (var eval in _evaluations)
                         {
                             <td class="num">
-                                <button type="button" class="secondary sm" @onclick="() => EditOffer(eval.Offer)">Edit</button>
+                                @if (eval.Offer.Id == _planOfferId)
+                                {
+                                    <button type="button" class="secondary sm" @onclick="ClearPlanAsync">Clear plan</button>
+                                }
+                                else
+                                {
+                                    <button type="button" class="sm" @onclick="() => SetPlanAsync(eval.Offer)">Set as plan</button>
+                                }
+                                <button type="button" class="secondary sm ml-8" @onclick="() => EditOffer(eval.Offer)">Edit</button>
                                 <button type="button" class="danger sm ml-8" aria-label="Delete offer @eval.Offer.Name" @onclick="() => DeleteOfferAsync(eval.Offer)">✕</button>
                             </td>
                         }
@@ -282,6 +328,11 @@ else
     private string? _error;
     private bool _isInitialized;
 
+    // Plan + affordability state
+    private int? _planOfferId;
+    private bool _hasIncome;
+    private decimal _realisticIncome;
+
     // Form state
     private int? _editingId;
     private string _name = "";
@@ -303,9 +354,14 @@ else
     protected override async Task OnInitializedAsync()
     {
         _preferences = await PreferencesRepository.GetAsync();
+        _planOfferId = _preferences.TargetOfferScenarioId;
         _downPercent = _preferences.DefaultDownPaymentPercent;
         _rate = _preferences.DefaultInterestRate;
         _termYears = _preferences.DefaultMortgageTerm;
+
+        var income = await IncomeRepository.GetAllAsync();
+        _hasIncome = income.Count > 0;
+        _realisticIncome = IncomeScenarioService.GetAverageMonthlyIncome(income, IncomeScenario.Realistic);
 
         _properties = (await PropertyRepository.GetActiveAsync()).ToList();
         _isInitialized = true;
@@ -498,6 +554,38 @@ else
         }
         await LoadOffersAsync();
     }
+
+    private async Task SetPlanAsync(OfferScenario offer)
+    {
+        await PlanService.SetPlanAsync(offer.PropertyId, offer.Id);
+        _planOfferId = offer.Id;
+    }
+
+    private async Task ClearPlanAsync()
+    {
+        await PlanService.ClearPlanAsync();
+        _planOfferId = null;
+    }
+
+    private AffordabilityAssessment AssessOffer(OfferEvaluation eval)
+    {
+        var percentage = AffordabilityService.CalculateHousingPercentage(eval.TotalMonthlyCost, _realisticIncome);
+        return new AffordabilityAssessment
+        {
+            Scenario = IncomeScenario.Realistic,
+            GrossMonthlyIncome = _realisticIncome,
+            MonthlyHousingCost = eval.TotalMonthlyCost,
+            HousingPercentage = percentage,
+            Zone = _realisticIncome <= 0 ? AffordabilityZone.Risky : AffordabilityService.GetZone(percentage)
+        };
+    }
+
+    private static string ZoneBadgeClass(AffordabilityZone zone) => zone switch
+    {
+        AffordabilityZone.Comfortable => "ok",
+        AffordabilityZone.Stretching => "brand",
+        _ => "warn"
+    };
 
     private string StrengthBadgeClass(OfferEvaluation eval) =>
         eval.StrengthScore >= 60 ? "ok" : eval.StrengthScore >= 40 ? "brand" : "warn";

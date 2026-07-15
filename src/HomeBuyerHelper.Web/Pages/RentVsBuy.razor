@@ -14,6 +14,18 @@
         <span><label>Other Ownership Costs/mo</label><input type="number" @bind="_ownershipCosts" /></span>
     </div>
     <div class="row mt-12">
+        <span><label>Down Payment %</label><input type="number" step="1" @bind="_downPaymentPercent" /></span>
+        <span><label>Rate %</label><input type="number" step="0.125" @bind="_interestRate" /></span>
+        <span>
+            <label>Term</label>
+            <select @bind="_mortgageTerm">
+                <option value="15">15 years</option>
+                <option value="20">20 years</option>
+                <option value="30">30 years</option>
+            </select>
+        </span>
+    </div>
+    <div class="row mt-12">
         <span><label>Rent Increase %/yr</label><input type="number" step="0.1" @bind="_rentIncrease" /></span>
         <span><label>Investment Return %/yr</label><input type="number" step="0.1" @bind="_investReturn" /></span>
         <span><label>Appreciation %/yr</label><input type="number" step="0.1" @bind="_appreciation" /></span>
@@ -25,6 +37,7 @@
             Compare
         </button>
     </div>
+    <p class="muted mt-12 mb-0">Defaults come from Settings — <a href="settings">edit</a></p>
     @if (_error != null) { <p class="error-text">@_error</p> }
 </div>
 
@@ -61,6 +74,9 @@
     private decimal _price;
     private decimal _rent;
     private decimal _ownershipCosts = 800m;
+    private decimal _downPaymentPercent;
+    private decimal _interestRate;
+    private int _mortgageTerm;
     private decimal _rentIncrease = 3m;
     private decimal _investReturn = 7m;
     private decimal _appreciation = 3m;
@@ -69,7 +85,15 @@
     private string _verdict = "";
     private RentVsBuyResult? _result;
 
-    private async Task CompareAsync()
+    protected override async Task OnInitializedAsync()
+    {
+        var preferences = await PreferencesRepository.GetAsync();
+        _downPaymentPercent = preferences.DefaultDownPaymentPercent;
+        _interestRate = preferences.DefaultInterestRate;
+        _mortgageTerm = preferences.DefaultMortgageTerm;
+    }
+
+    private void CompareAsync()
     {
         if (_price <= 0 || _rent <= 0)
         {
@@ -78,14 +102,13 @@
         }
 
         _error = null;
-        var preferences = await PreferencesRepository.GetAsync();
 
         _result = RentVsBuyService.Compare(new RentVsBuyInput
         {
             PurchasePrice = _price,
-            DownPaymentPercent = preferences.DefaultDownPaymentPercent,
-            InterestRate = preferences.DefaultInterestRate,
-            MortgageTermYears = preferences.DefaultMortgageTerm,
+            DownPaymentPercent = _downPaymentPercent,
+            InterestRate = _interestRate,
+            MortgageTermYears = _mortgageTerm,
             MonthlyOwnershipCosts = _ownershipCosts,
             CurrentMonthlyRent = _rent,
             AnnualRentIncreasePercent = _rentIncrease,

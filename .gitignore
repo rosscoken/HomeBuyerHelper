@@ -157,3 +157,5 @@ UpgradeLog*.XML
 UpgradeLog*.htm
 ServiceFabricBackup/
 *.rptproj.bak
+verify-shots/
+.claude/worktrees/

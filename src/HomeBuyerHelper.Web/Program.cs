@@ -30,6 +30,7 @@ builder.Services.AddSingleton<IFundingRepository, LocalFundingRepository>();
 builder.Services.AddSingleton<IPhotoRepository, LocalPhotoRepository>();
 builder.Services.AddSingleton<IProConRepository, LocalProConRepository>();
 builder.Services.AddSingleton<IOfferScenarioRepository, LocalOfferScenarioRepository>();
+builder.Services.AddSingleton<WebBackupService>();
 
 // Core business services (shared with the native app)
 builder.Services.AddSingleton<IPropertyService, PropertyService>();
@@ -45,5 +46,7 @@ builder.Services.AddSingleton<IRentVsBuyService, RentVsBuyService>();
 builder.Services.AddSingleton<IScenarioService, ScenarioService>();
 builder.Services.AddSingleton<IOfferPlanningService, OfferPlanningService>();
 builder.Services.AddSingleton<ICriteriaTemplateService, CriteriaTemplateService>();
+builder.Services.AddSingleton<IPlanService, PlanService>();
+builder.Services.AddSingleton<IOnboardingRecommendationService, OnboardingRecommendationService>();
 
 await builder.Build().RunAsync();

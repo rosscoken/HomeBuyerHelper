@@ -5,6 +5,7 @@
 @inject IUserPreferencesRepository PreferencesRepository
 @inject IIncomeScenarioService IncomeScenarioService
 @inject ICashFlowProjectionService ProjectionService
+@inject IPlanService PlanService
 
 <PageTitle>Budget · HomeBuyerHelper</PageTitle>
 
@@ -75,6 +76,10 @@
                 <label>Variable?</label>
                 <input type="checkbox" @bind="_newExpense.IsVariable" />
             </span>
+            <span>
+                <label>Ends at purchase?</label>
+                <input type="checkbox" @bind="_newExpense.EndsAtPurchase" />
+            </span>
             <button class="sm" @onclick="AddExpenseAsync">Add</button>
         </div>
         @if (_expenses.Count > 0)
@@ -87,7 +92,13 @@
                             <tr>
                                 <td><strong>@expense.Name</strong></td>
                                 <td class="num">@expense.MonthlyAmount.ToString("C0")/mo</td>
-                                <td><span class="chip">@(expense.IsVariable ? "Variable" : "Fixed")</span></td>
+                                <td>
+                                    <span class="chip">@(expense.IsVariable ? "Variable" : "Fixed")</span>
+                                    @if (expense.EndsAtPurchase)
+                                    {
+                                        <span class="chip">Ends at purchase</span>
+                                    }
+                                </td>
                                 <td style="text-align:right"><button type="button" class="danger sm" aria-label="Delete expense @expense.Name" @onclick="() => DeleteExpenseAsync(expense)">✕</button></td>
                             </tr>
                         }
@@ -125,6 +136,20 @@
         <button class="secondary sm" @onclick="SaveFundAsync">Save Fund</button>
     </div>
 </div>
+
+@if (_plan != null)
+{
+    <div class="callout">
+        <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>
+            Projection includes <strong>@_plan.Property.Nickname</strong> at
+            <strong>@_plan.Evaluation.TotalMonthlyCost.ToString("C0")/mo</strong> starting
+            <input type="month" @bind="_purchaseMonth" @bind:after="OnPurchaseMonthChangedAsync" />
+            — offer '<strong>@_plan.Offer.Name</strong>'.
+            Expenses marked 'ends at purchase' stop then.
+        </span>
+    </div>
+}
 
 <h2>
     24-Month Cash Flow
@@ -180,6 +205,15 @@
     private decimal _realistic;
     private decimal _expected;
 
+    private PlanSnapshot? _plan;
+    private DateTime _purchaseMonth = FirstOfNextMonth();
+
+    private static DateTime FirstOfNextMonth()
+    {
+        var next = DateTime.Today.AddMonths(1);
+        return new DateTime(next.Year, next.Month, 1);
+    }
+
     private static IncomeSource NewIncome() => new() { Name = "", GrossAmount = 0, Frequency = IncomeFrequency.Monthly, IsReliable = true, Probability = 70 };
     private static Expense NewExpense() => new() { Name = "", Amount = 0 };
     private static OneTimeEvent NewEvent() => new() { Name = "", Amount = 0, Date = DateTime.Today };
@@ -197,6 +231,14 @@
         _income = (await IncomeRepository.GetAllAsync()).ToList();
         _expenses = (await ExpenseRepository.GetAllAsync()).ToList();
         _events = (await EventRepository.GetAllAsync()).ToList();
+
+        _plan = await PlanService.GetSnapshotAsync();
+        if (_plan != null)
+        {
+            _purchaseMonth = _plan.TargetPurchaseMonth is DateTime month
+                ? new DateTime(month.Year, month.Month, 1)
+                : FirstOfNextMonth();
+        }
 
         _conservative = Math.Round(IncomeScenarioService.GetAverageMonthlyIncome(_income, IncomeScenario.Conservative), 0);
         _realistic = Math.Round(IncomeScenarioService.GetAverageMonthlyIncome(_income, IncomeScenario.Realistic), 0);
@@ -224,8 +266,21 @@
             {
                 TargetMonths = preferences.EmergencyFundTargetMonths,
                 CurrentBalance = preferences.EmergencyFundBalance
-            }
+            },
+            PlannedHousing = _plan != null
+                ? new PlannedHousing
+                {
+                    MonthlyCost = _plan.Evaluation.TotalMonthlyCost,
+                    StartMonth = _purchaseMonth
+                }
+                : null
         });
+    }
+
+    private async Task OnPurchaseMonthChangedAsync()
+    {
+        await PlanService.SetPurchaseMonthAsync(_purchaseMonth);
+        await ProjectAsync();
     }
 
     private async Task AddIncomeAsync()

@@ -61,4 +61,25 @@ public class CashFlowProjectionInput
     /// Emergency fund configuration; null disables fund tracking.
     /// </summary>
     public EmergencyFundConfig? EmergencyFund { get; init; }
+
+    /// <summary>
+    /// Optional planned home purchase to model. From its start month onward the
+    /// projection adds the housing cost and drops expenses marked
+    /// <see cref="Expense.EndsAtPurchase"/> (e.g. current rent). Null projects
+    /// current finances unchanged.
+    /// </summary>
+    public PlannedHousing? PlannedHousing { get; init; }
+}
+
+/// <summary>
+/// A planned home purchase layered into a cash flow projection: the monthly
+/// housing cost that begins at <see cref="StartMonth"/>.
+/// </summary>
+public class PlannedHousing
+{
+    /// <summary>Monthly housing cost once the home is owned.</summary>
+    public decimal MonthlyCost { get; init; }
+
+    /// <summary>First month the housing cost applies (rounded to the month).</summary>
+    public DateTime StartMonth { get; init; }
 }

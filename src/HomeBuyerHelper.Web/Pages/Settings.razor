@@ -1,0 +1,131 @@
+@page "/settings"
+@inject IUserPreferencesRepository PreferencesRepository
+
+<PageTitle>Settings · HomeBuyerHelper</PageTitle>
+
+<h1>Settings</h1>
+<p class="page-sub">These defaults drive the numbers on Compare, Rent vs. Buy, and Offers. Change them here and every calculation updates.</p>
+
+<div class="grid-2">
+    <div class="card">
+        <h2>Loan Defaults</h2>
+        <div class="row">
+            <span><label>Down Payment %</label><input type="number" step="1" @bind="_downPaymentPercent" /></span>
+            <span><label>Interest Rate %</label><input type="number" step="0.125" @bind="_interestRate" /></span>
+            <span>
+                <label>Mortgage Term</label>
+                <select @bind="_mortgageTerm">
+                    <option value="15">15 years</option>
+                    <option value="20">20 years</option>
+                    <option value="30">30 years</option>
+                </select>
+            </span>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Cost Estimates</h2>
+        <div class="row">
+            <span><label>Property Tax Rate % (of price/yr)</label><input type="number" step="0.01" @bind="_propertyTaxRate" /></span>
+            <span><label>Monthly Insurance</label><input type="number" @bind="_monthlyInsurance" /></span>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Commute Value</h2>
+        <div class="row">
+            <span><label>Time Value ($/hr)</label><input type="number" @bind="_timeValueHourlyRate" /></span>
+            <span><label>Workdays / Month</label><input type="number" step="1" @bind="_workdaysPerMonth" /></span>
+            <span><label>Work Address</label><input @bind="_workAddress" placeholder="optional" /></span>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Data &amp; Backup</h2>
+        <p class="muted">Export, import, or delete your data.</p>
+        <a href="settings/data"><button type="button" class="secondary sm">Manage Data</button></a>
+    </div>
+</div>
+
+<div class="row mt-14">
+    <button @onclick="SaveAsync">Save Settings</button>
+    @if (_saved) { <span class="badge ok">Saved</span> }
+</div>
+@if (_error != null) { <p class="error-text">@_error</p> }
+
+@code {
+    private decimal _downPaymentPercent;
+    private decimal _interestRate;
+    private int _mortgageTerm;
+    private decimal _propertyTaxRate;
+    private decimal _monthlyInsurance;
+    private decimal _timeValueHourlyRate;
+    private int _workdaysPerMonth;
+    private string? _workAddress;
+
+    private string? _error;
+    private bool _saved;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var preferences = await PreferencesRepository.GetAsync();
+        _downPaymentPercent = preferences.DefaultDownPaymentPercent;
+        _interestRate = preferences.DefaultInterestRate;
+        _mortgageTerm = preferences.DefaultMortgageTerm;
+        _propertyTaxRate = preferences.DefaultPropertyTaxRate;
+        _monthlyInsurance = preferences.DefaultMonthlyInsurance;
+        _timeValueHourlyRate = preferences.TimeValueHourlyRate;
+        _workdaysPerMonth = preferences.WorkdaysPerMonth;
+        _workAddress = preferences.WorkAddress;
+    }
+
+    private async Task SaveAsync()
+    {
+        _saved = false;
+
+        if (_interestRate < 0 || _interestRate > 15)
+        {
+            _error = "Interest rate must be between 0 and 15 percent.";
+            return;
+        }
+        if (_downPaymentPercent < 0 || _downPaymentPercent > 100)
+        {
+            _error = "Down payment must be between 0 and 100 percent.";
+            return;
+        }
+        if (_mortgageTerm <= 0)
+        {
+            _error = "Mortgage term must be greater than 0.";
+            return;
+        }
+        if (_propertyTaxRate < 0 || _propertyTaxRate > 15)
+        {
+            _error = "Property tax rate must be between 0 and 15 percent.";
+            return;
+        }
+        if (_workdaysPerMonth < 1 || _workdaysPerMonth > 31)
+        {
+            _error = "Workdays per month must be between 1 and 31.";
+            return;
+        }
+        if (_monthlyInsurance < 0 || _timeValueHourlyRate < 0)
+        {
+            _error = "Insurance and time value can't be negative.";
+            return;
+        }
+
+        _error = null;
+        var preferences = await PreferencesRepository.GetAsync();
+        preferences.DefaultDownPaymentPercent = _downPaymentPercent;
+        preferences.DefaultInterestRate = _interestRate;
+        preferences.DefaultMortgageTerm = _mortgageTerm;
+        preferences.DefaultPropertyTaxRate = _propertyTaxRate;
+        preferences.DefaultMonthlyInsurance = _monthlyInsurance;
+        preferences.TimeValueHourlyRate = _timeValueHourlyRate;
+        preferences.WorkdaysPerMonth = _workdaysPerMonth;
+        preferences.WorkAddress = string.IsNullOrWhiteSpace(_workAddress) ? null : _workAddress.Trim();
+        await PreferencesRepository.SaveAsync(preferences);
+
+        _saved = true;
+    }
+}

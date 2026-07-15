@@ -1,0 +1,220 @@
+@page "/scenarios"
+@inject IPlanService PlanService
+@inject IPropertyRepository PropertyRepository
+@inject IUserPreferencesRepository PreferencesRepository
+@inject IIncomeRepository IncomeRepository
+@inject IScenarioService ScenarioService
+
+<PageTitle>Scenarios · HomeBuyerHelper</PageTitle>
+
+<h1>Scenarios</h1>
+<p class="page-sub">What changes if you wait? Compare buying now against waiting while you save.</p>
+
+<div class="grid-2">
+    <div class="card">
+        <h2>Buy Now</h2>
+        <div class="row">
+            <span><label>Purchase Price</label><input type="number" @bind="_purchasePrice" /></span>
+            <span><label>Down Payment %</label><input type="number" step="1" @bind="_downPercent" /></span>
+        </div>
+        <div class="row mt-12">
+            <span><label>Rate %</label><input type="number" step="0.125" @bind="_rate" /></span>
+            <span>
+                <label>Term</label>
+                <select @bind="_termYears">
+                    <option value="15">15 years</option>
+                    <option value="20">20 years</option>
+                    <option value="30">30 years</option>
+                </select>
+            </span>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Wait Scenario</h2>
+        <div class="row">
+            <span><label>Months to Wait</label><input type="number" min="1" @bind="_monthsToWait" /></span>
+            <span><label>Monthly Savings toward Down</label><input type="number" @bind="_monthlySavings" /></span>
+        </div>
+        <div class="row mt-12">
+            <span><label>Market Change %/yr</label><input type="number" step="0.1" @bind="_marketChangePercent" /></span>
+            <span><label>Current Rent/mo</label><input type="number" @bind="_currentRent" /></span>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-14">
+    <button @onclick="Compare">
+        <svg aria-hidden="true" focusable="false" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Compare
+    </button>
+</div>
+@if (_error != null) { <p class="error-text">@_error</p> }
+
+@if (_buyNow != null && _wait != null)
+{
+    <div class="verdict-card">
+        <h2>@_verdict</h2>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Metric</th><th class="num">Buy now</th><th class="num">Wait @_monthsToWait months</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Purchase price</td>
+                    <td class="num">@_buyNow.Scenario.PurchasePrice.ToString("C0")</td>
+                    <td class="num">@_wait.Scenario.PurchasePrice.ToString("C0")</td>
+                </tr>
+                <tr>
+                    <td>Down payment</td>
+                    <td class="num">@_buyNow.DownPayment.ToString("C0")</td>
+                    <td class="num">@_wait.DownPayment.ToString("C0")</td>
+                </tr>
+                <tr>
+                    <td>Loan</td>
+                    <td class="num">@_buyNow.LoanAmount.ToString("C0")</td>
+                    <td class="num">@_wait.LoanAmount.ToString("C0")</td>
+                </tr>
+                <tr>
+                    <td>Monthly payment</td>
+                    <td class="num">@_buyNow.MonthlyPayment.ToString("C0")</td>
+                    <td class="num">@_wait.MonthlyPayment.ToString("C0")</td>
+                </tr>
+                <tr>
+                    <td>Cash to close</td>
+                    <td class="num">@_buyNow.CashToClose.ToString("C0")</td>
+                    <td class="num">@_wait.CashToClose.ToString("C0")</td>
+                </tr>
+                <tr>
+                    <td>Total interest</td>
+                    <td class="num">@_buyNow.TotalInterest.ToString("C0")</td>
+                    <td class="num">@_wait.TotalInterest.ToString("C0")</td>
+                </tr>
+                <tr>
+                    <td>Housing %</td>
+                    <td class="num">
+                        @if (_hasIncome)
+                        {
+                            <span class="badge @ZoneBadgeClass(_buyNow.AffordabilityZone)">@_buyNow.HousingPercentage.ToString("0.#")%</span>
+                        }
+                        else
+                        {
+                            <span class="muted">— <a href="budget">add income</a></span>
+                        }
+                    </td>
+                    <td class="num">
+                        @if (_hasIncome)
+                        {
+                            <span class="badge @ZoneBadgeClass(_wait.AffordabilityZone)">@_wait.HousingPercentage.ToString("0.#")%</span>
+                        }
+                        else
+                        {
+                            <span class="muted">—</span>
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td>Rent paid while waiting</td>
+                    <td class="num">@_buyNow.Scenario.SunkCosts.ToString("C0")</td>
+                    <td class="num">@_wait.Scenario.SunkCosts.ToString("C0")</td>
+                </tr>
+                <tr>
+                    <td>Total cost incl. sunk</td>
+                    <td class="num"><strong>@_buyNow.TotalCostIncludingSunk.ToString("C0")</strong></td>
+                    <td class="num"><strong>@_wait.TotalCostIncludingSunk.ToString("C0")</strong></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private decimal _purchasePrice;
+    private decimal _downPercent;
+    private decimal _rate;
+    private int _termYears;
+
+    private int _monthsToWait = 6;
+    private decimal _monthlySavings = 1000m;
+    private decimal _marketChangePercent = 3m;
+    private decimal _currentRent;
+
+    private IReadOnlyList<IncomeSource> _incomeSources = Array.Empty<IncomeSource>();
+    private bool _hasIncome;
+
+    private ScenarioResult? _buyNow;
+    private ScenarioResult? _wait;
+    private string _verdict = "";
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var preferences = await PreferencesRepository.GetAsync();
+        var plan = await PlanService.GetSnapshotAsync();
+
+        if (plan != null)
+        {
+            _purchasePrice = plan.Offer.OfferPrice;
+            _downPercent = plan.Offer.DownPaymentPercent;
+            _rate = plan.Offer.InterestRate;
+            _termYears = plan.Offer.TermYears;
+        }
+        else
+        {
+            var properties = await PropertyRepository.GetActiveAsync();
+            var first = properties.FirstOrDefault();
+            _purchasePrice = first?.AskingPrice ?? 0;
+            _downPercent = preferences.DefaultDownPaymentPercent;
+            _rate = preferences.DefaultInterestRate;
+            _termYears = preferences.DefaultMortgageTerm;
+        }
+
+        _incomeSources = await IncomeRepository.GetAllAsync();
+        _hasIncome = _incomeSources.Count > 0;
+    }
+
+    private void Compare()
+    {
+        if (_purchasePrice <= 0)
+        {
+            _error = "Enter a purchase price.";
+            return;
+        }
+
+        _error = null;
+
+        var baseScenario = new PurchaseScenario
+        {
+            Name = "Buy now",
+            PurchasePrice = _purchasePrice,
+            DownPaymentPercent = _downPercent,
+            InterestRate = _rate,
+            MortgageTermYears = _termYears,
+            IncomeScenario = IncomeScenario.Realistic
+        };
+
+        var waitScenario = ScenarioService.BuildWaitScenario(
+            baseScenario, Math.Max(1, _monthsToWait), _monthlySavings, _marketChangePercent, _currentRent);
+
+        _buyNow = ScenarioService.Evaluate(baseScenario, _incomeSources);
+        _wait = ScenarioService.Evaluate(waitScenario, _incomeSources);
+
+        var diff = _buyNow.TotalCostIncludingSunk - _wait.TotalCostIncludingSunk;
+        _verdict = diff switch
+        {
+            > 0 => $"Waiting {_monthsToWait} months costs less overall — {diff:C0} cheaper than buying now.",
+            < 0 => $"Buying now costs less overall — {Math.Abs(diff):C0} cheaper than waiting {_monthsToWait} months.",
+            _ => "Buying now and waiting cost about the same overall."
+        };
+    }
+
+    private static string ZoneBadgeClass(AffordabilityZone zone) => zone switch
+    {
+        AffordabilityZone.Comfortable => "ok",
+        AffordabilityZone.Stretching => "brand",
+        _ => "warn"
+    };
+}

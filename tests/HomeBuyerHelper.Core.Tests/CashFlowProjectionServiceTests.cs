@@ -213,6 +213,94 @@ public class CashFlowProjectionServiceTests
         result[0].Surplus.Should().Be(4_300m);
     }
 
+    private static Expense EndsAtPurchase(string name, decimal amount) => new()
+    {
+        Name = name,
+        Amount = amount,
+        Frequency = ExpenseFrequency.Monthly,
+        IsVariable = false,
+        EndsAtPurchase = true
+    };
+
+    [Fact]
+    public void PlannedHousing_AddsHousingFromStartMonthOnward()
+    {
+        var result = _service.Project(new CashFlowProjectionInput
+        {
+            IncomeSources = new[] { MonthlyIncome(8_000m) },
+            Expenses = new[] { Fixed("Car", 500m) },
+            StartMonth = Start,
+            Months = 4,
+            PlannedHousing = new PlannedHousing
+            {
+                MonthlyCost = 3_200m,
+                StartMonth = Start.AddMonths(2) // March 2026
+            }
+        });
+
+        // Before purchase: no housing cost layered in.
+        result[0].HousingCost.Should().Be(0m);
+        result[1].HousingCost.Should().Be(0m);
+        result[0].TotalExpenses.Should().Be(500m);
+
+        // From the purchase month onward: housing cost appears.
+        result[2].HousingCost.Should().Be(3_200m);
+        result[3].HousingCost.Should().Be(3_200m);
+        result[2].TotalExpenses.Should().Be(3_700m);
+    }
+
+    [Fact]
+    public void PlannedHousing_StopsEndsAtPurchaseExpensesAtStartMonth()
+    {
+        var result = _service.Project(new CashFlowProjectionInput
+        {
+            IncomeSources = new[] { MonthlyIncome(8_000m) },
+            Expenses = new[] { EndsAtPurchase("Rent", 2_000m), Fixed("Car", 500m) },
+            StartMonth = Start,
+            Months = 3,
+            PlannedHousing = new PlannedHousing
+            {
+                MonthlyCost = 3_200m,
+                StartMonth = Start.AddMonths(1) // February 2026
+            }
+        });
+
+        // January: rent still counts, no housing yet.
+        result[0].FixedExpenses.Should().Be(2_500m);
+        result[0].HousingCost.Should().Be(0m);
+        result[0].TotalExpenses.Should().Be(2_500m);
+
+        // February onward: rent drops off, housing kicks in.
+        result[1].FixedExpenses.Should().Be(500m);
+        result[1].HousingCost.Should().Be(3_200m);
+        result[1].TotalExpenses.Should().Be(3_700m);
+        result[2].FixedExpenses.Should().Be(500m);
+        result[2].HousingCost.Should().Be(3_200m);
+    }
+
+    [Fact]
+    public void PlannedHousing_Null_KeepsLegacyBehavior()
+    {
+        var input = new CashFlowProjectionInput
+        {
+            IncomeSources = new[] { MonthlyIncome(8_000m) },
+            Expenses = new[] { EndsAtPurchase("Rent", 2_000m), Fixed("Car", 500m) },
+            StartMonth = Start,
+            Months = 3,
+            PlannedHousing = null
+        };
+
+        var result = _service.Project(input);
+
+        // No plan: the EndsAtPurchase expense keeps counting all months.
+        result.Should().AllSatisfy(m =>
+        {
+            m.FixedExpenses.Should().Be(2_500m);
+            m.HousingCost.Should().Be(0m);
+            m.TotalExpenses.Should().Be(2_500m);
+        });
+    }
+
     [Fact]
     public void Project_PerformanceUnder100msFor24Months()
     {

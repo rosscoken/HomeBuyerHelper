@@ -1,0 +1,157 @@
+@page "/welcome"
+@using System.Text.RegularExpressions
+@using HomeBuyerHelper.Core.Data
+@inject ICriteriaRepository CriteriaRepository
+@inject IUserPreferencesRepository PreferencesRepository
+@inject IOnboardingRecommendationService RecommendationService
+@inject NavigationManager Nav
+
+<PageTitle>Welcome · HomeBuyerHelper</PageTitle>
+
+<h1>Welcome</h1>
+<p class="page-sub">Four quick questions and we'll set up starter criteria weighted for you. You can change everything later.</p>
+
+<div class="card">
+    <h2>1. What best describes you?</h2>
+    <span class="seg">
+        <button type="button" class="@(IsSituation(BuyingGoal.Exploring, false) ? "on" : "")" @onclick="() => SetSituation(BuyingGoal.Exploring, false)">Just exploring</button>
+        <button type="button" class="@(IsSituation(BuyingGoal.WithinYear, false) ? "on" : "")" @onclick="() => SetSituation(BuyingGoal.WithinYear, false)">Within a year</button>
+        <button type="button" class="@(IsSituation(BuyingGoal.ActivelySearching, false) ? "on" : "")" @onclick="() => SetSituation(BuyingGoal.ActivelySearching, false)">Actively searching</button>
+        <button type="button" class="@(IsSituation(BuyingGoal.ActivelySearching, true) ? "on" : "")" @onclick="() => SetSituation(BuyingGoal.ActivelySearching, true)">Investment property</button>
+    </span>
+</div>
+
+<div class="card">
+    <h2>2. How does your household work?</h2>
+    <span class="seg">
+        <button type="button" class="@(_work == WorkArrangement.FullyRemote ? "on" : "")" @onclick='() => _work = WorkArrangement.FullyRemote'>Fully remote</button>
+        <button type="button" class="@(_work == WorkArrangement.Hybrid ? "on" : "")" @onclick='() => _work = WorkArrangement.Hybrid'>Hybrid</button>
+        <button type="button" class="@(_work == WorkArrangement.FullyOnsite ? "on" : "")" @onclick='() => _work = WorkArrangement.FullyOnsite'>Fully onsite</button>
+        <button type="button" class="@(_work == WorkArrangement.Retired ? "on" : "")" @onclick='() => _work = WorkArrangement.Retired'>Retired</button>
+        <button type="button" class="@(_work == WorkArrangement.Other ? "on" : "")" @onclick='() => _work = WorkArrangement.Other'>Other</button>
+    </span>
+</div>
+
+<div class="card">
+    <h2>3. Kids at home?</h2>
+    <span class="seg">
+        <button type="button" class="@(_hasChildren ? "on" : "")" @onclick="() => _hasChildren = true">Yes</button>
+        <button type="button" class="@(!_hasChildren ? "on" : "")" @onclick="() => _hasChildren = false">No</button>
+    </span>
+</div>
+
+<div class="card">
+    <h2>4. What matters most?</h2>
+    <span class="seg">
+        <button type="button" class="@(_focus == PriorityFocus.Location ? "on" : "")" @onclick='() => _focus = PriorityFocus.Location'>Location</button>
+        <button type="button" class="@(_focus == PriorityFocus.Space ? "on" : "")" @onclick='() => _focus = PriorityFocus.Space'>Space</button>
+        <button type="button" class="@(_focus == PriorityFocus.Condition ? "on" : "")" @onclick='() => _focus = PriorityFocus.Condition'>Condition</button>
+        <button type="button" class="@(_focus == PriorityFocus.Price ? "on" : "")" @onclick='() => _focus = PriorityFocus.Price'>Price</button>
+    </span>
+</div>
+
+<h2>Recommended for you</h2>
+<div class="card">
+    <div class="row">
+        <span class="badge brand">@Humanize(Recommendation.TemplateKey)</span>
+    </div>
+    <p>@Recommendation.Reason</p>
+
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Criterion</th><th style="width:35%">Weight</th></tr></thead>
+            <tbody>
+                @foreach (var entry in CommonCriteria.Templates[Recommendation.TemplateKey])
+                {
+                    <tr>
+                        <td>@entry.Name</td>
+                        <td class="num">@entry.SuggestedWeight%</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (_existingCriteriaCount > 0)
+    {
+        <p class="muted">You already have @_existingCriteriaCount criteria set up — using this setup replaces them.</p>
+    }
+
+    <div class="row mt-14">
+        <button @onclick="UseThisSetupAsync">Use this setup</button>
+        <button class="secondary" @onclick="SkipAsync">Skip for now</button>
+    </div>
+</div>
+
+@code {
+    private BuyingGoal _goal = BuyingGoal.Exploring;
+    private bool _isInvestment;
+    private WorkArrangement _work = WorkArrangement.Hybrid;
+    private bool _hasChildren;
+    private PriorityFocus _focus = PriorityFocus.Price;
+    private int _existingCriteriaCount;
+
+    private TemplateRecommendation Recommendation =>
+        RecommendationService.Recommend(_goal, _work, _hasChildren, _focus, _isInvestment);
+
+    protected override async Task OnInitializedAsync()
+    {
+        _existingCriteriaCount = await CriteriaRepository.GetCountAsync();
+    }
+
+    private bool IsSituation(BuyingGoal goal, bool investment) => _goal == goal && _isInvestment == investment;
+
+    private void SetSituation(BuyingGoal goal, bool investment)
+    {
+        _goal = goal;
+        _isInvestment = investment;
+    }
+
+    private async Task UseThisSetupAsync()
+    {
+        var recommendation = Recommendation;
+
+        foreach (var existing in await CriteriaRepository.GetAllAsync())
+        {
+            await CriteriaRepository.DeleteAsync(existing.Id);
+        }
+
+        var template = CommonCriteria.Templates[recommendation.TemplateKey];
+        var order = 0;
+        foreach (var entry in template)
+        {
+            await CriteriaRepository.CreateAsync(new EvaluationCriterion
+            {
+                Name = entry.Name,
+                Description = entry.Description,
+                Weight = (int)entry.SuggestedWeight,
+                ScoreAnchorLow = entry.ScoreAnchorLow,
+                ScoreAnchorHigh = entry.ScoreAnchorHigh,
+                IsSystemSuggested = true,
+                DisplayOrder = order++
+            });
+        }
+
+        var preferences = await PreferencesRepository.GetAsync();
+        preferences.BuyingGoal = _goal;
+        preferences.WorkArrangement = _work;
+        preferences.HasChildren = _hasChildren;
+        preferences.PrioritizesLocation = _focus == PriorityFocus.Location;
+        preferences.PrioritizesSize = _focus == PriorityFocus.Space;
+        preferences.PrioritizesCondition = _focus == PriorityFocus.Condition;
+        preferences.PrioritizesPrice = _focus == PriorityFocus.Price;
+        preferences.HasCompletedOnboarding = true;
+        await PreferencesRepository.SaveAsync(preferences);
+
+        Nav.NavigateTo("");
+    }
+
+    private async Task SkipAsync()
+    {
+        await PreferencesRepository.SetOnboardingCompleteAsync();
+        Nav.NavigateTo("");
+    }
+
+    private static string Humanize(string key) =>
+        Regex.Replace(key, "(?<!^)([A-Z])", " $1");
+}
