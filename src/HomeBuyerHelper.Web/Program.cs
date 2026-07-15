@@ -30,6 +30,7 @@ builder.Services.AddSingleton<IFundingRepository, LocalFundingRepository>();
 builder.Services.AddSingleton<IPhotoRepository, LocalPhotoRepository>();
 builder.Services.AddSingleton<IProConRepository, LocalProConRepository>();
 builder.Services.AddSingleton<IOfferScenarioRepository, LocalOfferScenarioRepository>();
+builder.Services.AddSingleton<WebBackupService>();
 
 // Core business services (shared with the native app)
 builder.Services.AddSingleton<IPropertyService, PropertyService>();

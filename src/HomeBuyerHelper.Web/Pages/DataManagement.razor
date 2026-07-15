@@ -1,0 +1,157 @@
+@page "/settings/data"
+@using System.IO
+@inject HomeBuyerHelper.Web.Storage.WebBackupService BackupService
+@inject IJSRuntime JS
+
+<PageTitle>Data & Backup · HomeBuyerHelper</PageTitle>
+
+<h1>Data & Backup</h1>
+<p class="page-sub">Everything you enter lives only in this browser's local storage — nothing is ever uploaded anywhere. Back up regularly so clearing your browser profile doesn't cost you your plan.</p>
+
+<div class="card">
+    <h2>Export</h2>
+    <p class="muted">Download one JSON file with everything: properties, criteria, scores, budget, funding sources, offers, and preferences. Keep it somewhere safe — re-import it any time to restore this exact state.</p>
+    <div class="row">
+        <button @onclick="ExportAsync" disabled="@_busy">Download backup</button>
+        <span class="badge brand">Last backup: @_lastBackupText</span>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Import</h2>
+    <p class="muted">Restore from a previously downloaded backup file. Importing replaces everything currently stored in this browser.</p>
+    <div class="row">
+        <InputFile OnChange="OnFileSelectedAsync" accept=".json" />
+    </div>
+    @if (_importError != null)
+    {
+        <p class="error-text mt-12">@_importError</p>
+    }
+    @if (_pendingImportJson != null)
+    {
+        <div class="callout mt-14">
+            <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span>
+                This replaces <strong>all</strong> current data with the contents of <strong>@_pendingFileName</strong> and cannot be undone. Type <strong>REPLACE</strong> below to confirm.
+                <div class="row mt-12">
+                    <input @bind="_importConfirmText" @bind:event="oninput" placeholder="REPLACE" />
+                    <button class="danger" disabled="@(_importConfirmText != "REPLACE" || _busy)" @onclick="ConfirmImportAsync">Replace all data</button>
+                    <button class="secondary sm" @onclick="CancelImport">Cancel</button>
+                </div>
+            </span>
+        </div>
+    }
+</div>
+
+<div class="card">
+    <h2>Danger Zone</h2>
+    <p class="muted">Permanently delete every property, criterion, score, budget item, funding source, and offer from this browser. This cannot be undone.</p>
+    <div class="row">
+        <input @bind="_deleteConfirmText" @bind:event="oninput" placeholder="DELETE" />
+        <button class="danger" disabled="@(_deleteConfirmText != "DELETE" || _busy)" @onclick="ConfirmDeleteAsync">Delete all data</button>
+    </div>
+</div>
+
+@code {
+    private string _lastBackupText = "never";
+    private string? _importError;
+    private string? _pendingImportJson;
+    private string? _pendingFileName;
+    private string _importConfirmText = "";
+    private string _deleteConfirmText = "";
+    private bool _busy;
+
+    protected override void OnInitialized()
+    {
+        RefreshLastBackup();
+    }
+
+    private void RefreshLastBackup()
+    {
+        var last = BackupService.GetLastBackupAt();
+        _lastBackupText = last == null
+            ? "never"
+            : last.Value.ToLocalTime().ToString("MMM d, yyyy 'at' h:mm tt");
+    }
+
+    private async Task ExportAsync()
+    {
+        _busy = true;
+        try
+        {
+            var json = BackupService.Export();
+            var fileName = $"homebuyerhelper-backup-{DateTime.Now:yyyyMMdd}.json";
+            await JS.InvokeVoidAsync("hbhDownload", fileName, json);
+            RefreshLastBackup();
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task OnFileSelectedAsync(InputFileChangeEventArgs e)
+    {
+        _importError = null;
+        _pendingImportJson = null;
+        _importConfirmText = "";
+
+        var file = e.File;
+        try
+        {
+            using var stream = file.OpenReadStream(maxAllowedSize: 20 * 1024 * 1024);
+            using var reader = new StreamReader(stream);
+            _pendingImportJson = await reader.ReadToEndAsync();
+            _pendingFileName = file.Name;
+        }
+        catch (Exception ex)
+        {
+            _importError = $"Couldn't read that file: {ex.Message}";
+        }
+    }
+
+    private void CancelImport()
+    {
+        _pendingImportJson = null;
+        _pendingFileName = null;
+        _importConfirmText = "";
+        _importError = null;
+    }
+
+    private async Task ConfirmImportAsync()
+    {
+        if (_pendingImportJson == null || _importConfirmText != "REPLACE")
+        {
+            return;
+        }
+
+        _busy = true;
+        try
+        {
+            BackupService.Import(_pendingImportJson);
+        }
+        catch (InvalidDataException ex)
+        {
+            _importError = ex.Message;
+            _busy = false;
+            return;
+        }
+
+        // LocalStore caches items in memory per repository instance; a
+        // stale cache would silently reintroduce the data we just replaced.
+        // A full reload is the simplest way to guarantee a clean state.
+        await JS.InvokeVoidAsync("location.reload");
+    }
+
+    private async Task ConfirmDeleteAsync()
+    {
+        if (_deleteConfirmText != "DELETE")
+        {
+            return;
+        }
+
+        _busy = true;
+        BackupService.DeleteAllData();
+        await JS.InvokeVoidAsync("location.reload");
+    }
+}
