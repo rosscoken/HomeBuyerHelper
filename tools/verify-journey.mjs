@@ -90,16 +90,20 @@ await page.screenshot({ path: `${SHOTS}/compare.png`, fullPage: true });
 // --- 6. Budget: income + expense → projection
 await page.goto(BASE + '/budget', { waitUntil: 'networkidle' });
 const incomeCard = page.locator('.card:has(h2:text-is("Income Sources"))');
-await incomeCard.locator('span:has(> label:text-is("Name")) input').fill('Salary');
+await incomeCard.locator('.preset-row button:text-is("Salary")').click();
 await incomeCard.locator('span:has(> label:text-is("Amount")) input').fill('12500');
 await incomeCard.locator('button:text-is("Add")').click();
-await page.waitForSelector('.card:has(h2:text-is("Income Sources")) table');
+await page.waitForSelector('.card:has(h2:text-is("Income Sources")) .score-item:has-text("Salary")');
 const expenseCard = page.locator('.card:has(h2:text-is("Expenses"))');
-await expenseCard.locator('span:has(> label:text-is("Name")) input').fill('Rent');
+await expenseCard.locator('.preset-row button:text-is("Rent")').click();
 await expenseCard.locator('span:has(> label:text-is("Amount/mo")) input').fill('2800');
 await expenseCard.locator('button:text-is("Add")').click();
-await page.waitForSelector('.card:has(h2:text-is("Expenses")) table');
+await page.waitForSelector('.card:has(h2:text-is("Expenses")) .score-item:has-text("Rent")');
 expect(await page.locator('h2:has-text("24-Month Cash Flow")').count() === 1, 'cash flow projection renders');
+expect(await page.locator('.stat-strip .stat').count() === 4, 'projection insight strip renders');
+await page.click('button:has-text("Show all")');
+await page.waitForFunction(() => document.querySelectorAll('table tbody tr').length > 6);
+log('projection expands to all months');
 
 // --- 7. Funding
 await page.goto(BASE + '/funding', { waitUntil: 'networkidle' });
