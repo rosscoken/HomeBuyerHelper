@@ -63,7 +63,8 @@ else if (_loaded)
     </p>
 
     <h2>True Total Cost</h2>
-    <p class="muted">Housing + utilities + the monetized value of commute time (set your rate in the native app or use the $100/hr default).</p>
+    <p class="muted">Housing + utilities + the monetized value of commute time.</p>
+    <p class="muted">Commute time valued at @_preferences?.TimeValueHourlyRate.ToString("C0")/hr × @_preferences?.WorkdaysPerMonth workdays/mo — <a href="settings">edit</a></p>
     <div class="table-wrap">
         <table>
             <thead>
@@ -94,6 +95,7 @@ else if (_loaded)
     private List<PropertyComparisonResult> _results = new();
     private List<(PropertyComparisonResult Result, TrueTotalCost Cost)> _trueCosts = new();
     private TrueTotalCost? _lowestCost;
+    private UserPreferences? _preferences;
 
     protected override async Task OnInitializedAsync()
     {
@@ -102,6 +104,7 @@ else if (_loaded)
         _results = (await PropertyService.ComparePropertiesAsync(properties.Select(p => p.Id))).ToList();
 
         var preferences = await PreferencesRepository.GetAsync();
+        _preferences = preferences;
         _trueCosts = _results
             .Select(result => (result, TrueTotalCostService.Calculate(result.Property, preferences)))
             .ToList();
